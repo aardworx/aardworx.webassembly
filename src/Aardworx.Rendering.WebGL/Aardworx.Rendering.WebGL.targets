@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Project>
+    <PropertyGroup>
+        <WasmBuildNative>true</WasmBuildNative>
+        <EmccExtraLDFlags>-s MAX_WEBGL_VERSION=2</EmccExtraLDFlags>
+    </PropertyGroup>
+    <ItemGroup>
+        <NativeFileReference Include="$(MSBuildThisFileDirectory)Native\WebGL.c" ScanForPInvokes="true" />
+        <NativeFileReference Include="$(MSBuildThisFileDirectory)Streams\Interpreter.c" ScanForPInvokes="true" />
+    </ItemGroup>
+</Project>

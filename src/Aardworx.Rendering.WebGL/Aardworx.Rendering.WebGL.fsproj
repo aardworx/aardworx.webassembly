@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+      <TargetFramework>net6.0</TargetFramework>
+      <WasmBuildNative>true</WasmBuildNative>
+      <DisableImplicitFSharpCoreReference>true</DisableImplicitFSharpCoreReference>
+      <OutputPath>..\..\bin\$(Configuration)\</OutputPath>
+    </PropertyGroup>
+    <ItemGroup>
+        <None Include="Aardworx.Rendering.WebGL.targets" />
+        <None Include="Native\WebGL.h" />
+        <None Include="Native\WebGL.c" />
+        <Compile Include="Native\NativeHelpers.fs" />
+        <Compile Include="Native\AdaptivePointer.fs" />
+        <NativeFileReference Include="Native\WebGL.c" ScanForPInvokes="true" />
+        <Compile Include="WebGL.fs" />
+        <Compile Include="Device.fs" />
+        <Compile Include="FramebufferSignature.fs" />
+        <Compile Include="Resource.fs" />
+        <Compile Include="AdaptiveResource.fs" />
+        <NativeFileReference Include="Streams\Interpreter.c" ScanForPInvokes="true" />
+        <None Include="Streams\Generator.fsx" />
+        <None Include="Streams\Interpreter.c" />
+        <Compile Include="Streams\CommandEncoderBase.fs" />
+        <Compile Include="Streams\CommandEncoder.fs" />
+        <Compile Include="Streams\NativeCommandEncoder.fs" />
+        <Compile Include="Streams\ManagedCommandEncoder.fs" />
+        <Compile Include="Streams\CommandEncoderExtensions.fs" />
+        <Compile Include="SilkExtensions.fs" />
+        <Compile Include="CommandStream.fs" />
+        <Compile Include="Resources\Pixelbuffer.fs" />
+        <Compile Include="Resources\Buffer.fs" />
+        <Compile Include="Resources\Renderbuffer.fs" />
+        <Compile Include="Resources\Texture.fs" />
+        <Compile Include="Resources\TextureSlices.fs" />
+        <Compile Include="Resources\Sampler.fs" />
+        <Compile Include="Resources\Shader.fs" />
+        <Compile Include="Resources\VertexBufferBinding.fs" />
+        <Compile Include="Resources\Framebuffer.fs" />
+        <Compile Include="PreparedRenderObject.fs" />
+        <Compile Include="Fragments.fs" />
+        <Compile Include="ResourceManager.fs" />
+        <Compile Include="RenderTask.fs" />
+        <Compile Include="Runtime.fs" />
+        <Compile Include="RenderControl.fs" />
+        <Compile Include="FXAA.fs" />
+        <Compile Include="Application.fs" />
+    </ItemGroup>
+    <ItemGroup>
+        <ProjectReference Include="..\Aardworx.WebAssembly\Aardworx.WebAssembly.fsproj" />
+    </ItemGroup>
+    <Import Project="..\..\.paket\Paket.Restore.targets" />
+</Project>

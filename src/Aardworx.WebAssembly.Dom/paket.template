@@ -1,0 +1,11 @@
+type project
+id Aardworx.WebAssembly.Dom
+authors Aardworx
+owners Aardworx
+projectUrl http://github.com/aardworx/aardworx.webassembly
+licenseUrl http://www.apache.org/licenses/LICENSE-2.0.txt
+repositoryType git
+repositoryUrl https://github.com/aardworx/aardworx.webassembly
+description
+    WebAssembly libraries for Aardvark
+include-pdbs true

@@ -1,0 +1,26 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <DisableImplicitFSharpCoreReference>true</DisableImplicitFSharpCoreReference>
+    <PublishTrimmed>false</PublishTrimmed>
+    <PackAsTool>true</PackAsTool>
+    <OutputPath>..\..\..\bin\$(Configuration)\</OutputPath>
+    <BlazorEnableCompression>false</BlazorEnableCompression>
+    <RunAOTCompilation>false</RunAOTCompilation>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="Model.fs" />
+    <Compile Include="Model.g.fs" />
+    <Compile Include="App.fs" />
+    <Compile Include="Program.fs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\Aardworx.Rendering.WebGL\Aardworx.Rendering.WebGL.fsproj" />
+    <ProjectReference Include="..\..\Aardworx.WebAssembly.Dom\Aardworx.WebAssembly.Dom.fsproj" />
+    <ProjectReference Include="..\..\Aardworx.WebAssembly\Aardworx.WebAssembly.fsproj" />
+  </ItemGroup>
+  <Import Project="..\..\Aardworx.WebAssembly\Aardworx.WebAssembly.targets" />
+  <Import Project="..\..\Aardworx.Rendering.WebGL\Aardworx.Rendering.WebGL.targets" />
+  <Import Project="..\..\..\.paket\Paket.Restore.targets" />
+</Project>

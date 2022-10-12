@@ -1,0 +1,19 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+      <TargetFramework>net6.0</TargetFramework>
+      <WasmBuildNative>true</WasmBuildNative>
+      <DisableImplicitFSharpCoreReference>true</DisableImplicitFSharpCoreReference>
+      <OutputPath>..\..\bin\$(Configuration)\</OutputPath>
+    </PropertyGroup>
+    <ItemGroup>
+        <None Include="Utilities\CoreUtilities.c" />
+        <Compile Include="Utilities\CoreUtilities.fs" />
+        <Compile Include="Utilities\Log.fs" />
+        <Compile Include="Utilities\JsObj.fs" />
+        <None Include="Aardworx.WebAssembly.targets" />
+        <Compile Include="Browser.fs" />
+        <Compile Include="ApplicationInterop.fs" />
+    </ItemGroup>
+    <Import Project="..\..\.paket\Paket.Restore.targets" />
+</Project>

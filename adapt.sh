@@ -1,0 +1,1 @@
+dotnet adaptify --local --verbose --force $PWD/src/Examples/Dom/Dom.fsproj
