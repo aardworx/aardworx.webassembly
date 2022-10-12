@@ -1,5 +1,10 @@
 # Aardworx.WebAssembly
 
+[![Windows](https://github.com/aardworx/aardworx.webassembly/actions/workflows/windows.yml/badge.svg)](https://github.com/aardworx/aardworx.webassembly/actions/workflows/windows.yml)
+[![Mac](https://github.com/aardworx/aardworx.webassembly/actions/workflows/mac.yml/badge.svg)](https://github.com/aardworx/aardworx.webassembly/actions/workflows/mac.yml)
+[![Linux](https://github.com/aardworx/aardworx.webassembly/actions/workflows/linux.yml/badge.svg)](https://github.com/aardworx/aardworx.webassembly/actions/workflows/linux.yml)
+[![NuGet](https://badgen.net/nuget/v/Aardworx.Rendering.WebGL)](https://www.nuget.org/packages/Aardworx.Rendering.WebGL/)
+
 Aardworx.WebAssembly provides a WebGL backend for [Aardvark.Rendering](https://github.com/aardvark-platform/aardvark.rendering) and tools for working with [Aardvark.Dom](https://github.com/aardvark-community/aardvark.dom) in a WebAssembly environment.
 
 This library is work-in-progress and several rendering functionalities have not been implemented yet.
