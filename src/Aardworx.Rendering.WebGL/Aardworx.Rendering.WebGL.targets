@@ -2,7 +2,7 @@
 <Project>
     <PropertyGroup>
         <WasmBuildNative>true</WasmBuildNative>
-        <EmccExtraLDFlags>-s MAX_WEBGL_VERSION=2</EmccExtraLDFlags>
+        <EmccExtraLDFlags>-s MAX_WEBGL_VERSION=2 $(EmccExtraLDFlags)</EmccExtraLDFlags>
     </PropertyGroup>
     <ItemGroup>
         <NativeFileReference Include="$(MSBuildThisFileDirectory)Native\WebGL.c" ScanForPInvokes="true" />

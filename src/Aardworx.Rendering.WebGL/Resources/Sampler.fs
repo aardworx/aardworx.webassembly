@@ -91,30 +91,20 @@ type DeviceSamplerExtensions private() =
                 device.Run (fun gl ->
                     let handle = gl.GenSampler()
 
-                    Log.debug "TextureWrapS"
                     gl.SamplerParameter(handle, SamplerParameterI.TextureWrapS, wrapMode state.AddressU)
-                    
-                    Log.debug "TextureWrapT"
                     gl.SamplerParameter(handle, SamplerParameterI.TextureWrapT, wrapMode state.AddressV)
-                    
-                    Log.debug "TextureWrapR"
                     gl.SamplerParameter(handle, SamplerParameterI.TextureWrapR, wrapMode state.AddressW)
                     
                     
                     if state.Comparison <> ComparisonFunction.Always then
-                        Log.debug "TextureCompareFunc %A" state.Comparison
                         gl.SamplerParameter(handle, SamplerParameterI.TextureCompareFunc, compareFunc state.Comparison)
-                    
-                        Log.debug "TextureCompareMode"
                         gl.SamplerParameter(handle, SamplerParameterI.TextureCompareMode, int TextureCompareMode.CompareRefToTexture)
 
-                    Log.debug "TextureMinFilter"
                     gl.SamplerParameter(
                         handle, SamplerParameterI.TextureMinFilter, 
                         minFilter (struct(state.Filter.MipmapMode, state.Filter.Minification))
                     )
                 
-                    Log.debug "TextureMagFilter"
                     gl.SamplerParameter(
                         handle, SamplerParameterI.TextureMagFilter, 
                         magFilter state.Filter.Magnification
@@ -134,20 +124,17 @@ type DeviceSamplerExtensions private() =
                     //    float32 state.MipLodBias
                     //)
                     
-                    Log.debug "TextureMinLod"
                     gl.SamplerParameter(
                         handle, SamplerParameterF.TextureMinLod,
                         float32 state.MinLod
                     )
-
-                    Log.debug "TextureMaxLod"
+                    
                     gl.SamplerParameter(
                         handle, SamplerParameterF.TextureMaxLod,
                         float32 state.MaxLod
                     )
 
                     if device.Info.Features.TextureFilterAnisotropic then
-                        Log.debug "TextureMaxAnisotropy"
                         gl.SamplerParameter(
                             handle, SamplerParameterF.TextureMaxAnisotropy, 
                             float32 state.MaxAnisotropy
