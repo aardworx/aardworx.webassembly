@@ -5,7 +5,7 @@ Aardworx.WebAssembly provides a WebGL backend for [Aardvark.Rendering](https://g
 This library is work-in-progress and several rendering functionalities have not been implemented yet.
 
 ### Check out the [Live Demo](https://demo.aardvarkians.com/wasm/RenderingOnly/)
-![image](https://user-images.githubusercontent.com/6370801/195428227-12172fa3-ea00-4945-ae60-79984112eb05.png)
+[![image](https://user-images.githubusercontent.com/6370801/195428227-12172fa3-ea00-4945-ae60-79984112eb05.png)](https://demo.aardvarkians.com/wasm/RenderingOnly/)
 
 
 ## Building
