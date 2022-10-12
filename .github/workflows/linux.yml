@@ -18,5 +18,4 @@ jobs:
       - name: Restore
         run: dotnet paket restore
       - name: Build
-        shell: cmd
         run: dotnet build -c Release
