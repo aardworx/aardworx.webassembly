@@ -53,18 +53,18 @@ module private JSHelpers =
             };
 
             aardvark.addEventListener = function (target, name, callback, phase) {
-                const handler = { handleEvent: function (a) { callback.invokeMethodAsync('Invoke', DotNet.createJSObjectReference(a)); } };
+                const handler = { handleEvent: function (a) { callback.invokeMethod('Invoke', DotNet.createJSObjectReference(a)); } };
                 target.addEventListener(name, handler, phase);
                 return DotNet.createJSObjectReference({ dispose: function() { target.removeEventListener(name, handler, phase); } });
             };
 
             aardvark.requestAnimationFrame = function (callback) {
-                if(isWorker) setTimeout(function () { callback.invokeMethodAsync('Invoke'); }, 0);
-                else window.requestAnimationFrame(function () { callback.invokeMethodAsync('Invoke'); });
+                if(isWorker) setTimeout(function () { callback.invokeMethod('Invoke'); }, 0);
+                else window.requestAnimationFrame(function () { callback.invokeMethod('Invoke'); });
             };
 
             aardvark.setTimeout = function (time, callback) {
-                return setTimeout(function () { callback.invokeMethodAsync('Invoke'); }, time);
+                return setTimeout(function () { callback.invokeMethod('Invoke'); }, time);
             };
 
             
@@ -108,7 +108,7 @@ module private JSHelpers =
 
                     var buf = Module._malloc(img.data.length);
                     Module.HEAPU8.set(img.data, buf);
-                    callback.invokeMethodAsync('Invoke', img.width, img.height, buf);
+                    callback.invokeMethod('Invoke', img.width, img.height, buf);
                     Module._free(buf);
                 };
                 image.src = url;
@@ -120,14 +120,14 @@ module private JSHelpers =
                 FS.mount(IDBFS, {}, '/aardvark');
                 FS.syncfs(true, function (err) {
                     if(err) { console.error(err); }
-                    else { callback.invokeMethodAsync('Invoke'); }
+                    else { callback.invokeMethod('Invoke'); }
                 });
             };
             
             aardvark.syncFileSystem = function(callback) {
                 FS.syncfs(false, function (err) {
                     if(err) { console.error(err); }
-                    else { callback.invokeMethodAsync('Invoke'); }
+                    else { callback.invokeMethod('Invoke'); }
                 });
             }
 
@@ -142,7 +142,14 @@ module private JSHelpers =
 
             let host = builder.Build()
             let res = host.Services.GetService(typeof<IJSRuntime>) :?> WebAssemblyJSRuntime
-            CoreUtilities.installScript aardvarkScript
+
+
+            let code =
+                sprintf "try { %s } catch(e) { console.error(e); }" aardvarkScript
+
+            res.InvokeVoid("window.eval", code);
+            
+            //CoreUtilities.installScript aardvarkScript
             res
         )
         
@@ -254,31 +261,37 @@ module private JSHelpers =
 
 
 module JSActions =
+    [<Sealed>]
     type JSAction(action : unit -> unit) =
         [<JSInvokable("Invoke")>]
         member x.Invoke() = action()
- 
+
+    [<Sealed>]
     type JSActionImage(action : int -> int -> nativeint -> unit) =
         
         [<JSInvokable("Invoke")>]
         member x.Invoke(w : int, h : int, ptr : int) = action w h (nativeint ptr)
 
-
+        
+    [<Sealed>]
     type JSActionO(action : IJSInProcessObjectReference -> unit) =
 
         [<JSInvokable("Invoke")>]
         member x.Invoke(o : IJSInProcessObjectReference) = action o
         
+    [<Sealed>]
     type JSActionString(action : string -> unit) =
         
         [<JSInvokable("Invoke")>]
         member x.Invoke(value : string) = action value
-                
+         
+    [<Sealed>]       
     type JSActionPtrInt(action : nativeint -> int -> unit) =
         
         [<JSInvokable("Invoke")>]
         member x.Invoke(data : int, len : int) = action (nativeint data) len
         
+    [<Sealed>]
     type JSActionStringString(action : string -> string -> unit) =
         
         [<JSInvokable("Invoke")>]

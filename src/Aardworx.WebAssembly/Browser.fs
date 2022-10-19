@@ -5051,7 +5051,7 @@ type HTMLDocument(r : IJSInProcessObjectReference) =
         Async.FromContinuations(fun (action,_,_) -> 
             let s = x.ReadyState
             if s = "complete" then
-                Window.RequestAnimationFrame(action)
+                Window.SetTimeout(0, action) |> ignore
             else
                 x.AddEventListener("readystatechange", fun _ ->
                     let s = x.ReadyState
@@ -5386,20 +5386,48 @@ type Location(r : IJSInProcessObjectReference) =
         
 type Window(r : IJSInProcessObjectReference) =
     inherit EventTarget(r)
+    
+    let timeoutRefs = Dict<int, DotNetObjectReference<_> * GCHandle>()
 
     member x.Location =
         x.GetProperty<Location> "location"
     
     member x.RequestAnimationFrame(callback : unit -> unit) =
-        let cb = DotNetObjectReference.Create (JSActions.JSAction callback)
-        runtime.Value.InvokeVoid("aardvark.requestAnimationFrame", cb)
+        let mutable ref = Unchecked.defaultof<DotNetObjectReference<_>>
+        let mutable gc = Unchecked.defaultof<GCHandle>
+        let run =
+            JSActions.JSAction (fun () ->
+                gc.Free()
+                ref.Dispose()
+                try callback()
+                with e -> printfn "ERROR: %0A" e
+            )
+        ref <- DotNetObjectReference.Create run
+        gc <- GCHandle.Alloc(ref)
+        runtime.Value.InvokeVoid("aardvark.requestAnimationFrame", ref)
         
     member x.SetTimeout(time : int, callback : unit -> unit) =
-        let cb = DotNetObjectReference.Create (JSActions.JSAction callback)
-        runtime.Value.Invoke<int>("aardvark.setTimeout", time, cb)
-
+        let mutable ref = Unchecked.defaultof<DotNetObjectReference<_>>
+        let mutable gc = Unchecked.defaultof<GCHandle>
+        let mutable id = -1
+        let run() =
+            ref.Dispose()
+            timeoutRefs.Remove id |> ignore
+            callback()
+        
+        ref <- DotNetObjectReference.Create (JSActions.JSAction run)
+        gc <- GCHandle.Alloc(ref)
+        id <- runtime.Value.Invoke<int>("aardvark.setTimeout", time, ref)
+        timeoutRefs.[id] <- (ref, gc)
+        id
+        
     member x.ClearTimeout(timeout : int) =
         runtime.Value.InvokeVoid("window.clearTimeout", timeout)
+        match timeoutRefs.TryRemove timeout with
+        | (true, (ref, gc)) -> 
+            ref.Dispose()
+            gc.Free()
+        | _ -> ()
     
     member x.Document : HTMLDocument =
         x.GetProperty "document"

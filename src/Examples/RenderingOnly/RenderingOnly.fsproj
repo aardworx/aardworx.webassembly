@@ -8,6 +8,7 @@
     <OutputPath>..\..\..\bin\$(Configuration)\</OutputPath>
     <BlazorEnableCompression>false</BlazorEnableCompression>
     <RunAOTCompilation>false</RunAOTCompilation>
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="Program.fs" />
@@ -18,5 +19,9 @@
   </ItemGroup>
   <Import Project="..\..\Aardworx.WebAssembly\Aardworx.WebAssembly.targets" />
   <Import Project="..\..\Aardworx.Rendering.WebGL\Aardworx.Rendering.WebGL.targets" />
+  <Target Name="FShadeAOT" BeforeTargets="BeforePublish">
+    <Message Text="BeforePublish" Importance="high" />
+    <Exec Command="dotnet fshadeaot &quot;$(MSBuildThisFileDirectory)$(OutputPath)RenderingOnly.dll&quot;" />
+  </Target>
   <Import Project="..\..\..\.paket\Paket.Restore.targets" />
 </Project>

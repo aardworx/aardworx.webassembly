@@ -19,6 +19,12 @@
         "commands": [
           "adaptify"
         ]
+      },
+      "fshadeaot": {
+        "version": "5.2.15",
+        "commands": [
+          "fshadeaot"
+        ]
       }
     }
   }

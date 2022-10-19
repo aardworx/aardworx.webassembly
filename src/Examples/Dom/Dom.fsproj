@@ -8,6 +8,7 @@
     <OutputPath>..\..\..\bin\$(Configuration)\</OutputPath>
     <BlazorEnableCompression>false</BlazorEnableCompression>
     <RunAOTCompilation>false</RunAOTCompilation>
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="Model.fs" />

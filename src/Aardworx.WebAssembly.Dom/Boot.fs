@@ -19,6 +19,7 @@ type HtmlBackend(app : WebGLApplication, server : IServer) =
     static let initTable = Dict<string, unit -> unit>()
     static let disposables = Dict<int64, IDisposable>()
     
+    [<JSInvokable>]
     static member Init(id : string) =
         match initTable.TryRemove id with
         | (true, a) -> a()
@@ -299,6 +300,8 @@ module Boot =
                 let backend = HtmlBackend(app, server)
                 
                 let execute (code : string) =
+                    let code = sprintf "try { %s } catch (e) { console.error(e); }" code
+                    
                     let data = 
                         System.Text.StringBuilder()
                             .Append("{")

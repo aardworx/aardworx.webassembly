@@ -7,6 +7,14 @@ open Aardvark.Dom
 open Adaptify
 open App
 
+module Shader =
+    open FShade
+    
+    let nothing (v : Effects.Vertex) =
+        fragment {
+            return v.c
+        }
+
 type Message =
     | Increment
     | Decrement
@@ -39,6 +47,9 @@ module App =
             { model with Points = HashSet.empty }
             
     let view (env : Env<Message>) (model : AdaptiveModel) =
+    
+        let a = FShade.Effect.ofFunction DefaultSurfaces.trafo
+        printfn "%A" a
         body {
 
             OnBoot [
@@ -77,11 +88,13 @@ module App =
                     false
                 )
 
-                // for shading we simply use Aardvark.Rendering's default shaders doing transformations and 
+                // fori shading we simply use Aardvark.Rendering's default shaders doing transformations and 
                 // applying a simple phong-illumination with a headlight.
                 Sg.Shader {
                     DefaultSurfaces.trafo
+                    DefaultSurfaces.constantColor C4f.Red
                     DefaultSurfaces.simpleLighting
+                    Shader.nothing
                 }
 
                 // render a centered floor-plane of size 20

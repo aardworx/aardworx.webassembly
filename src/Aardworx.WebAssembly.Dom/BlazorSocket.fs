@@ -99,15 +99,17 @@ type BlazorSocket private(name : string) =
                 window.BlazorSocketReceive = function(name, a, b) {
                     let sock = allSockets[name]
                     if(sock) {
-                        let msg = a;
-                        if(typeof a === "number" && typeof b === "number") {
-                            const arr = HEAPU8.subarray(a, a + b)
-                            const res = Uint8Array(arr)
-                            msg = res.buffer;
-                        }
+                        setTimeout(function() {
+                            let msg = a;
+                            if(typeof a === "number" && typeof b === "number") {
+                                const arr = HEAPU8.subarray(a, a + b)
+                                const res = Uint8Array(arr)
+                                msg = res.buffer;
+                            }
 
-                        if(msg) { sock.trigger({ data: msg }); }
-                        else sock.close();
+                            if(msg) { sock.trigger({ data: msg }); }
+                            else sock.close();
+                        }, 0);
                     }
                 };
                 
@@ -202,12 +204,14 @@ type BlazorSocket private(name : string) =
         init.Value
         onConnect.Publish
     
+    [<JSInvokable>]
     static member Connect(name : string) =
         if not (all.ContainsKey name) then
             let s = BlazorSocket(name)
             all.[name] <- s
             onConnect.Trigger(s)
             
+    [<JSInvokable>]
     static member Disconnect(name : string) =
         match all.TryRemove name with
         | (true, o) ->
@@ -215,6 +219,7 @@ type BlazorSocket private(name : string) =
         | _ ->
             ()
             
+    [<JSInvokable>]
     static member ReceiveString(name : string, message : string) =
         match all.TryGetValue name with
         | (true, s) -> s.Trigger(ChannelMessage.Text message)
@@ -224,6 +229,7 @@ type BlazorSocket private(name : string) =
             onConnect.Trigger(s)
             s.Trigger(ChannelMessage.Text message)
         
+    [<JSInvokable>]
     static member ReceiveBinary(name : string, ptr : int, len : int) =
         let ptr = nativeint ptr
         let res = Array.zeroCreate<byte> len

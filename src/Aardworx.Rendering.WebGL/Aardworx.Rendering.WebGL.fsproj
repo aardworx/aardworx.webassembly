@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project Sdk="Microsoft.NET.Sdk">
     <PropertyGroup>
+      <OutputType>Library</OutputType>
       <TargetFramework>net6.0</TargetFramework>
       <WasmBuildNative>true</WasmBuildNative>
       <DisableImplicitFSharpCoreReference>true</DisableImplicitFSharpCoreReference>

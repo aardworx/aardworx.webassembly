@@ -58,18 +58,19 @@ type private WebGLSwapChainFXAA internal(device : Device, main : HTMLCanvasEleme
 
     let currentTexture = cval Unchecked.defaultof<IBackendTexture>
     
+    
+    static let effect =
+        FShade.Effect.ofFunction (
+            FXAA.fxaa 
+                FXAA.PRESET.Extreme39 
+                (float (FXAA.getEdgeThreshold FXAA.EDGETHRESHOLD.OVERKILL)) 
+                (float (FXAA.getEdgeThresholdMin FXAA.EDGETHRESHOLDMIN.QUALITY)) 
+                (float (FXAA.getSubpixParam FXAA.SUBPIX.SOFT))
+        )
+
     let renderFXAA =
         let obj = RenderObject.Create()
-
-        let effect =
-            FShade.Effect.ofFunction (
-                FXAA.fxaa 
-                    FXAA.PRESET.Extreme39 
-                    (float (FXAA.getEdgeThreshold FXAA.EDGETHRESHOLD.OVERKILL)) 
-                    (float (FXAA.getEdgeThresholdMin FXAA.EDGETHRESHOLDMIN.QUALITY)) 
-                    (float (FXAA.getSubpixParam FXAA.SUBPIX.SOFT))
-            )
-
+        
         obj.RenderPass <- RenderPass.main
         obj.Activate <- fun () -> { new System.IDisposable with member x.Dispose() = () }
         obj.BlendState <- BlendState.Default
