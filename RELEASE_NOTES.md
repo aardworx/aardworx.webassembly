@@ -1,4 +1,4 @@
-### 1.0.0-prerelease0002
+### 1.0.0-prerelease0003
 * improved Sg.Active performance (no structural dependency on the program)
 
 ### 1.0.0-prerelease0002
