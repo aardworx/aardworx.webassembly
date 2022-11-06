@@ -110,10 +110,19 @@ type RenderObjectCommandExtensions private() =
             this.SetTexture(i, t)
             this.SetSampler(i, s)
         if lineModes.Contains o.Mode then this.SetLineWidth(o.LineWidth)
-        this.IfThenElse(o.IsActive, 
-            (fun s -> s.Draw(o.Mode, o.IsIndexed, o.DrawCalls)),
-            ignore
-        )
+
+        let calls =
+            if o.IsActive.IsConstant then
+                if AVal.force o.IsActive then o.DrawCalls 
+                else DrawCalls.Direct (AVal.constant [])
+            else
+                match o.DrawCalls with
+                | DrawCalls.Direct calls ->
+                    o.IsActive |> AVal.bind (function true -> calls | _ -> AVal.constant []) |> DrawCalls.Direct
+                | DrawCalls.Indirect calls ->
+                    o.IsActive |> AVal.bind (function true -> calls | _ -> AVal.constant (IndirectBuffer.ofList o.IsIndexed [])) |> DrawCalls.Indirect
+
+        this.Draw(o.Mode, o.IsIndexed, calls)
         
     [<Extension>]
     static member Render(this : CommandStream, prev : PreparedRenderObject, o : PreparedRenderObject) =
@@ -146,10 +155,19 @@ type RenderObjectCommandExtensions private() =
                 this.SetSampler(i, s)
                 
         if lineModes.Contains o.Mode && prev.LineWidth <> o.LineWidth then this.SetLineWidth(o.LineWidth)
-        this.IfThenElse(o.IsActive, 
-            (fun s -> s.Draw(o.Mode, o.IsIndexed, o.DrawCalls)),
-            ignore
-        )
+
+        let calls =
+            if o.IsActive.IsConstant then
+                if AVal.force o.IsActive then o.DrawCalls 
+                else DrawCalls.Direct (AVal.constant [])
+            else
+                match o.DrawCalls with
+                | DrawCalls.Direct calls ->
+                    o.IsActive |> AVal.bind (function true -> calls | _ -> AVal.constant []) |> DrawCalls.Direct
+                | DrawCalls.Indirect calls ->
+                    o.IsActive |> AVal.bind (function true -> calls | _ -> AVal.constant (IndirectBuffer.ofList o.IsIndexed [])) |> DrawCalls.Indirect
+
+        this.Draw(o.Mode, o.IsIndexed, calls)
         
     [<Extension>]
     static member Render(this : CommandStream, prev : option<PreparedRenderObject>, o : PreparedRenderObject) =

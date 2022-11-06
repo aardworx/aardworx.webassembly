@@ -32,4 +32,4 @@ nuget Aardvark.Base.FSharp ~> 5.2.12
 
 nuget Aardvark.Dom.Elm ~> 1.0.0-prerelease0019
 nuget Aardvark.Dom.Remote ~> 1.0.0-prerelease0019
-nuget Aardvark.FontProvider ~> 0.0.4
+nuget Aardvark.FontProvider ~> 0.0.5
