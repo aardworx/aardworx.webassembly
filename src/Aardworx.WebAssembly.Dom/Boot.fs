@@ -415,7 +415,7 @@ module Boot =
                     while true do
                         let! msg = queue.Take()
                         transact (fun () ->
-                            model <- (model, msg) ||> Seq.fold (fun m msg -> app.update env model msg)
+                            model <- (model, msg) ||> Seq.fold (fun m msg -> app.update env m msg)
                             app.unpersist.update adaptiveModel model
                         )
                 }

@@ -1,3 +1,6 @@
+### 1.0.0-prerelease0004
+* fixed handling of multiple messages in one emit
+
 ### 1.0.0-prerelease0003
 * improved Sg.Active performance (no structural dependency on the program)
 
