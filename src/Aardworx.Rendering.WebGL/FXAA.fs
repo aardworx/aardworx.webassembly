@@ -491,9 +491,151 @@ module internal FXAA =
         toEffect (fxaaUniform preset)
 
     let fxaa (preset : PRESET) (edgeThreshold : float) (edgeThresholdMin : float) (subpix : float) (v : Vertex) =
-            fragment {
-                return diffuseSampler.SampleLevelFXAA(v.tc, 0.0, preset, edgeThreshold, edgeThresholdMin, subpix)
-            }
+        fragment {
+            return diffuseSampler.SampleLevelFXAA(v.tc, 0.0, preset, edgeThreshold, edgeThresholdMin, subpix)
+        }
+
+    let fxaaExtreme (v : Vertex) =
+        fragment {
+            
+            let inverseVP = 1.0 / V2d (diffuseSampler.GetSize 0)
+            let luma = V3d(0.299, 0.587, 0.114)
+            
+            //let P = FXAA_PRESET_39__P
+
+            let mutable posM = v.tc
+            let mutable lumaS = Vec.dot (diffuseSampler.SampleLevel(posM + V2d( 0.0,  1.0) * inverseVP, 0.0).XYZ) luma
+            let mutable lumaE = Vec.dot (diffuseSampler.SampleLevel(posM + V2d( 1.0,  0.0) * inverseVP, 0.0).XYZ) luma
+            let mutable lumaN = Vec.dot (diffuseSampler.SampleLevel(posM + V2d( 0.0, -1.0) * inverseVP, 0.0).XYZ) luma
+            let mutable lumaW = Vec.dot (diffuseSampler.SampleLevel(posM + V2d(-1.0,  0.0) * inverseVP, 0.0).XYZ) luma
+            let rgbM = diffuseSampler.SampleLevel(posM, 0.0)
+            let lumaM = Vec.dot rgbM.XYZ luma
+                        
+            let maxSM = max lumaS lumaM
+            let minSM = min lumaS lumaM
+            let maxESM = max lumaE maxSM
+            let minESM = min lumaE minSM
+            let maxWN = max lumaN lumaW
+            let minWN = min lumaN lumaW
+            let rangeMax = max maxWN maxESM
+            let rangeMin = min minWN minESM
+            let rangeMaxScaled = rangeMax * 0.063
+            let range = rangeMax - rangeMin
+            let rangeMaxClamped = max 0.0625 rangeMaxScaled
+            
+            if range < rangeMaxClamped then
+                return rgbM
+            else
+                let lumaNW = Vec.dot (diffuseSampler.SampleLevel(posM + V2d(-1.0, -1.0) * inverseVP, 0.0).XYZ) luma
+                let lumaSE = Vec.dot (diffuseSampler.SampleLevel(posM + V2d( 1.0,  1.0) * inverseVP, 0.0).XYZ) luma
+                let lumaNE = Vec.dot (diffuseSampler.SampleLevel(posM + V2d( 1.0, -1.0) * inverseVP, 0.0).XYZ) luma
+                let lumaSW = Vec.dot (diffuseSampler.SampleLevel(posM + V2d(-1.0,  1.0) * inverseVP, 0.0).XYZ) luma
+
+                let lumaNS = lumaN + lumaS
+                let lumaWE = lumaW + lumaE
+                let subpixRcpRange = 1.0/range
+                let subpixNSWE = lumaNS + lumaWE
+                let edgeHorz1 = (-2.0 * lumaM) + lumaNS
+                let edgeVert1 = (-2.0 * lumaM) + lumaWE
+
+                let lumaNESE = lumaNE + lumaSE
+                let lumaNWNE = lumaNW + lumaNE
+                let edgeHorz2 = (-2.0 * lumaE) + lumaNESE
+                let edgeVert2 = (-2.0 * lumaN) + lumaNWNE
+
+                let lumaNWSW = lumaNW + lumaSW
+                let lumaSWSE = lumaSW + lumaSE
+                let edgeHorz4 = (abs edgeHorz1 * 2.0) + abs edgeHorz2
+                let edgeVert4 = (abs edgeVert1 * 2.0) + abs edgeVert2
+                let edgeHorz3 = (-2.0 * lumaW) + lumaNWSW
+                let edgeVert3 = (-2.0 * lumaS) + lumaSWSE
+                let edgeHorz = abs(edgeHorz3) + edgeHorz4
+                let edgeVert = abs(edgeVert3) + edgeVert4
+
+                let subpixNWSWNESE = lumaNWSW + lumaNESE
+                let mutable lengthSign = inverseVP.X
+                let horzSpan = edgeHorz >= edgeVert
+                let subpixA = subpixNSWE * 2.0 + subpixNWSWNESE
+
+                if not horzSpan then lumaN <- lumaW
+                if not horzSpan then lumaS <- lumaE
+                if horzSpan then lengthSign <- inverseVP.Y
+                let subpixB = (subpixA * (1.0/12.0)) - lumaM
+
+                let gradientN = lumaN - lumaM
+                let gradientS = lumaS - lumaM
+                let mutable lumaNN = lumaN + lumaM
+                let mutable lumaSS = lumaS + lumaM
+                let pairN = abs gradientN >= abs gradientS
+                let gradient = max (abs gradientN) (abs gradientS)
+                if pairN then lengthSign <- -lengthSign
+                let subpixC = clamp 0.0 1.0 (abs subpixB * subpixRcpRange)
+
+                let mutable posB = posM
+                let mutable offNP = inverseVP
+                if not horzSpan then set offNP.X 0.0
+                if horzSpan then set offNP.Y 0.0
+                if not horzSpan then set posB.X (posB.X + lengthSign * 0.5)
+                if horzSpan then set posB.Y (posB.Y + lengthSign * 0.5)
+
+                let mutable posN = posB - offNP * FXAA_PRESET_39__P.[0]
+                let mutable posP = posB + offNP * FXAA_PRESET_39__P.[0]
+
+                let subpixD = ((-2.0)*subpixC) + 3.0
+                let mutable lumaEndN = Vec.dot (diffuseSampler.SampleLevel(posN, 0.0).XYZ) luma
+                let subpixE = subpixC * subpixC
+                let mutable lumaEndP = Vec.dot (diffuseSampler.SampleLevel(posP, 0.0).XYZ) luma
+
+                if not pairN then lumaNN <- lumaSS
+                let gradientScaled = gradient * 1.0/4.0
+                let lumaMM = lumaM - lumaNN * 0.5
+                let subpixF = subpixD * subpixE
+                let lumaMLTZero = lumaMM < 0.0
+
+                lumaEndN <- lumaEndN - lumaNN * 0.5
+                lumaEndP <- lumaEndP - lumaNN * 0.5
+                let mutable doneN = abs lumaEndN >= gradientScaled
+                let mutable doneP = abs lumaEndP >= gradientScaled
+                if not doneN then posN <- posN - offNP * FXAA_PRESET_39__P.[1]
+                let mutable doneNP = (not doneN) || (not doneP)
+                if not doneP then posP <- posP + offNP * FXAA_PRESET_39__P.[1]
+                
+                for i in 2..FXAA_PRESET_39__P.Length-1 do
+                    if not doneNP then brk()
+                    if not doneN then lumaEndN <- Vec.dot (diffuseSampler.SampleLevel(posN, 0.0).XYZ) luma
+                    if not doneP then lumaEndP <- Vec.dot (diffuseSampler.SampleLevel(posP, 0.0).XYZ) luma
+                    if not doneN then lumaEndN <- lumaEndN - lumaNN * 0.5
+                    if not doneP then lumaEndP <- lumaEndP - lumaNN * 0.5
+                    doneN <- abs lumaEndN >= gradientScaled
+                    doneP <- abs lumaEndP >= gradientScaled
+                    if not doneN then posN <- posN - offNP * FXAA_PRESET_39__P.[i]
+                    doneNP <- (not doneN) || (not doneP)
+                    if not doneP then posP <- posP + offNP * FXAA_PRESET_39__P.[i]
+                    
+                let mutable dstN = posM.X - posN.X
+                let mutable dstP = posP.X - posM.X
+                if not horzSpan then dstN <- posM.Y - posN.Y
+                if not horzSpan then dstP <- posP.Y - posM.Y
+
+                let goodSpanN = (lumaEndN < 0.0) <> lumaMLTZero
+                let spanLength = (dstP + dstN)
+                let goodSpanP = (lumaEndP < 0.0) <> lumaMLTZero
+                let spanLengthRcp = 1.0/spanLength
+
+                let directionN = dstN < dstP
+                let dst = min dstN dstP
+                let goodSpan = if directionN then goodSpanN else goodSpanP
+                let subpixG = subpixF * subpixF
+                let pixelOffset = (dst * (-spanLengthRcp)) + 0.5
+                let subpixH = subpixG
+
+                let pixelOffsetGood = if goodSpan then pixelOffset else 0.0
+                let pixelOffsetSubpix = max pixelOffsetGood subpixH
+                if not horzSpan then set posM.X (posM.X + pixelOffsetSubpix * lengthSign)
+                if horzSpan then set posM.Y (posM.Y + pixelOffsetSubpix * lengthSign)
+
+                return V4d(diffuseSampler.SampleLevel(posM, 0.0).XYZ, rgbM.W)
+        }
 
     let Effect(preset : PRESET, edgeThreshold, edgeThresholdMin, subpix) = 
         toEffect (fxaa preset edgeThreshold edgeThresholdMin subpix)

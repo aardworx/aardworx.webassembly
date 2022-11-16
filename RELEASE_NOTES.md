@@ -1,3 +1,6 @@
+### 1.0.0-prerelease0005
+* inlined FXAA shader utilities (maybe helping)
+
 ### 1.0.0-prerelease0004
 * fixed handling of multiple messages in one emit
 

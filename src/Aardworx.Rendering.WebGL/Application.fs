@@ -60,12 +60,10 @@ type private WebGLSwapChainFXAA internal(device : Device, main : HTMLCanvasEleme
     
     
     static let effect =
-        FShade.Effect.ofFunction (
-            FXAA.fxaa 
-                FXAA.PRESET.Extreme39 
-                (float (FXAA.getEdgeThreshold FXAA.EDGETHRESHOLD.OVERKILL)) 
-                (float (FXAA.getEdgeThresholdMin FXAA.EDGETHRESHOLDMIN.QUALITY)) 
-                (float (FXAA.getSubpixParam FXAA.SUBPIX.SOFT))
+        lazy (
+            FShade.Effect.ofFunction (
+                FXAA.fxaaExtreme
+            )
         )
 
     let renderFXAA =
@@ -81,7 +79,7 @@ type private WebGLSwapChainFXAA internal(device : Device, main : HTMLCanvasEleme
         obj.Indices <- None
         obj.IsActive <- AVal.constant true
         obj.StencilState <- StencilState.Default
-        obj.Surface <- Surface.FShadeSimple effect
+        obj.Surface <- Surface.FShadeSimple effect.Value
         obj.Uniforms <-
             UniformProvider.ofList [
                 "DiffuseColorTexture", currentTexture :> IAdaptiveValue
