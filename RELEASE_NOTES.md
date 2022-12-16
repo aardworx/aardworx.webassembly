@@ -1,3 +1,6 @@
+### 1.0.0-prerelease0007
+* made logging of update-code optional
+
 ### 1.0.0-prerelease0006
 * upgraded to latest packages
 

@@ -107,6 +107,8 @@ module Boot =
                         return new window.BlazorSocket(name);
                     };
 
+                    aardvark.logCode = false;
+
                     aardvark.onReady(() => {
 
                         function receive(data) {
@@ -115,7 +117,7 @@ module Boot =
                                 const msg = JSON.parse(data);
                                 switch (msg.command) {
                                     case "execute":
-                                        console.debug(msg.code);
+                                        if(aardvark.logCode) { console.debug(msg.code); }
                                         try { new Function(msg.code)(); }
                                         catch (e) { console.error("bad code", msg.code, e); }
                                         break;
