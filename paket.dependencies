@@ -30,6 +30,6 @@ nuget FSharp.Data.Adaptive ~> 1.2.13
 nuget Aardvark.Base ~> 5.2.12
 nuget Aardvark.Base.FSharp ~> 5.2.12
 
-nuget Aardvark.Dom.Elm ~> 1.0.0-prerelease0019
-nuget Aardvark.Dom.Remote ~> 1.0.0-prerelease0019
+nuget Aardvark.Dom.Elm ~> 1.0.0-prerelease0023
+nuget Aardvark.Dom.Remote ~> 1.0.0-prerelease0023
 nuget Aardvark.FontProvider ~> 0.0.5

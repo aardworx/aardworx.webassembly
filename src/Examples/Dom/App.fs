@@ -92,7 +92,6 @@ module App =
                 // applying a simple phong-illumination with a headlight.
                 Sg.Shader {
                     DefaultSurfaces.trafo
-                    DefaultSurfaces.constantColor C4f.Red
                     DefaultSurfaces.simpleLighting
                     Shader.nothing
                 }

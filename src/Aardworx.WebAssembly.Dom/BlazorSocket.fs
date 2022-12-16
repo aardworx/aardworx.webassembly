@@ -204,14 +204,14 @@ type BlazorSocket private(name : string) =
         init.Value
         onConnect.Publish
     
-    [<JSInvokable>]
+    [<JSInvokable("Connect")>]
     static member Connect(name : string) =
         if not (all.ContainsKey name) then
             let s = BlazorSocket(name)
             all.[name] <- s
             onConnect.Trigger(s)
             
-    [<JSInvokable>]
+    [<JSInvokable("Disconnect")>]
     static member Disconnect(name : string) =
         match all.TryRemove name with
         | (true, o) ->
@@ -219,7 +219,7 @@ type BlazorSocket private(name : string) =
         | _ ->
             ()
             
-    [<JSInvokable>]
+    [<JSInvokable("ReceiveString")>]
     static member ReceiveString(name : string, message : string) =
         match all.TryGetValue name with
         | (true, s) -> s.Trigger(ChannelMessage.Text message)
@@ -229,7 +229,7 @@ type BlazorSocket private(name : string) =
             onConnect.Trigger(s)
             s.Trigger(ChannelMessage.Text message)
         
-    [<JSInvokable>]
+    [<JSInvokable("ReceiveBinary")>]
     static member ReceiveBinary(name : string, ptr : int, len : int) =
         let ptr = nativeint ptr
         let res = Array.zeroCreate<byte> len

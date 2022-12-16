@@ -1,3 +1,6 @@
+### 1.0.0-prerelease0006
+* upgraded to latest packages
+
 ### 1.0.0-prerelease0005
 * inlined FXAA shader utilities (maybe helping)
 

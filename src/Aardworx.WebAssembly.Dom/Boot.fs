@@ -399,8 +399,22 @@ module Boot =
             let adaptiveModel = app.unpersist.init model
             
             let queue = AsyncCollection<seq<'message>>()
+            
+            let additional = clist []
+            
             let env =
                 { new Env<'message> with
+                    member x.RunModal(action) =
+                        let idx = additional.Value.NewIndexAfter(additional.MaxIndex)
+                        let disp =
+                            { new IDisposable with
+                                member x.Dispose() =
+                                    transact (fun () -> additional.Remove idx |> ignore)
+                            }
+                        let dom = action disp
+                        transact (fun () -> additional.[idx] <- dom)
+                        disp
+                        
                     member x.Emit msgs =
                         queue.Put msgs
 
@@ -414,12 +428,18 @@ module Boot =
                 task {
                     while true do
                         let! msg = queue.Take()
+                        model <- (model, msg) ||> Seq.fold (fun m msg -> app.update env m msg)
                         transact (fun () ->
-                            model <- (model, msg) ||> Seq.fold (fun m msg -> app.update env m msg)
                             app.unpersist.update adaptiveModel model
                         )
                 }
                 
-            app.view env adaptiveModel
+            let root = app.view env adaptiveModel
+            match root with
+            | DomNode.Element(tag, atts, cs) ->
+                DomNode.Element(tag, atts, AList.append cs additional)
+            | _ ->
+                Log.warn "could not append additional nodes to root"
+                root
         )
         
