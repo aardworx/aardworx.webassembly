@@ -1,3 +1,6 @@
+### 1.0.0-prerelease0008
+* RenderPasses
+
 ### 1.0.0-prerelease0007
 * made logging of update-code optional
 

@@ -37,13 +37,17 @@ type RenderObjectProgram(manager : ResourceManager, signature : FramebufferSigna
     let fbo = NativePtr.alloc 1
     let viewportOffset = NativePtr.alloc 1
     let viewportSize = NativePtr.alloc 1
-
+    let mutable count = 0
+    
     do  head.Update (fun cmd ->
             cmd.SetFramebuffer(FramebufferTarget.Framebuffer, signature, APtr.ofNativePtr fbo)
             cmd.SetViewport(viewportOffset, viewportSize)
         )
 
+    member x.Count = count
+    
     member x.Add(ro : PreparedMultiRenderObject) =
+        count <- count + 1
         let key = (List.head ro.Objects).Key
         let ref = 
             order.AddOrUpdate(
@@ -72,6 +76,7 @@ type RenderObjectProgram(manager : ResourceManager, signature : FramebufferSigna
         let key = (List.head ro.Objects).Key
         match order.TryGetValue key with
         | ValueSome self ->
+            count <- count - 1
             let self = self.Value
             match order.TryRemove(key) with
             | ValueSome (l, r) ->
@@ -150,8 +155,19 @@ type RenderTask(manager : ResourceManager, signature : FramebufferSignature, mod
     let id = newId()
     let mutable reader = objs.GetReader()
     let cache = Dict<IRenderObject, PreparedMultiRenderObject>()
-    let prog = new RenderObjectProgram(manager, signature, mode)
+    // let prog = new RenderObjectProgram(manager, signature, mode)
+    //
+    let passPrograms = SortedDictionaryExt<RenderPass, RenderObjectProgram>(compare)
+    
     let mutable frameId = 0UL
+    
+    let getPassProgram (pass : RenderPass) =
+        match passPrograms.TryGetValue pass with
+        | (true, p) -> p
+        | _ ->
+            let p = new RenderObjectProgram(manager, signature, mode)
+            passPrograms.[pass] <- p
+            p
     
     //member x.Update(t : AdaptiveToken, rt : RenderToken) =
     //    x.EvaluateAlways t (fun t ->
@@ -179,16 +195,21 @@ type RenderTask(manager : ResourceManager, signature : FramebufferSignature, mod
                     match op with
                     | Add(_,o) ->  
                         let po = cache.GetOrCreate(o, fun o -> manager.PrepareRenderObject(signature, o))
+                        let prog = getPassProgram o.RenderPass
                         prog.Add po
 
                     | Rem(_,o) ->
                         match cache.TryRemove o with
-                        | true, po -> prog.Remove po
+                        | true, po ->
+                            let prog = getPassProgram o.RenderPass
+                            prog.Remove po
+                            if prog.Count = 0 then passPrograms.Remove o.RenderPass |> ignore
                         | _ -> ()
 
                 manager.Device.Run(fun gl ->
-                    prog.SetFramebuffer(o.framebuffer :?> Framebuffer, o.viewport)
-                    prog.Run(t)
+                    for KeyValue(_, prog) in passPrograms do
+                        prog.SetFramebuffer(o.framebuffer :?> Framebuffer, o.viewport)
+                        prog.Run(t)
                     gl.BindVertexArray 0u
                 )
                 frameId <- frameId + 1UL
@@ -196,7 +217,8 @@ type RenderTask(manager : ResourceManager, signature : FramebufferSignature, mod
                 Log.warn "RenderTask failed: %A" e
         )
     member x.Dispose() =
-        prog.Dispose()
+        for KeyValue(_, prog) in passPrograms do prog.Dispose()
+        passPrograms.Clear()
         cache.Clear()
         reader <- Unchecked.defaultof<_>
 
