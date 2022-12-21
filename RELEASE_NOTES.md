@@ -1,3 +1,6 @@
+### 1.0.0-prerelease0009
+* fixed MultiDrawIndexed
+
 ### 1.0.0-prerelease0008
 * RenderPasses
 

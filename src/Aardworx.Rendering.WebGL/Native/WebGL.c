@@ -221,13 +221,12 @@ void glMultiDrawElements(GLenum mode, DrawElementsIndirectCommand* indirect, int
                 glBindBuffer(GL_ARRAY_BUFFER, 0);
             }
 
-
             // draw
             if (instanceCount > 1) {
-                glDrawElementsInstanced(mode, count, infos[0].type, (void*)(bindingInfo->indexOffset + firstIndex * indexSize), instanceCount);
+                glDrawElementsInstanced(mode, count, indexType, (void*)(bindingInfo->indexOffset + firstIndex * indexSize), instanceCount);
             }
             else {
-                glDrawElements(mode, count, infos[0].type, (void*)(bindingInfo->indexOffset + firstIndex * indexSize));
+                glDrawElements(mode, count, indexType, (void*)(bindingInfo->indexOffset + firstIndex * indexSize));
             }
 
         }
