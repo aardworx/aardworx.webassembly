@@ -17,7 +17,7 @@ type CommandEncoderBase(device : Device) =
     inherit AdaptiveObject()
 
     let lockObj = obj()
-    let mutable all = Dict<AdaptivePointer, ref<int>>()
+    let mutable all = System.Collections.Generic.HashSet<AdaptivePointer>()
     let dirtyLock = obj()
     let mutable dirtySet = System.Collections.Generic.HashSet<AdaptivePointer>()
     let mutable pointers = Dict<IAdaptiveObject, System.Collections.Generic.HashSet<AdaptivePointer>>()
@@ -26,13 +26,11 @@ type CommandEncoderBase(device : Device) =
 
     let addPtr (x : CommandEncoderBase) (ptr : aptr<'a>) =
         lock lockObj (fun () ->
-            let r = all.GetOrCreate(ptr, fun _ -> ref 0)
-            let o = r.Value
-            r.Value <- o + 1
-            ptr.Acquire()
+            let isNew = all.Add ptr
+            if isNew then ptr.Acquire()
 
             if not ptr.IsConstant then
-                if o = 0 then lock dirtyLock (fun () -> dirtySet.Add ptr |> ignore)
+                if isNew then lock dirtyLock (fun () -> dirtySet.Add ptr |> ignore)
                 let l = pointers.GetOrCreate(ptr.Input, fun _ -> System.Collections.Generic.HashSet())
                 l.Add ptr |> ignore
                 if not x.OutOfDate then transact x.MarkOutdated
@@ -119,9 +117,9 @@ type CommandEncoderBase(device : Device) =
     
     member x.Reset() =
         dirtySet.Clear()
-        for KeyValue(k,p) in all do
+        for k in all do
             k.Input.Outputs.Remove x |> ignore
-            k.Release p.Value
+            k.Release()
         all.Clear()
         pointers.Clear()
         x.Clear()

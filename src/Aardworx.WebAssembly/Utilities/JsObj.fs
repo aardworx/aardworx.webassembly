@@ -316,4 +316,5 @@ type JsObj(r : IJSInProcessObjectReference) =
     member x.SetProperty<'a>(name : string, value : 'a) : unit=
         Invoker<unit>.Invoke("aardvark.setProperty", [| r :> obj; name :> obj; js value |])
   
-  
+    static member New(fields : #seq<string * obj>) =
+        newObj fields

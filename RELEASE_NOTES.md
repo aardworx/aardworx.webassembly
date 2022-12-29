@@ -1,3 +1,6 @@
+### 1.0.0-prerelease0010
+* fixed channel issue
+
 ### 1.0.0-prerelease0009
 * fixed MultiDrawIndexed
 

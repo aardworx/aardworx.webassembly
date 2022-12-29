@@ -248,15 +248,16 @@ module Boot =
 
                     self <-
                         Aardworx.WebAssembly.Dom.BlazorSocket.OnConnect.Subscribe (fun s ->
-                            socket <- Some s
-                            let channel =
-                                { new IChannel with
-                                    member x.Receive() = s.Receive()
-                                    member x.Send msg = Task.FromResult (s.Send msg)
-                                    member x.OnClose = s.OnClose
-                                }
-                            action channel |> ignore
-                            self.Dispose()
+                            if s.Name = name then
+                                socket <- Some s
+                                let channel =
+                                    { new IChannel with
+                                        member x.Receive() = s.Receive()
+                                        member x.Send msg = Task.FromResult (s.Send msg)
+                                        member x.OnClose = s.OnClose
+                                    }
+                                action channel |> ignore
+                                self.Dispose()
                         )
                     
                     let kill() =

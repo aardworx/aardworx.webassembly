@@ -5412,7 +5412,9 @@ type Window(r : IJSInProcessObjectReference) =
         let mutable id = -1
         let run() =
             ref.Dispose()
-            timeoutRefs.Remove id |> ignore
+            match timeoutRefs.TryRemove id with
+            | true, (_, gc) -> gc.Free()
+            | _ -> ()
             callback()
         
         ref <- DotNetObjectReference.Create (JSActions.JSAction run)
