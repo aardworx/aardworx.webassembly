@@ -1,3 +1,6 @@
+### 1.0.0-prerelease0011
+* `GetEffectInterface` now also uses shader-cache
+
 ### 1.0.0-prerelease0010
 * fixed channel issue
 
