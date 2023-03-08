@@ -1,3 +1,6 @@
+### 1.0.0-prerelease0012
+* disabled GS simulation for now
+
 ### 1.0.0-prerelease0011
 * `GetEffectInterface` now also uses shader-cache
 

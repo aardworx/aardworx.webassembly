@@ -334,38 +334,39 @@ type RenderObjectResourceManagerExtensions private() =
         let program, instancedGS, outputVertices, mode, offsets, stride =
             match o.Surface with
             | Surface.FShadeSimple effect ->
-                match effect.GeometryShader with
-                | Some gs ->
-                    match FShade.Effect.tryReplaceGeometry effect with
-                    | Some e -> 
-                        let vertices = 
-                            match gs.shaderOutputVertices with
-                            | FShade.ShaderOutputVertices.Computed a -> a
-                            | FShade.ShaderOutputVertices.UserGiven a -> a
-                            | _ -> failf "unknown outputvertices"
-
-                        let mode =
-                            match gs.shaderOutputTopology with
-                            | Some FShade.OutputTopology.Points -> IndexedGeometryMode.PointList
-                            | Some FShade.OutputTopology.LineStrip -> IndexedGeometryMode.LineStrip
-                            | Some FShade.OutputTopology.TriangleStrip -> IndexedGeometryMode.TriangleStrip
-                            | None -> failf "no GS outputTopology"
-
-                        let offsets, stride = 
-                            match o.Mode with
-                            | IndexedGeometryMode.PointList -> [|0|], 1
-                            | IndexedGeometryMode.LineList -> [|0;1|], 2
-                            | IndexedGeometryMode.LineStrip -> [|0;1|], 1
-                            | mode -> failf "bad GS mode: %A" mode
-
-                        if Option.isSome o.Indices then
-                            failf "indexed GS simulation not implemented"
-
-                        this.CreateProgram(fbo, e), true, vertices, mode, offsets, stride
-                    | None ->
-                        failf "could not simulate GeometryShader"
-                | None ->
-                    this.CreateProgram(fbo, effect), false, 0, o.Mode, [||], 0
+                this.CreateProgram(fbo, effect), false, 0, o.Mode, [||], 0
+                // match effect.GeometryShader with
+                // | Some gs ->
+                //     match FShade.Effect.tryReplaceGeometry effect with
+                //     | Some e -> 
+                //         let vertices = 
+                //             match gs.shaderOutputVertices with
+                //             | FShade.ShaderOutputVertices.Computed a -> a
+                //             | FShade.ShaderOutputVertices.UserGiven a -> a
+                //             | _ -> failf "unknown outputvertices"
+                //
+                //         let mode =
+                //             match gs.shaderOutputTopology with
+                //             | Some FShade.OutputTopology.Points -> IndexedGeometryMode.PointList
+                //             | Some FShade.OutputTopology.LineStrip -> IndexedGeometryMode.LineStrip
+                //             | Some FShade.OutputTopology.TriangleStrip -> IndexedGeometryMode.TriangleStrip
+                //             | None -> failf "no GS outputTopology"
+                //
+                //         let offsets, stride = 
+                //             match o.Mode with
+                //             | IndexedGeometryMode.PointList -> [|0|], 1
+                //             | IndexedGeometryMode.LineList -> [|0;1|], 2
+                //             | IndexedGeometryMode.LineStrip -> [|0;1|], 1
+                //             | mode -> failf "bad GS mode: %A" mode
+                //
+                //         if Option.isSome o.Indices then
+                //             failf "indexed GS simulation not implemented"
+                //
+                //         this.CreateProgram(fbo, e), true, vertices, mode, offsets, stride
+                //     | None ->
+                //         failf "could not simulate GeometryShader"
+                // | None ->
+                //     this.CreateProgram(fbo, effect), false, 0, o.Mode, [||], 0
 
             | Surface.Backend (:? Program as p) ->
                 p, false, 0, o.Mode, [||], 0
