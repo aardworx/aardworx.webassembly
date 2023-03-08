@@ -120,7 +120,7 @@ type RenderObjectCommandExtensions private() =
                 | DrawCalls.Direct calls ->
                     o.IsActive |> AVal.bind (function true -> calls | _ -> AVal.constant []) |> DrawCalls.Direct
                 | DrawCalls.Indirect calls ->
-                    o.IsActive |> AVal.bind (function true -> calls | _ -> AVal.constant (IndirectBuffer.ofList o.IsIndexed [])) |> DrawCalls.Indirect
+                    o.IsActive |> AVal.bind (function true -> calls | _ -> AVal.constant (IndirectBuffer.ofList [])) |> DrawCalls.Indirect
 
         this.Draw(o.Mode, o.IsIndexed, calls)
         
@@ -165,7 +165,7 @@ type RenderObjectCommandExtensions private() =
                 | DrawCalls.Direct calls ->
                     o.IsActive |> AVal.bind (function true -> calls | _ -> AVal.constant []) |> DrawCalls.Direct
                 | DrawCalls.Indirect calls ->
-                    o.IsActive |> AVal.bind (function true -> calls | _ -> AVal.constant (IndirectBuffer.ofList o.IsIndexed [])) |> DrawCalls.Indirect
+                    o.IsActive |> AVal.bind (function true -> calls | _ -> AVal.constant (IndirectBuffer.ofList [])) |> DrawCalls.Indirect
 
         this.Draw(o.Mode, o.IsIndexed, calls)
         

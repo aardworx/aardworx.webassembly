@@ -81,7 +81,7 @@ type GeometryPool(device : Device, attributes : Map<Symbol, Type>) =
 
         member this.TryGetBufferView(name: Symbol): Option<BufferView> = 
             match Map.tryFind name buffers with
-            | Some (_, b) -> BufferView(AVal.cast b, Map.find name attributes) |> Some
+            | Some (_, b) -> BufferView(AVal.cast<IBuffer> b, Map.find name attributes) |> Some
             | _ -> None
 
         member this.UsedMemory: Mem = 
@@ -95,12 +95,25 @@ type Runtime(device : Device) as this =
     member x.Device = device
     member x.ResourceManager = manager
 
+    member this.CompileRender(fboSignature : IFramebufferSignature, objects : aset<IRenderObject>) =
+        let signature = fboSignature :?> FramebufferSignature
+
+        let mode =
+            if device.Debug then CommandStreamMode.Debug
+            else CommandStreamMode.Managed // TODO: fix native
+
+        new RenderTask(manager, signature, mode, objects) :> IRenderTask
+
     interface IRuntime with
+        member x.DebugConfig =
+            if device.Debug then DebugLevel.Full
+            else DebugLevel.None
+            
         member this.AssembleModule(effect, signature, _mode) =
             let signature = signature :?> FramebufferSignature
             signature.AssembleModule(effect)
 
-        member x.DebugLevel = DebugLevel.None
+        //member x.DebugLevel = DebugLevel.None
         member x.MaxRayRecursionDepth = 0
         member x.SupportsRaytracing = false
 
@@ -275,14 +288,11 @@ type Runtime(device : Device) as this =
         member this.CreateComputeShader(_compute) = 
             failf "ComputeShaders not supported"
 
-        member this.DeleteComputeShader(_compute) =
-            failf "ComputeShaders not supported"
-
-        member this.CompileRender(fboSignature, objects, debug) =
+        member this.CompileRender(fboSignature, objects) =
             let signature = fboSignature :?> FramebufferSignature
 
             let mode =
-                if device.Debug || debug then CommandStreamMode.Debug
+                if device.Debug then CommandStreamMode.Debug
                 else CommandStreamMode.Managed // TODO: fix native
 
             new RenderTask(manager, signature, mode, objects) :> IRenderTask
@@ -334,12 +344,6 @@ type Runtime(device : Device) as this =
             let samples = if samples > 1 then Some samples else None
             device.CreateTexture(dimension, format, size, levels = levels, layers = count, ?samples = samples) :> IBackendTexture
             
-        member this.DeleteRenderbuffer(rbo) =
-            (rbo :?> Renderbuffer).Dispose()
-
-        member this.DeleteTexture(texture) = 
-            (texture :?> Texture).Dispose()
-        
 
 
         member this.ShaderCachePath
@@ -367,15 +371,12 @@ type Runtime(device : Device) as this =
             let res = device.CreateTexture input
             res :> IBackendTexture
             
-        member this.CreateBuffer(size, _usage) = 
+        member this.CreateBuffer(size, _usage, _storage) = 
             device.CreateBuffer(int64 size, Aardworx.Rendering.WebGL.BufferUsage.Vertex) :> IBackendBuffer
         
-        member this.PrepareBuffer(data, usage : Aardvark.Rendering.BufferUsage) = 
+        member this.PrepareBuffer(data, usage : Aardvark.Rendering.BufferUsage, _storage) = 
             device.CreateBuffer(data) :> IBackendBuffer
             
-        member this.DeleteBuffer(buffer) = 
-            (buffer :?> Buffer).Dispose()
-
         member this.PrepareRenderObject(signature, object) = 
             manager.PrepareRenderObject(unbox signature, object) :> IPreparedRenderObject
 
@@ -385,8 +386,6 @@ type Runtime(device : Device) as this =
             | :? Program as p -> p.AddReference(); p :> IBackendSurface
             | _ -> failwith "not implemented"
 
-        member this.DeleteSurface(_surface) = 
-            ()
             
         member this.Copy(srcBuffer: IBackendBuffer, srcOffset: nativeint, dstBuffer: IBackendBuffer, dstOffset: nativeint, size: nativeint): unit = 
             let srcBuffer = srcBuffer :?> Buffer
@@ -502,15 +501,14 @@ type Runtime(device : Device) as this =
         member this.CreateStreamingTexture(mipMaps) = raise (System.NotImplementedException())
         member this.CreateTextureView(texture, levels, slices, isArray) = raise (System.NotImplementedException())
         member this.CreateTimeQuery() = raise (System.NotImplementedException())
-        member this.DeleteStreamingTexture(arg1) = raise (System.NotImplementedException())
-        
-        member this.Download(tex, tensor, offset, size): unit = 
+
+        member this.Download(tex, tensor, fmt, offset, size): unit = 
             raise (System.NotImplementedException())
         member this.DownloadDepth(texture, level, slice, offset, target) = raise (System.NotImplementedException())
         member this.DownloadStencil(texture, level, slice, offset, target) = raise (System.NotImplementedException())
         member this.ResourceManager = raise (System.NotImplementedException())
         member this.Run(arg1, arg2) = raise (System.NotImplementedException())
-        member this.Upload(tex, tensor, offset, size) = raise (System.NotImplementedException())
+        member this.Upload(tex, tensor, fmt, offset, size) = raise (System.NotImplementedException())
 
 
     new(ctx) = new Runtime(new Device(ctx))

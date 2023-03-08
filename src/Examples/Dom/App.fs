@@ -65,7 +65,7 @@ module App =
                     Background "linear-gradient(to top, #051937, #314264, #5d6f95, #8ba1c9, #bbd5ff)"
                 ]
 
-                RenderControl.FXAA
+                RenderControl.Samples 1
                 
                 let proj =
                     size |> AVal.map (fun s ->

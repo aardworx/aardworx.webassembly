@@ -51,7 +51,7 @@ let createRenderControl (app : WebGLApplication) =
     doc.Body.AppendChild c
 
     // for interop with our rendering we need to "wrap" the canvas in a `RenderControl`
-    let ctrl = app.CreateRenderControl(c, Antialiasing.FXAA)
+    let ctrl = app.CreateRenderControl(c, Antialiasing.None)
 
     // when the first frame was rendered we set the canvas to visible, 
     // remove the loading-spinner from then DOM and add our help-text.
