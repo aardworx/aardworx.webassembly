@@ -900,9 +900,6 @@ type ShaderExtensions private() =
             ShaderStage.TessEval, ShaderType.TessEvaluationShader
         ]
 
-    static let glslCache =
-        Dict<Effect * Map<string, TextureFormat * int>, GLSLShader>()
-        
     static let programCache =
         Dict<Device * Effect * Map<string, TextureFormat * int>, Program>()
         
@@ -943,6 +940,63 @@ type ShaderExtensions private() =
         Log.stop()
         Log.stop()
 
+    [<Extension>]
+    static let getGLSLShader(outputs : Map<string, (TextureFormat * int)>) (effect : Effect) =
+        let key =
+            let suffix = outputs |> Map.toSeq |> Seq.map (fun (name, (_, i)) -> sprintf "%s:%d" name i) |> String.concat "_"
+            sprintf "%s_%s" effect.Id suffix
+
+        let glsl = 
+            let sw = System.Diagnostics.Stopwatch.StartNew()
+
+            let create() =
+                
+                let shaderType (sem : string) (fmt : TextureFormat) =
+                    match sem with
+                    | "Normals" -> typeof<V3d>
+                    | _ -> TextureFormat.toShaderType fmt
+
+                let module_ = 
+                    effect |> Effect.toModule { 
+                        depthRange = Range1d(-1.0, 1.0)
+                        flipHandedness = false
+                        lastStage = ShaderStage.Fragment
+                        outputs = outputs |> Map.map (fun k (a,b) -> shaderType k a, b)
+                    }
+
+                let glsl = 
+                    ModuleCompiler.compileGLSL backend module_
+                    
+                try
+                    let data =
+                        use ms = new System.IO.MemoryStream()
+                        GLSLShader.serialize ms glsl
+                        ms.ToArray() |> Convert.ToBase64String
+                    JS.LocalStorage.Set(key, data)
+                    Log.line "[Shader] cache written: %s (%A)" key sw.MicroTime
+                    Log.line "%s" glsl.code
+                with _ ->
+                    Log.warn "[Shader] cache write failed: %s (%A)" key sw.MicroTime
+                    ()
+
+                glsl
+
+            match LocalStorage.TryGet key with
+            | Some glsl ->
+                try
+                    let arr = Convert.FromBase64String glsl
+                    use ms = new System.IO.MemoryStream(arr)
+                    let glsl = GLSLShader.deserialize ms
+                    Log.line "[Shader] cache hit: %s (%A)" key sw.MicroTime
+                    glsl
+                with _ ->
+                    Log.warn "[Shader] cache read failed: %s" key
+                    create()
+            | None ->
+                create()
+        
+        glsl
+        
     //let pickle (glsl : GLSLShader) =
     //    use ms = new System.IO.MemoryStream()
     //    use w = new System.IO.BinaryWriter(ms)
@@ -1047,85 +1101,6 @@ type ShaderExtensions private() =
         
 
     [<Extension>]
-    static member GetGLSLShader(outputs : Map<string, (TextureFormat * int)>, effect : Effect) =
-        lock programCache (fun () ->
-            glslCache.GetOrCreate((effect, outputs), fun (effect, outputs) ->
-
-                let key =
-                    let suffix = outputs |> Map.toSeq |> Seq.map (fun (name, (_, i)) -> sprintf "%s:%d" name i) |> String.concat "_"
-                    sprintf "%s_%s" effect.Id suffix
-
-                let glsl = 
-                    let sw = System.Diagnostics.Stopwatch.StartNew()
-
-                    let create() =
-                        
-                        let shaderType (sem : string) (fmt : TextureFormat) =
-                            match sem with
-                            | "Normals" -> typeof<V3d>
-                            | _ -> TextureFormat.toShaderType fmt
-
-                        let module_ = 
-                            effect |> Effect.toModule { 
-                                depthRange = Range1d(-1.0, 1.0)
-                                flipHandedness = false
-                                lastStage = ShaderStage.Fragment
-                                outputs = outputs |> Map.map (fun k (a,b) -> shaderType k a, b)
-                            }
-        
-                        let glsl = 
-                            ModuleCompiler.compileGLSL backend module_
-                            
-                        try
-                            let data =
-                                use ms = new System.IO.MemoryStream()
-                                GLSLShader.serialize ms glsl
-                                ms.ToArray() |> Convert.ToBase64String
-                            JS.LocalStorage.Set(key, data)
-                            Log.line "[Shader] cache written: %s (%A)" key sw.MicroTime
-                            Log.line "%s" glsl.code
-                        with _ ->
-                            Log.warn "[Shader] cache write failed: %s (%A)" key sw.MicroTime
-                            ()
-
-                        glsl
-
-                    match LocalStorage.TryGet key with
-                    | Some glsl ->
-                        try
-                            let arr = Convert.FromBase64String glsl
-                            use ms = new System.IO.MemoryStream(arr)
-                            let glsl = GLSLShader.deserialize ms
-                            Log.line "[Shader] cache hit: %s (%A)" key sw.MicroTime
-                            glsl
-                        with _ ->
-                            Log.warn "[Shader] cache read failed: %s" key
-                            create()
-                    | None ->
-                        create()
-                
-                glsl
-            )
-        )
-        
-    [<Extension>]
-    static member GetGLSLShader(outputs : FramebufferSignature, effect : Effect) =
-        let outputs =
-            outputs.ColorAttachments 
-            |> Map.toSeq
-            |> Seq.map (fun (id, { Name = name; Format = fmt }) ->
-                string name, (fmt, id)
-            )
-            |> Map.ofSeq
-        
-        outputs.GetGLSLShader(effect)
-        
-    [<Extension>]
-    static member GetEffectInterface(outputs : FramebufferSignature, effect : Effect) =
-        let glsl = outputs.GetGLSLShader(effect)
-        glsl.iface
-
-    [<Extension>]
     static member CreateProgram(device : Device, effect : Effect, signature : FramebufferSignature) =
         let outputs =
             signature.ColorAttachments 
@@ -1138,7 +1113,7 @@ type ShaderExtensions private() =
         
         lock programCache (fun () ->
             programCache.GetOrCreate((device, effect, outputs), fun (device, effect, outputs) ->
-                let glsl = outputs.GetGLSLShader(effect)
+                let glsl = getGLSLShader outputs effect
                 
                 let stageCode = 
                     versionRx.Replace(glsl.code, fun m ->
@@ -1258,7 +1233,13 @@ type ShaderExtensions private() =
                 res
             )
         )
-        
+  
+
+    [<Extension>]
+    static member GetEffectInterface(outputs : FramebufferSignature, effect : Effect) =
+        let p = outputs.Device.CreateProgram(effect, outputs)
+        p.Interface
+      
     [<Extension>]
     static member CreateProgram(signature : FramebufferSignature, effect : Effect) =
         signature.Device.CreateProgram(effect, signature)
