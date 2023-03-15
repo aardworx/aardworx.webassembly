@@ -26,6 +26,7 @@
         <Compile Include="Streams\CommandEncoder.fs" />
         <Compile Include="Streams\NativeCommandEncoder.fs" />
         <Compile Include="Streams\ManagedCommandEncoder.fs" />
+        <Compile Include="Streams\JSCommandEncoder.fs" />
         <Compile Include="Streams\CommandEncoderExtensions.fs" />
         <Compile Include="SilkExtensions.fs" />
         <Compile Include="CommandStream.fs" />

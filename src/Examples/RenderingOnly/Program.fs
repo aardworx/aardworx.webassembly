@@ -75,6 +75,24 @@ let run() =
         // Since our `WebGLApplication` expects the document to be loaded we need to wait until everything is ready.
         do! Window.Document.Ready
         
+        
+        let msg0 = cval "Hello"
+        let msg1 = cval "World"
+        
+        let length = msg1 |> APtr.mapVal (fun s -> s.Length)
+        
+        let bla = JSCommandEncoder()
+        
+        bla.Test(msg0)
+        bla.Test(msg1)
+        bla.Seppy length
+        bla.Run()
+        
+        transact (fun () -> msg1.Value <- "Sepp")
+        bla.Run()
+        exit 0
+        
+        
         // Create the `WebGLApplication` and a `RenderControl` using our utility from above.
         let app = new WebGLApplication()
         let ctrl = createRenderControl app
@@ -88,6 +106,15 @@ let run() =
             ctrl.Sizes |> AVal.map (fun s ->
                 Frustum.perspective 90.0 0.1 100.0 (float s.X / float s.Y)
             )
+            
+        let sw = System.Diagnostics.Stopwatch.StartNew()
+        let active =
+            ctrl.Time |> AVal.map (fun _ ->
+                if sw.Elapsed.TotalSeconds % 1.0 > 0.5 then
+                    true
+                else
+                    false
+            )
 
         // let's start to setup a scene.
         let scene =
@@ -96,6 +123,7 @@ let run() =
                 Sg.View (AVal.map CameraView.viewTrafo view)
                 Sg.Proj (AVal.map Frustum.projTrafo proj)
                 
+                //Sg.Active active
                 // for shading we simply use Aardvark.Rendering's default shaders doing transformations and 
                 // applying a simple phong-illumination with a headlight.
                 Sg.Shader {
@@ -111,6 +139,23 @@ let run() =
                 
                 // render a green teapot centered at the origin
                 Primitives.Teapot(C4b.Green)
+                
+                active |> ASet.bind (function
+                    | true ->
+                        ASet.single (
+                            sg {
+                                Sg.Translate(3.0, 0.0, 0.0)
+                                Primitives.Octahedron(C4b.Yellow)
+                            }
+                        )
+                    | false ->
+                        ASet.single (
+                            sg {
+                                Sg.Translate(3.0, 0.0, 0.0)
+                                Primitives.Teapot(C4b.Green)
+                            }
+                        )
+                )
                 
                 // a yellow octahedron hovering 1 unit above the teapot
                 sg {
