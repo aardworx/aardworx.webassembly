@@ -6,6 +6,8 @@ open Aardvark.FontProvider
 open FSharp.Data.Adaptive
 open Aardworx.WebAssembly
 open Aardworx.Rendering.WebGL
+open Aardworx.Rendering.WebGL.Streams
+open Microsoft.FSharp.NativeInterop
 
 // This example renders a very basic scene and allows the user to control the camera.
 // It works on a similar abstraction-level to `Aardvark.Application.Slim` and therefore
@@ -81,15 +83,75 @@ let run() =
         
         let length = msg1 |> APtr.mapVal (fun s -> s.Length)
         
-        let bla = JSCommandEncoder()
+        let app = new WebGLApplication()
+        let bla = new JSCommandEncoder(app.Device)
         
-        bla.Test(msg0)
-        bla.Test(msg1)
-        bla.Seppy length
-        bla.Run()
+        app.Runtime.Device.Run(fun gl ->
+            gl.Enable(Silk.NET.OpenGLES.EnableCap.Blend)    
+        )
         
-        transact (fun () -> msg1.Value <- "Sepp")
-        bla.Run()
+        let a = [| 255uy; 128uy; 37uy; 123uy; 1uy; 2uy; 3uy; 4uy |]
+        let b = Array.zeroCreate<byte> a.Length
+        let cnt = [| 8n |]
+        b.[0] <- 42uy
+        // let pa = APtr.pinArray a
+        // let pb = APtr.pinArray b
+        // let pc = APtr.pinArray cnt
+        //
+        // pa.Acquire()
+        // pb.Acquire()
+        // pc.Acquire()
+        //
+        // pa.Update AdaptiveToken.Top
+        // pb.Update AdaptiveToken.Top
+        // pc.Update AdaptiveToken.Top
+        
+        let v = [|1|]
+        
+        do
+            use pa = fixed a
+            use pb = fixed b
+            let pc = APtr.pinArray cnt
+            
+            let pia = APtr.pinArray [| NativePtr.toNativeInt pa |]
+            let pib = APtr.pinArray [| NativePtr.toNativeInt pb |]
+            let buffArr = Array.zeroCreate<uint32> 1
+            let buff = APtr.pinArray buffArr
+            bla.Begin()
+            
+            bla.Switch(APtr.pinArray v,
+                [
+                    1, fun cmd -> (cmd :?> JSCommandEncoder).JS [| "console.log('one');" |]
+                    2, fun cmd -> (cmd :?> JSCommandEncoder).JS [| "console.log('two');" |]
+                ], fun cmd -> ())
+            
+            bla.JS [|
+                "console.log(GL.currentContext.GLctx);"
+            |]
+            
+            bla.ActiveTexture Silk.NET.OpenGLES.TextureUnit.Texture1
+            bla.GenBuffers(APtr.constant 1u, buff)
+            bla.Push(pb)
+            bla.CopyII(pia, pib, pc)
+            bla.Pop(pb)
+            
+            bla.Custom (fun _ ->
+                printfn "hi there"    
+            )
+            
+            bla.End()
+            
+            bla.Run(AdaptiveToken.Top)
+            
+            printfn "buff: %A" buffArr.[0]
+            printfn "input:  %A" a
+            printfn "result: %A" b
+            
+            
+            v.[0] <- 2
+            bla.Run(AdaptiveToken.Top)
+            
+        
         exit 0
         
         
