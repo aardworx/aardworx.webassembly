@@ -420,7 +420,6 @@ type RenderObjectResourceManagerExtensions private() =
             program.Interface.uniformBuffers
             |> MapExt.toSeq
             |> Seq.map (fun (_name, ub) ->
-
                 ub.ubBinding, this.CreateUniformBuffer(ub, tryGet)
             )
 

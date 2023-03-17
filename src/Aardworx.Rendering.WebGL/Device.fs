@@ -277,8 +277,8 @@ type Device(ctx : WebGLContext, debug : bool) as this =
 
     member x.Run<'a>(action : GL -> 'a) : 'a =
         if inRun then 
-            for p in pending.Values do p gl
-            pending.Clear()
+            // for p in pending.Values do p gl
+            // pending.Clear()
             action gl
         else
             inRun <- true
@@ -287,19 +287,24 @@ type Device(ctx : WebGLContext, debug : bool) as this =
                 if o <> ctx then
                     ctx.MakeCurrent()
                     try
-                        for p in pending.Values do p gl
-                        pending.Clear()
+                        // for p in pending.Values do p gl
+                        // pending.Clear()
                         action gl
                     finally
                         if isNull o then ctx.ReleaseCurrent()
                         else o.MakeCurrent()
                 else
-                    for p in pending.Values do p gl
-                    pending.Clear()
+                    // for p in pending.Values do p gl
+                    // pending.Clear()
                     action gl
             finally
                 inRun <- false
 
+    member x.RunPending() =
+        x.Run (fun gl ->
+            for p in pending.Values do p gl
+            pending.Clear()
+        )
 
     member x.Dispose() =
         if not isDisposed then

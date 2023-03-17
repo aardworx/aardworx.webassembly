@@ -88,7 +88,7 @@ type GeometryPool(device : Device, attributes : Map<Symbol, Type>) =
             manager.Capactiy |> Mem
 
 
-type Runtime(device : Device) as this =
+type Runtime(device : Device, defaultCommandStreamMode : CommandStreamMode) as this =
     let manager = ResourceManager(device)
     do device.Runtime <- this :> IRuntime
 
@@ -100,7 +100,7 @@ type Runtime(device : Device) as this =
 
         let mode =
             if device.Debug then CommandStreamMode.Debug
-            else CommandStreamMode.Managed // TODO: fix native
+            else defaultCommandStreamMode
 
         new RenderTask(manager, signature, mode, objects) :> IRenderTask
 
@@ -511,5 +511,5 @@ type Runtime(device : Device) as this =
         member this.Upload(tex, tensor, fmt, offset, size) = raise (System.NotImplementedException())
 
 
-    new(ctx) = new Runtime(new Device(ctx))
-    new(selector : string) = Runtime(new Device(WebGLContext.Create selector))
+    // new(ctx) = new Runtime(new Device(ctx))
+    // new(selector : string) = Runtime(new Device(WebGLContext.Create selector))

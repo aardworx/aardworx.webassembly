@@ -415,7 +415,7 @@ type WebGLRenderControl internal(runtime : Runtime, swapChain : WebGLSwapChain, 
             with get() = x.Cursor
             and set v = x.Cursor <- v
 
-type WebGLApplication(debug : bool) =
+type WebGLApplication(commandStreamMode : CommandStreamMode) =
         
     static let blitCode =
         """
@@ -449,7 +449,7 @@ type WebGLApplication(debug : bool) =
             })();
         """
 
-    static let initialize = lazy (Window.Invoke("eval", [| blitCode :> obj |]))
+    static let initialize = lazy (JsObj.InstallScript blitCode)
 
     do initialize.Value
         
@@ -472,11 +472,12 @@ type WebGLApplication(debug : bool) =
                     printfn "retry: %A" e
                     ()
             res.Value
+        let debug = commandStreamMode = CommandStreamMode.Debug
         let device = Device(ctx, debug)
         
         c, device
         
-    let runtime = Runtime(device)
+    let runtime = Runtime(device, commandStreamMode)
     
     member x.Device = device
     member x.Runtime = runtime
@@ -496,5 +497,5 @@ type WebGLApplication(debug : bool) =
     interface System.IDisposable with
         member x.Dispose() = x.Dispose()
         
-    new() = new WebGLApplication(false)
+    new() = new WebGLApplication(CommandStreamMode.Managed)
         

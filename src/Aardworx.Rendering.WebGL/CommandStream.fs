@@ -14,9 +14,9 @@ open Aardworx.WebAssembly
 
 [<RequireQualifiedAccess>]
 type CommandStreamMode =
-    | Native
     | Managed
     | Debug
+    | Javascript
 
 
 [<AutoOpen>]
@@ -380,11 +380,8 @@ type CommandStream private(state : CommandStreamState, ownState : bool, backend 
                 new DebugCommandEncoder(state.Device) :> CommandEncoder
             | CommandStreamMode.Managed ->
                 new ManagedCommandEncoder(state.Device) :> CommandEncoder
-            | CommandStreamMode.Native ->
-                if RuntimeInformation.ProcessArchitecture = Architecture.X64 then
-                    new NativeCommandEncoder(state.Device) :> CommandEncoder
-                else
-                    new ManagedCommandEncoder(state.Device) :> CommandEncoder
+            | CommandStreamMode.Javascript ->
+                new JSCommandEncoder(state.Device) :> CommandEncoder
         new CommandStream(state, false, backend)
 
     new(state : CommandStreamState) = 
@@ -392,18 +389,11 @@ type CommandStream private(state : CommandStreamState, ownState : bool, backend 
             if state.Device.Debug then
                 new DebugCommandEncoder(state.Device) :> CommandEncoder
             else
-                if RuntimeInformation.ProcessArchitecture = Architecture.X64 then
-                    new NativeCommandEncoder(state.Device) :> CommandEncoder
-                else
-                    new ManagedCommandEncoder(state.Device) :> CommandEncoder
+                new JSCommandEncoder(state.Device) :> CommandEncoder
         new CommandStream(state, false, backend)
 
     new(device : Device) = 
-        let backend =
-            if RuntimeInformation.ProcessArchitecture = Architecture.X64 then
-                new NativeCommandEncoder(device) :> CommandEncoder
-            else
-                new ManagedCommandEncoder(device) :> CommandEncoder
+        let backend = new JSCommandEncoder(device) :> CommandEncoder
         new CommandStream(new CommandStreamState(device), true, backend)
 
     new(device : Device, mode : CommandStreamMode) = 
@@ -413,11 +403,8 @@ type CommandStream private(state : CommandStreamState, ownState : bool, backend 
                 new DebugCommandEncoder(device) :> CommandEncoder
             | CommandStreamMode.Managed ->
                 new ManagedCommandEncoder(device) :> CommandEncoder
-            | CommandStreamMode.Native ->
-                if RuntimeInformation.ProcessArchitecture = Architecture.X64 then
-                    new NativeCommandEncoder(device) :> CommandEncoder
-                else
-                    new ManagedCommandEncoder(device) :> CommandEncoder
+            | CommandStreamMode.Javascript ->
+                new JSCommandEncoder(device) :> CommandEncoder
         new CommandStream(new CommandStreamState(device), true, backend)
 
     member x.Device : Device = state.Device
@@ -1377,7 +1364,6 @@ type CommandStream private(state : CommandStreamState, ownState : bool, backend 
                         dirtyUpdaters.Clear()
                         d
                     )
-
                 for d in dirty do
                     d.GetValue token
             )

@@ -29,9 +29,11 @@ let createHelpText() =
     t.Style.BorderBottomLeftRadius <- "20px"
     t.Style.PointerEvents <- "none"
     t.Style.UserSelect <- "none"
-    t.InnerHTML <- "<ul><li>Use WSAD for moving the camera</li><li>Use the left mouse button to look around</li></ul>"
+    t.InnerHTML <- "<ul><li>Use WSAD for moving the camera</li><li>Use the left mouse button to look around</li><li><pre id=\"fps\"></pre></li></ul>"
     
     doc.Body.AppendChild t
+    
+    doc.GetElementById "fps"
     
 /// Another utility for creating our RenderControl.
 let createRenderControl (app : WebGLApplication) =
@@ -55,13 +57,28 @@ let createRenderControl (app : WebGLApplication) =
     // for interop with our rendering we need to "wrap" the canvas in a `RenderControl`
     let ctrl = app.CreateRenderControl(c, Antialiasing.None)
 
+    let mutable fps : HTMLElement = null
     // when the first frame was rendered we set the canvas to visible, 
     // remove the loading-spinner from then DOM and add our help-text.
     ctrl.AfterFirstFrame.Add(fun () ->
         let l = doc.GetElementById("loader")
         if not (isNull l) then l.Remove()
         c.Style.RemoveProperty "visibility"
-        createHelpText()
+        fps <- createHelpText()
+    )
+    
+    
+    let sw = System.Diagnostics.Stopwatch.StartNew()
+    let mutable counter = 0
+    ctrl.AfterRender.Add (fun _ ->
+        if counter >= 50 then
+            sw.Stop()
+            let v = float counter / sw.Elapsed.TotalSeconds
+            if not (isNull fps) then fps.InnerText <- sprintf "%.1ffps" v
+            counter <- 0
+            sw.Restart()
+        else
+            counter <- counter + 1
     )
     
     ctrl
@@ -77,86 +94,87 @@ let run() =
         // Since our `WebGLApplication` expects the document to be loaded we need to wait until everything is ready.
         do! Window.Document.Ready
         
-        
-        let msg0 = cval "Hello"
-        let msg1 = cval "World"
-        
-        let length = msg1 |> APtr.mapVal (fun s -> s.Length)
-        
-        let app = new WebGLApplication()
-        let bla = new JSCommandEncoder(app.Device)
-        
-        app.Runtime.Device.Run(fun gl ->
-            gl.Enable(Silk.NET.OpenGLES.EnableCap.Blend)    
-        )
-        
-        let a = [| 255uy; 128uy; 37uy; 123uy; 1uy; 2uy; 3uy; 4uy |]
-        let b = Array.zeroCreate<byte> a.Length
-        let cnt = [| 8n |]
-        b.[0] <- 42uy
-        // let pa = APtr.pinArray a
-        // let pb = APtr.pinArray b
-        // let pc = APtr.pinArray cnt
         //
-        // pa.Acquire()
-        // pb.Acquire()
-        // pc.Acquire()
+        // let msg0 = cval "Hello"
+        // let msg1 = cval "World"
         //
-        // pa.Update AdaptiveToken.Top
-        // pb.Update AdaptiveToken.Top
-        // pc.Update AdaptiveToken.Top
+        // let length = msg1 |> APtr.mapVal (fun s -> s.Length)
+        //
+        // let app = new WebGLApplication()
+        // let bla = new JSCommandEncoder(app.Device)
+        //
+        // app.Runtime.Device.Run(fun gl ->
+        //     gl.Enable(Silk.NET.OpenGLES.EnableCap.Blend)    
+        // )
+        //
+        // let a = [| 255uy; 128uy; 37uy; 123uy; 1uy; 2uy; 3uy; 4uy |]
+        // let b = Array.zeroCreate<byte> a.Length
+        // let cnt = [| 8n |]
+        // b.[0] <- 42uy
+        // // let pa = APtr.pinArray a
+        // // let pb = APtr.pinArray b
+        // // let pc = APtr.pinArray cnt
+        // //
+        // // pa.Acquire()
+        // // pb.Acquire()
+        // // pc.Acquire()
+        // //
+        // // pa.Update AdaptiveToken.Top
+        // // pb.Update AdaptiveToken.Top
+        // // pc.Update AdaptiveToken.Top
+        //
+        // let v = [|1|]
+        //
+        // do
+        //     use pa = fixed a
+        //     use pb = fixed b
+        //     let pc = APtr.pinArray cnt
+        //     
+        //     let pia = APtr.pinArray [| NativePtr.toNativeInt pa |]
+        //     let pib = APtr.pinArray [| NativePtr.toNativeInt pb |]
+        //     let buffArr = Array.zeroCreate<uint32> 1
+        //     let buff = APtr.pinArray buffArr
+        //     bla.Begin()
+        //     
+        //     bla.Switch(APtr.pinArray v,
+        //         [
+        //             1, fun cmd -> (cmd :?> JSCommandEncoder).JS [| "console.log('one');" |]
+        //             2, fun cmd -> (cmd :?> JSCommandEncoder).JS [| "console.log('two');" |]
+        //         ], fun cmd -> ())
+        //     
+        //     bla.JS [|
+        //         "console.log(GL.currentContext.GLctx);"
+        //     |]
+        //     
+        //     bla.ActiveTexture Silk.NET.OpenGLES.TextureUnit.Texture1
+        //     bla.GenBuffers(APtr.constant 1u, buff)
+        //     bla.Push(pb)
+        //     bla.CopyII(pia, pib, pc)
+        //     bla.Pop(pb)
+        //     
+        //     bla.Custom (fun _ ->
+        //         printfn "hi there"    
+        //     )
+        //     
+        //     bla.End()
+        //     
+        //     bla.Run(AdaptiveToken.Top)
+        //     
+        //     printfn "buff: %A" buffArr.[0]
+        //     printfn "input:  %A" a
+        //     printfn "result: %A" b
+        //     
+        //     
+        //     v.[0] <- 2
+        //     bla.Run(AdaptiveToken.Top)
+        //     
+        //
+        // exit 0
         
-        let v = [|1|]
-        
-        do
-            use pa = fixed a
-            use pb = fixed b
-            let pc = APtr.pinArray cnt
-            
-            let pia = APtr.pinArray [| NativePtr.toNativeInt pa |]
-            let pib = APtr.pinArray [| NativePtr.toNativeInt pb |]
-            let buffArr = Array.zeroCreate<uint32> 1
-            let buff = APtr.pinArray buffArr
-            bla.Begin()
-            
-            bla.Switch(APtr.pinArray v,
-                [
-                    1, fun cmd -> (cmd :?> JSCommandEncoder).JS [| "console.log('one');" |]
-                    2, fun cmd -> (cmd :?> JSCommandEncoder).JS [| "console.log('two');" |]
-                ], fun cmd -> ())
-            
-            bla.JS [|
-                "console.log(GL.currentContext.GLctx);"
-            |]
-            
-            bla.ActiveTexture Silk.NET.OpenGLES.TextureUnit.Texture1
-            bla.GenBuffers(APtr.constant 1u, buff)
-            bla.Push(pb)
-            bla.CopyII(pia, pib, pc)
-            bla.Pop(pb)
-            
-            bla.Custom (fun _ ->
-                printfn "hi there"    
-            )
-            
-            bla.End()
-            
-            bla.Run(AdaptiveToken.Top)
-            
-            printfn "buff: %A" buffArr.[0]
-            printfn "input:  %A" a
-            printfn "result: %A" b
-            
-            
-            v.[0] <- 2
-            bla.Run(AdaptiveToken.Top)
-            
-        
-        exit 0
         
         
         // Create the `WebGLApplication` and a `RenderControl` using our utility from above.
-        let app = new WebGLApplication()
+        let app = new WebGLApplication(CommandStreamMode.Managed)
         let ctrl = createRenderControl app
 
         // the camera can be controlled with Aardvark.Application's DefaultCameraController
@@ -178,13 +196,18 @@ let run() =
                     false
             )
 
+        let trafo =
+            ctrl.Time |> AVal.map (fun _ ->
+                Trafo3d.RotationZ sw.Elapsed.TotalSeconds    
+            )
+        
         // let's start to setup a scene.
         let scene =
             sg {
                 // first off we need to set the camera
-                Sg.View (AVal.map CameraView.viewTrafo view)
+                Sg.View (AVal.map CameraView.viewTrafo view) //((trafo, view) ||> AVal.map2 (fun m v -> m * CameraView.viewTrafo v))
                 Sg.Proj (AVal.map Frustum.projTrafo proj)
-                
+                Sg.Trafo trafo
                 //Sg.Active active
                 // for shading we simply use Aardvark.Rendering's default shaders doing transformations and 
                 // applying a simple phong-illumination with a headlight.
@@ -202,28 +225,36 @@ let run() =
                 // render a green teapot centered at the origin
                 Primitives.Teapot(C4b.Green)
                 
-                active |> ASet.bind (function
-                    | true ->
-                        ASet.single (
-                            sg {
-                                Sg.Translate(3.0, 0.0, 0.0)
-                                Primitives.Octahedron(C4b.Yellow)
-                            }
-                        )
-                    | false ->
-                        ASet.single (
-                            sg {
-                                Sg.Translate(3.0, 0.0, 0.0)
-                                Primitives.Teapot(C4b.Green)
-                            }
-                        )
-                )
+                sg {
+                    Sg.Translate(3.0, 0.0, 0.0)
+                    Primitives.Teapot(C4b.Green)
+                }
+                // active |> ASet.bind (function
+                //     | true ->
+                //         ASet.single (
+                //             sg {
+                //                 Sg.Translate(3.0, 0.0, 0.0)
+                //                 Primitives.Octahedron(C4b.Yellow)
+                //             }
+                //         )
+                //     | false ->
+                //         ASet.single (
+                //             sg {
+                //                 Sg.Translate(3.0, 0.0, 0.0)
+                //                 Primitives.Teapot(C4b.Green)
+                //             }
+                //         )
+                
                 
                 // a yellow octahedron hovering 1 unit above the teapot
-                sg {
-                    Sg.Translate(0.0, 0.0, 1.0)
-                    Primitives.Octahedron(C4b.Yellow)
-                }
+                [
+                    for x in -5.0 .. 1.0 .. 5.0 do
+                        for y in -5.0 .. 1.0 .. 5.0 do
+                            sg {
+                                Sg.Translate(x, y, 1.0)
+                                Primitives.Octahedron(C4b.Yellow)
+                            }
+                ]
                 
                 // a text (using our font from above) 
                 sg {

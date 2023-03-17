@@ -196,7 +196,7 @@ and UniformBufferPool(device : Device, size : int, fields : list<GLSLUniformBuff
             // TODO: flexible count??
         )
 
-    let cache = ConcurrentDict<list<int * GLSLType * IAdaptiveValue>, AdaptiveUniformBuffer>(Dict())
+    let cache = Dict<list<int * GLSLType * IAdaptiveValue>, AdaptiveUniformBuffer>()
 
     member x.Fields = fields
 
@@ -220,17 +220,18 @@ and UniformBufferPool(device : Device, size : int, fields : list<GLSLUniformBuff
                 struct(d, f)
             )
 
-        for KeyValue(buffer, src) in full do
-            gl.BindBuffer(BufferTargetARB.PixelPackBuffer, buffer.Handle)
-            gl.BufferSubData(BufferTargetARB.PixelPackBuffer, 0n, unativeint buffer.Size, VoidPtr.ofNativeInt src)
-            gl.BindBuffer(BufferTargetARB.PixelPackBuffer, 0u)
+        if dirty.Count > 0 || full.Count > 0 then
+            for KeyValue(buffer, src) in full do
+                gl.BindBuffer(BufferTargetARB.PixelPackBuffer, buffer.Handle)
+                gl.BufferSubData(BufferTargetARB.PixelPackBuffer, 0n, unativeint buffer.Size, VoidPtr.ofNativeInt src)
+                gl.BindBuffer(BufferTargetARB.PixelPackBuffer, 0u)
 
-        for KeyValue(buffer, struct (src, offsets)) in dirty do
-            gl.BindBuffer(BufferTargetARB.PixelPackBuffer, buffer.Handle)
-            for offset in offsets do
-                gl.BufferSubData(BufferTargetARB.PixelPackBuffer, offset, unativeint size, VoidPtr.ofNativeInt (src + offset))
-            gl.BindBuffer(BufferTargetARB.PixelPackBuffer, 0u)
-
+            for KeyValue(buffer, struct (src, offsets)) in dirty do
+                gl.BindBuffer(BufferTargetARB.PixelPackBuffer, buffer.Handle)
+                for offset in offsets do
+                    gl.BufferSubData(BufferTargetARB.PixelPackBuffer, offset, unativeint size, VoidPtr.ofNativeInt (src + offset))
+                gl.BindBuffer(BufferTargetARB.PixelPackBuffer, 0u)
+        
     member x.NewBuffer() =
         let block = manager.Alloc(align ,nativeint size)
         new UniformBuffer(x, device, manager, block)

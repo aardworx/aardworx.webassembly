@@ -183,8 +183,9 @@ module private ResolveShader =
             return nearestSam.SampleLevel(v.tc, 0.0)
         }
 
-type RenderControl(element : HTMLCanvasElement, ?scale : float) =
+type RenderControl(element : HTMLCanvasElement, ?scale : float, ?commandStreamMode : CommandStreamMode) =
     let scale = defaultArg scale 1.0
+    let commandStreamMode = defaultArg commandStreamMode CommandStreamMode.Managed
     let ctx =   
         let oid = element.Id
         if String.IsNullOrWhiteSpace oid then
@@ -200,7 +201,7 @@ type RenderControl(element : HTMLCanvasElement, ?scale : float) =
     let device = Device(ctx)
     do Log.line "%s" (DeviceInformation.toString true device.Info)
     let runtime, _manager = 
-        let r = Runtime(device) 
+        let r = Runtime(device, commandStreamMode) 
         r :> IRuntime, r.ResourceManager
 
     let keyboard = new NodeKeyboard(element)

@@ -417,7 +417,7 @@ let run() =
         
 
         printfn "    let commands = StringBuilder()"
-        printfn "    let mutable handles = JsObj.New []"
+        //printfn "    let mutable handles = JsObj.New []"
         printfn "    let mutable cachedAction = None"
         printfn "    let mutable currentGL = Unchecked.defaultof<GL>"
         printfn "    "
@@ -435,39 +435,39 @@ let run() =
         printfn "        match cachedAction with"
         printfn "        | Some a -> a"
         printfn "        | None ->"
-        printfn "            printfn \"%%s\" (string commands)"
-        printfn "            let code = sprintf \"(function() { return { run: (self) => { %%s } }; })()\" (string commands)"
-        printfn "            let a = JS.invoke<IJSInProcessObjectReference> \"window.eval\" [|code|]"
+        printfn "            let code = sprintf \"return { run: (self) => { %%s } };\" (string commands)"
+        printfn "            let a = JsObj.Evaluate<IJSInProcessObjectReference> code"
         printfn "            cachedAction <- Some a"
         printfn "            a"
         printfn "    "
-        printfn "    let run() ="
+        printfn "    let run(self : JsObj) ="
         printfn "        let action = getAction()"
-        printfn "        action.Invoke(\"run\", [| handles.Reference :> obj |])"
+        printfn "        action.InvokeVoid(\"run\", self.Reference :> obj)"
         printfn "    "
-        printfn "    let appendCommand (str : string[]) ="
+        printfn "    let appendCommands (str : string[]) ="
         printfn "        cachedAction <- None"
         printfn "        for str in str do"
-        printfn "            commands.AppendFormat(\"{0};\\n\", str) |> ignore"
+        printfn "            commands.AppendFormat(\"{0}\\n\", str) |> ignore"
+        printfn "    let appendCommand (str : string) ="
+        printfn "        cachedAction <- None"
+        printfn "        commands.AppendFormat(\"{0}\\n\", str) |> ignore"
         printfn "    "
         printfn "    override this.Destroy() ="
         printfn "        for c in cleanup do c()"
         printfn "        cleanup.Clear()"
         printfn "        commands.Clear() |> ignore"
-        printfn "        handles <- null"
+        //printfn "        handles <- null"
         printfn "        cachedAction <- None"
         printfn "    "
         printfn "    override this.Clear() ="
         printfn "        for c in cleanup do c()"
         printfn "        cleanup.Clear()"
         printfn "        commands.Clear() |> ignore"
-        printfn "        handles <- JsObj.New []"
+        //printfn "        handles <- JsObj.New []"
         printfn "        cachedAction <- None"
         printfn "    "
         printfn "    override x.Begin() ="
-        printfn "        appendCommand [|"
-        printfn "            \"self.gl = GL.currentContext.GLctx;\""
-        printfn "        |]"
+        printfn "        appendCommand \"if(!self.stack) { self.stack = new ArrayBuffer(65536); self.stackOffset = 0; }\""
         printfn "        "
         printfn "    override x.End() ="
         printfn "        ()"
@@ -475,7 +475,8 @@ let run() =
         printfn "    override this.Perform(gl) ="
         printfn "        try"
         printfn "            currentGL <- gl"
-        printfn "            run()"
+        printfn "            let self = JsObj.New []"
+        printfn "            run(self)"
         printfn "        finally"
         printfn "            currentGL <- Unchecked.defaultof<GL>"
         printfn ""
@@ -487,9 +488,7 @@ let run() =
         printfn "        let resOffset = int (res.Pointer / 4n)"
         printfn "        let aOffset = int (a.Pointer / 4n)"
         printfn "        let bOffset = int (b.Pointer / 4n)"
-        printfn "        appendCommand [|"
-        printfn "            $\"Module.HEAP32[{resOffset}] = Module.HEAP32[{aOffset}] + Module.HEAP32[{bOffset}]\""
-        printfn "        |]"
+        printfn "        appendCommand $\"Module.HEAP32[{resOffset}] = Module.HEAP32[{aOffset}] + Module.HEAP32[{bOffset}];\""
         printfn "     "
         printfn "    override this.Mad(a,b,c,res) ="
         printfn "        let a = this.Use a"
@@ -501,15 +500,13 @@ let run() =
         printfn "        let aOffset = int (a.Pointer / 4n)"
         printfn "        let bOffset = int (b.Pointer / 4n)"
         printfn "        let cOffset = int (c.Pointer / 4n)"
-        printfn "        appendCommand [|"
-        printfn "            $\"Module.HEAP32[{resOffset}] = Module.HEAP32[{aOffset}] + Module.HEAP32[{bOffset}] * Module.HEAP32[{cOffset}]\""
-        printfn "        |]"
+        printfn "        appendCommand $\"Module.HEAP32[{resOffset}] = Module.HEAP32[{aOffset}] + Module.HEAP32[{bOffset}] * Module.HEAP32[{cOffset}];\""
         printfn ""
         printfn "    override this.Bgra(colors,count) ="
         printfn "        let colors = this.Use colors"
         printfn "        let count = this.Use count"
         printfn "        "
-        printfn "        appendCommand [|"
+        printfn "        appendCommands [|"
         printfn "            \"{\""
         printfn "            $\"  const count = Module.HEAP32[{int (count.Pointer / 4n)}];\""
         printfn "            $\"  let offset = {int colors.Pointer};\""
@@ -527,7 +524,7 @@ let run() =
         printfn "        let dst = this.Use dst"
         printfn "        let count = this.Use count"
         printfn "        "
-        printfn "        appendCommand [|"
+        printfn "        appendCommands [|"
         printfn "            \"{\""
         printfn "            $\"  const count = Module.HEAP32[{int (count.Pointer / 4n)}];\""
         printfn "            $\"  let srcOff = {int src.Pointer};\""
@@ -543,7 +540,7 @@ let run() =
         printfn "        |]  "
         printfn ""
         printfn "    override this.Copy(src,dst,size) ="
-        printfn "        appendCommand [|"
+        printfn "        appendCommands [|"
         printfn "            \"{\""
         printfn "            $\"  let a = new Uint8Array(Module.HEAPU8.buffer, {int src}, {int size});\""
         printfn "            $\"  let b = new Uint8Array(Module.HEAPU8.buffer, {int dst}, {int size});\""
@@ -555,7 +552,7 @@ let run() =
         printfn "        let src = this.Use src"
         printfn "        let dst = this.Use dst"
         printfn "        let size = this.Use size"
-        printfn "        appendCommand [|"
+        printfn "        appendCommands [|"
         printfn "            \"{\""
         printfn "            $\"  let size = Module.HEAP32[{int (size.Pointer / 4n)}];\""
         printfn "            $\"  let a = new Uint8Array(Module.HEAPU8.buffer, {int src.Pointer}, size);\""
@@ -568,7 +565,7 @@ let run() =
         printfn "        let src = this.Use src"
         printfn "        let dst = this.Use dst"
         printfn "        let size = this.Use size"
-        printfn "        appendCommand [|"
+        printfn "        appendCommands [|"
         printfn "            \"{\""
         printfn "            $\"  let size = Module.HEAP32[{int (size.Pointer / 4n)}];\""
         printfn "            $\"  let a = new Uint8Array(Module.HEAPU8.buffer, {int src.Pointer}, size);\""
@@ -581,7 +578,7 @@ let run() =
         printfn "        let src = this.Use src"
         printfn "        let dst = this.Use dst"
         printfn "        let size = this.Use size"
-        printfn "        appendCommand [|"
+        printfn "        appendCommands [|"
         printfn "            \"{\""
         printfn "            $\"  let size = Module.HEAP32[{int (size.Pointer / 4n)}];\""
         printfn "            $\"  let a = new Uint8Array(Module.HEAPU8.buffer, Module.HEAP32[{int (src.Pointer / 4n)}], size);\""
@@ -594,7 +591,7 @@ let run() =
         printfn "        let src = this.Use src"
         printfn "        let dst = this.Use dst"
         printfn "        let size = this.Use size"
-        printfn "        appendCommand [|"
+        printfn "        appendCommands [|"
         printfn "            \"{\""
         printfn "            $\"  let size = Module.HEAP32[{int (size.Pointer / 4n)}];\""
         printfn "            $\"  let a = new Uint8Array(Module.HEAPU8.buffer, Module.HEAP32[{int (src.Pointer / 4n)}], size);\""
@@ -604,32 +601,47 @@ let run() =
         printfn "        |]"
         printfn "        "
         printfn "    member this.JS(code : string[]) ="
-        printfn "        appendCommand code"
+        printfn "        appendCommands code"
         printfn "        "
-        printfn "    override this.Custom(action) ="
-        printfn "        let name = newName()"
-        printfn "        let callback ="
-        printfn "            JSActions.JSAction(fun () ->"
-        printfn "                action currentGL    "
-        printfn "            )"
-        printfn "            "
-        printfn "        let gc = GCHandle.Alloc(callback)"
-        printfn "        let r = DotNetObjectReference.Create(callback)"
-        printfn "            "
-        printfn "        handles.SetProperty(name, r)"
-        printfn "        "
-        printfn "        cleanup.Add (fun () ->"
-        printfn "            r.Dispose()"
-        printfn "            gc.Free()"
-        printfn "        )"
-        printfn "        "
-        printfn "        appendCommand [|"
-        printfn "            $\"self.{name}.invokeMethod('Invoke');\""
-        printfn "        |]"
-        printfn ""
+        printfn "    member this.Action = getAction()"
+        printfn "    override this.Custom(action) = failwith \"custom not implemented\""
+        // printfn "        let name = newName()"
+        // printfn "        let callback ="
+        // printfn "            JSActions.JSAction(fun () ->"
+        // printfn "                action currentGL    "
+        // printfn "            )"
+        // printfn "            "
+        // printfn "        let gc = GCHandle.Alloc(callback)"
+        // printfn "        let r = DotNetObjectReference.Create(callback)"
+        // printfn "            "
+        // printfn "        handles.SetProperty(name, r)"
+        // printfn "        "
+        // printfn "        cleanup.Add (fun () ->"
+        // printfn "            r.Dispose()"
+        // printfn "            gc.Free()"
+        // printfn "        )"
+        // printfn "        "
+        // printfn "        appendCommand [|"
+        // printfn "            $\"self.{name}.invokeMethod('Invoke');\""
+        // printfn "        |]"
+        // printfn ""
+        // printfn "    override this.Pop(mem : nativeptr<'a>) ="
+        // printfn "        let s = sizeof<'a>"
+        // printfn "        appendCommands [|"
+        // printfn "            $\"  self.stackOffset -= {s};\""
+        // printfn "            $\"  new Uint8Array(Module.HEAPU8.buffer, {int (NativePtr.toNativeInt mem)}, {s}).set(new Uint8Array(self.stack, self.stackOffset, {s}));\""
+        // printfn "        |]"
+        // printfn "        "
+        // printfn "    override this.Push(mem : nativeptr<'a>) ="
+        // printfn "        let s = sizeof<'a>"
+        // printfn "        appendCommands [|"
+        // printfn "            $\"  new Uint8Array(self.stack, self.stackOffset, {s}).set(new Uint8Array(Module.HEAPU8.buffer, {int (NativePtr.toNativeInt mem)}, {s}));\""
+        // printfn "            $\"  self.stackOffset += {s};\""
+        // printfn "        |]"
+        // printfn ""
         printfn "    override this.Pop(mem : nativeptr<'a>) ="
         printfn "        let s = sizeof<'a>"
-        printfn "        appendCommand [|"
+        printfn "        appendCommands [|"
         printfn "            \"{\""
         printfn "            \"  if(!self.stack) { self.stack = new ArrayBuffer(65536); self.stackOffset = 0; }\""
         printfn "            $\"  self.stackOffset -= {s};\""
@@ -641,7 +653,7 @@ let run() =
         printfn "        "
         printfn "    override this.Push(mem : nativeptr<'a>) ="
         printfn "        let s = sizeof<'a>"
-        printfn "        appendCommand [|"
+        printfn "        appendCommands [|"
         printfn "            \"{\""
         printfn "            \"  if(!self.stack) { self.stack = new ArrayBuffer(65536); self.stackOffset = 0; }\""
         printfn "            $\"  let src = new Uint8Array(Module.HEAPU8.buffer, {int (NativePtr.toNativeInt mem)}, {s});\""
@@ -650,19 +662,18 @@ let run() =
         printfn "            $\"  self.stackOffset += {s};\""
         printfn "            \"}\""
         printfn "        |]"
-        printfn ""
         printfn "    override this.Switch(location : aptr<int>, cases : list<int * (CommandEncoder -> unit)>, fallback : CommandEncoder -> unit) ="
         printfn "        let location = this.Use(location).Pointer"
         printfn "        match cases with"
         printfn "        | [] -> fallback this"
         printfn "        | [(v, ifTrue)] ->"
-        printfn "            appendCommand [| $\"if(Module.HEAP32[{int (location / 4n)}] == {v}) {{\"|]"
+        printfn "            appendCommand $\"if(Module.HEAP32[{int (location / 4n)}] == {v}) {{\""
         printfn "            ifTrue this"
-        printfn "            appendCommand [| \"}\"; \"else {\" |]"
+        printfn "            appendCommands [| \"}\"; \"else {\" |]"
         printfn "            fallback this"
-        printfn "            appendCommand [| \"}\" |]"
+        printfn "            appendCommand \"}\""
         printfn "        | many ->"
-        printfn "            appendCommand [|"
+        printfn "            appendCommands [|"
         printfn "                \"{\""
         printfn "                $\"  const value = Module.HEAP32[{int (location / 4n)}];\""
         printfn "            |]"
@@ -670,15 +681,15 @@ let run() =
         printfn "            let mutable first = true"
         printfn "            for (v, ifTrue) in many do"
         printfn "                if first then"
-        printfn "                    appendCommand [| $\"if(value == {v}) {{\" |]"
+        printfn "                    appendCommands [| $\"if(value == {v}) {{\" |]"
         printfn "                    first <- false"
         printfn "                else"
-        printfn "                    appendCommand [| $\"}} else if(value == {v}) {{\" |]"
+        printfn "                    appendCommands [| $\"}} else if(value == {v}) {{\" |]"
         printfn "                ifTrue this"
         printfn "                "
-        printfn "            appendCommand [| \"} else {\" |]"
+        printfn "            appendCommands [| \"} else {\" |]"
         printfn "            fallback this"
-        printfn "            appendCommand [| \"}\"; \"}\" |]"
+        printfn "            appendCommands [| \"}\"; \"}\" |]"
         printfn "            "
         printfn ""
         printfn "    override this.Call(func) = failwith \"todo\""
@@ -694,8 +705,10 @@ let run() =
         
         for (name, aliases, sepc, def) in commands do
             let pars = def.GetParameters()
-            
-            let glName = "gl" + name
+        
+            let glName =
+                if def.DeclaringType = typeof<MyGL> then "_gl" + name
+                else "_emscripten_gl" + name
                       
             do 
                 let args =
@@ -720,16 +733,15 @@ let run() =
                         else sprintf "{``%s``}" p.Name
                     )
                 printfn "    override this.%s(%s) = " name args
-                printfn "        appendCommand [|"
                 if def.ReturnType <> typeof<System.Void> then
                     if def.ReturnType = typeof<int> || def.ReturnType = typeof<uint32> ||
                        def.ReturnType = typeof<bool> || def.ReturnType = typeof<nativeint> || def.ReturnType.IsEnum || def.ReturnType.IsPointer then
-                        printfn "            $\"Module.HEAPU32[{NativePtr.toNativeInt result / 4n}] = Module._emscripten_%s(%s);\"" glName (String.concat ", " parUse)
+                        printfn "        appendCommand $\"Module.HEAPU32[{NativePtr.toNativeInt result / 4n}] = Module.%s(%s);\"" glName (String.concat ", " parUse)
                     else
                         failwithf "unexpected return-type: %A" def.ReturnType
                 else
-                    printfn "            $\"Module._emscripten_%s(%s);\"" glName (String.concat ", " parUse)
-                printfn "        |]"
+                    printfn "        appendCommand $\"Module.%s(%s);\"" glName (String.concat ", " parUse)
+               
         
                
             if pars.Length > 0 || def.ReturnType <> typeof<System.Void> then
@@ -766,7 +778,7 @@ let run() =
                         elif not (def.Name.Contains "Draw") && not (def.Name.Contains "Image")  && not (def.Name.EndsWith "Data") && (p.ParameterType.IsPointer || p.ParameterType = typeof<voidptr>) then
               
                             sprintf "{``%s``}" p.Name 
-                        elif p.ParameterType.IsPointer || p.ParameterType = typeof<voidptr> then
+                        elif p.ParameterType.IsPointer || p.ParameterType = typeof<voidptr> || p.ParameterType = typeof<nativeint> then
                             sprintf "Module.HEAP32[{``%s`` / 4n}]" p.Name 
                             
                         else sprintf "{``%s``}" p.Name 
@@ -779,17 +791,15 @@ let run() =
                     
                     printfn "        let result = this.Use(result).Pointer" 
                     
-                printfn "        appendCommand [|"
                 if def.ReturnType <> typeof<System.Void> then
                     if def.ReturnType = typeof<int> || def.ReturnType = typeof<uint32> ||
                        def.ReturnType = typeof<bool> || def.ReturnType = typeof<nativeint> || def.ReturnType.IsEnum || def.ReturnType.IsPointer then
-                        printfn "            $\"Module.HEAPU32[{result / 4n}] = Module._emscripten_%s(%s);\"" glName (String.concat ", " parUse)
+                        printfn "        appendCommand $\"Module.HEAPU32[{result / 4n}] = Module.%s(%s);\"" glName (String.concat ", " parUse)
                     else
                         failwithf "unexpected return-type: %A" def.ReturnType
                         
                 else
-                    printfn "            $\"Module._emscripten_%s(%s);\"" glName (String.concat ", " parUse)
-                printfn "        |]"
+                    printfn "        appendCommand $\"Module.%s(%s);\"" glName (String.concat ", " parUse)
         
        
         File.WriteAllText(Path.Combine(__SOURCE_DIRECTORY__, "JSCommandEncoder.fs"), string b)

@@ -140,11 +140,11 @@ type RenderObjectProgram(manager : ResourceManager, signature : FramebufferSigna
         NativePtr.free viewportOffset
         NativePtr.free viewportSize
 
-    new(manager : ResourceManager, signature : FramebufferSignature) =
-        let mode =
-            if manager.Device.Debug then CommandStreamMode.Debug
-            else CommandStreamMode.Native
-        new RenderObjectProgram(manager, signature, mode)
+    // new(manager : ResourceManager, signature : FramebufferSignature) =
+    //     let mode =
+    //         if manager.Device.Debug then CommandStreamMode.Debug
+    //         else CommandStreamMode.Javascript
+    //     new RenderObjectProgram(manager, signature, mode)
 
     interface IDisposable with  
         member x.Dispose() = x.Dispose()

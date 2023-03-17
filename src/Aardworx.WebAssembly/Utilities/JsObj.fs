@@ -143,18 +143,37 @@ module private JSHelpers =
             let host = builder.Build()
             let res = host.Services.GetService(typeof<IJSRuntime>) :?> WebAssemblyJSRuntime
 
+            let compile =
+                String.concat "\n" [
+                    "const isWorker = typeof window == \"undefined\";"
+                    "const g = isWorker ? self : window;"
+                    "g.compile = function(...args) {"
+                    "    let f = new Function(...args);"
+                    "    return { run: f };"
+                    "};"
+                    "g.evaluate = function(code) {"
+                    "    try {"
+                    "      let f = new Function(code);"
+                    "      return f();"
+                    "    }"
+                    "    catch(e) {"
+                    "      console.log(code);"
+                    "      console.error(e);"
+                    "      throw e;"
+                    "    }"
+                    "};"
+                ]
+            
+            res.InvokeVoid("eval", compile);
 
             let code =
                 sprintf "try { %s } catch(e) { console.error(e); }" aardvarkScript
 
-            res.InvokeVoid("window.eval", code);
-            
-            //CoreUtilities.installScript aardvarkScript
+            let ref = res.Invoke<IJSInProcessObjectReference>("compile", code)
+            ref.InvokeVoid("run")
             res
         )
         
-
-
 
     let js (o : obj) =
         match o with
@@ -305,6 +324,17 @@ type JsObj(r : IJSInProcessObjectReference) =
 
     static member Runtime = runtime.Value
 
+    
+    static member InstallScript(code : string) =
+        runtime.Value.InvokeVoid("evaluate", code)
+    
+    static member Evaluate<'r>(code : string) =
+        try
+            runtime.Value.Invoke<'r>("evaluate", code)
+        with e ->
+            printfn "eval failed on: %s" code
+            reraise()
+            
     member x.Reference : IJSInProcessObjectReference = r
 
     member x.Invoke<'a>(meth : string, args : obj[]) =

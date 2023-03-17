@@ -1,3 +1,6 @@
+### 1.0.0-prerelease0015
+* added Javascript fragments and optimized UB uploads
+
 ### 1.0.0-prerelease0014
 * fixed `GetEffectInterface` 
 

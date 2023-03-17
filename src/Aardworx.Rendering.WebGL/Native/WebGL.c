@@ -7,14 +7,14 @@
 #include <stdint.h>
 #include "WebGL.h"
 
-void glGetBufferSubData(GLenum theTarget, GLintptr theOffset, GLsizeiptr theSize, void* theData)
+EMSCRIPTEN_KEEPALIVE void glGetBufferSubData(GLenum theTarget, GLintptr theOffset, GLsizeiptr theSize, void* theData)
 {
     EM_ASM_(
     {
         Module.ctx.getBufferSubData($0, $1, HEAPU8.subarray($2, $2 + $3));
     }, theTarget, theOffset, theData, theSize);
 }
-void glCommit()
+EMSCRIPTEN_KEEPALIVE void glCommit()
 {
     EM_ASM_(
     {
@@ -22,7 +22,7 @@ void glCommit()
     });
 }
 
-EMSCRIPTEN_WEBGL_CONTEXT_HANDLE emCreateContext(const char* id)
+EMSCRIPTEN_KEEPALIVE EMSCRIPTEN_WEBGL_CONTEXT_HANDLE emCreateContext(const char* id)
 {
     EmscriptenWebGLContextAttributes attrs;
     emscripten_webgl_init_context_attributes(&attrs);
@@ -44,36 +44,36 @@ EMSCRIPTEN_WEBGL_CONTEXT_HANDLE emCreateContext(const char* id)
     return glContext; 
 }
 
-int emEnableExtension(EMSCRIPTEN_WEBGL_CONTEXT_HANDLE ctx, const char* name) {
+EMSCRIPTEN_KEEPALIVE int emEnableExtension(EMSCRIPTEN_WEBGL_CONTEXT_HANDLE ctx, const char* name) {
     return emscripten_webgl_enable_extension(ctx, name);
 }
 
-int emSwapBuffers() {
+EMSCRIPTEN_KEEPALIVE int emSwapBuffers() {
     return emscripten_webgl_commit_frame();
 }
 
 
-int emDestroyContext(EMSCRIPTEN_WEBGL_CONTEXT_HANDLE handle)
+EMSCRIPTEN_KEEPALIVE int emDestroyContext(EMSCRIPTEN_WEBGL_CONTEXT_HANDLE handle)
 {
     return emscripten_webgl_destroy_context(handle);
 }
 
-int emMakeCurrent(EMSCRIPTEN_WEBGL_CONTEXT_HANDLE ctx) {
+EMSCRIPTEN_KEEPALIVE int emMakeCurrent(EMSCRIPTEN_WEBGL_CONTEXT_HANDLE ctx) {
     return emscripten_webgl_make_context_current(ctx);
 }
 
-int emIsCurrent(EMSCRIPTEN_WEBGL_CONTEXT_HANDLE ctx) {
+EMSCRIPTEN_KEEPALIVE int emIsCurrent(EMSCRIPTEN_WEBGL_CONTEXT_HANDLE ctx) {
     return emscripten_webgl_get_current_context() == ctx;  
 }
 
 
-EMSCRIPTEN_WEBGL_CONTEXT_HANDLE emGetCurrent() {
+EMSCRIPTEN_KEEPALIVE EMSCRIPTEN_WEBGL_CONTEXT_HANDLE emGetCurrent() {
     return emscripten_webgl_get_current_context();
 }
 
 
 
-GLboolean isNextInstance(DrawElementsIndirectCommand* c0, DrawElementsIndirectCommand* c1) {
+EMSCRIPTEN_KEEPALIVE GLboolean isNextInstance(DrawElementsIndirectCommand* c0, DrawElementsIndirectCommand* c1) {
     return
         c0->firstIndex == c1->firstIndex && 
         c0->baseVertex == c1->baseVertex && 
@@ -81,7 +81,7 @@ GLboolean isNextInstance(DrawElementsIndirectCommand* c0, DrawElementsIndirectCo
         c0->baseInstance + c0->instanceCount == c1->baseInstance;
 }
 
-void glMultiDrawArrays(GLenum mode, DrawElementsIndirectCommand* indirect, int count, VertexBufferBindingInfo* bindingInfo) {
+EMSCRIPTEN_KEEPALIVE void glMultiDrawArrays(GLenum mode, DrawElementsIndirectCommand* indirect, int count, VertexBufferBindingInfo* bindingInfo) {
     GLboolean changed = 0;
     VertexAttribInfo* infos = bindingInfo->bindings;
     int attribCount = bindingInfo->bindingCount;
@@ -151,7 +151,7 @@ void glMultiDrawArrays(GLenum mode, DrawElementsIndirectCommand* indirect, int c
     }
 }
 
-void glMultiDrawArraysIndirect(GLenum mode, uint32_t indirectBuffer, int count, VertexBufferBindingInfo* bindingInfo) {
+EMSCRIPTEN_KEEPALIVE void glMultiDrawArraysIndirect(GLenum mode, uint32_t indirectBuffer, int count, VertexBufferBindingInfo* bindingInfo) {
     DrawElementsIndirectCommand* indirect = (DrawElementsIndirectCommand*)malloc(sizeof(DrawElementsIndirectCommand) * count);
     glBindBuffer(GL_PIXEL_PACK_BUFFER, indirectBuffer);
     glGetBufferSubData(GL_PIXEL_PACK_BUFFER, 0, count * sizeof(DrawElementsIndirectCommand), (void*)indirect);
@@ -161,7 +161,7 @@ void glMultiDrawArraysIndirect(GLenum mode, uint32_t indirectBuffer, int count, 
 }
 
 
-void glMultiDrawElements(GLenum mode, DrawElementsIndirectCommand* indirect, int count, GLenum indexType, VertexBufferBindingInfo* bindingInfo) {
+EMSCRIPTEN_KEEPALIVE void glMultiDrawElements(GLenum mode, DrawElementsIndirectCommand* indirect, int count, GLenum indexType, VertexBufferBindingInfo* bindingInfo) {
     GLboolean changed = 0;
     VertexAttribInfo* infos = bindingInfo->bindings;
     int attribCount = bindingInfo->bindingCount;
@@ -247,7 +247,7 @@ void glMultiDrawElements(GLenum mode, DrawElementsIndirectCommand* indirect, int
     }
 }
 
-void glMultiDrawElementsIndirect(GLenum mode, uint32_t indirectBuffer, int count, GLenum indexType, VertexBufferBindingInfo* bindingInfo) {
+EMSCRIPTEN_KEEPALIVE void glMultiDrawElementsIndirect(GLenum mode, uint32_t indirectBuffer, int count, GLenum indexType, VertexBufferBindingInfo* bindingInfo) {
     DrawElementsIndirectCommand* indirect = (DrawElementsIndirectCommand*)malloc(sizeof(DrawElementsIndirectCommand) * count);
     glBindBuffer(GL_PIXEL_PACK_BUFFER, indirectBuffer);
     glGetBufferSubData(GL_PIXEL_PACK_BUFFER, 0, count * sizeof(DrawElementsIndirectCommand), (void*)indirect);
@@ -259,7 +259,7 @@ void glMultiDrawElementsIndirect(GLenum mode, uint32_t indirectBuffer, int count
 
 
 
-void* emGetProcAddress(const char* name) {
+EMSCRIPTEN_KEEPALIVE void* emGetProcAddress(const char* name) {
     if (strcmp(name, "glGetBufferSubData") == 0) return (void*)glGetBufferSubData;
     if (strcmp(name, "glMultiDrawArrays") == 0)return (void*)glMultiDrawArrays;
     if (strcmp(name, "glMultiDrawArraysIndirect") == 0)return (void*)glMultiDrawArraysIndirect;
