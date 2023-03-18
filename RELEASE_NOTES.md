@@ -1,3 +1,6 @@
+### 1.0.0-prerelease0016
+* WebGLApplication CommandStreamMode now respected by all CompileRender overloads
+
 ### 1.0.0-prerelease0015
 * added Javascript fragments and optimized UB uploads
 

@@ -293,7 +293,7 @@ type Runtime(device : Device, defaultCommandStreamMode : CommandStreamMode) as t
 
             let mode =
                 if device.Debug then CommandStreamMode.Debug
-                else CommandStreamMode.Managed // TODO: fix native
+                else defaultCommandStreamMode
 
             new RenderTask(manager, signature, mode, objects) :> IRenderTask
 
