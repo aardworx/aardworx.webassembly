@@ -14,6 +14,30 @@ open Microsoft.FSharp.NativeInterop
 // doesn't use ELM-style updates or any kind of "model-type".
 // Please refer to the other examples for ELM-style applications.
 
+
+module Shader =
+    open FShade
+    
+    let sam =
+        samplerCube {
+            texture uniform?Skybox
+            filter Filter.MinMagMipLinear
+            addressU WrapMode.Clamp
+            addressV WrapMode.Clamp
+            addressW WrapMode.Clamp
+        }
+    let env (v : Effects.Vertex) =
+        fragment {
+            let vp = uniform.ProjTrafoInv * v.pos
+            let vp = Vec.normalize (vp.XYZ / vp.W)
+            let wd = uniform.ViewTrafoInv * V4d(vp, 0.0) |> Vec.xyz |> Vec.normalize
+            
+            let wd = V3d(wd.X, wd.Z, wd.Y)
+            
+            return sam.Sample(wd)
+        }
+    
+
 /// A utility function for creating an Overlay with a little help text.  
 let createHelpText() =
     let doc = Window.Document
@@ -94,6 +118,13 @@ let run() =
         // Since our `WebGLApplication` expects the document to be loaded we need to wait until everything is ready.
         do! Window.Document.Ready
         
+        let! bk = JSImage.load (RelativeUrl "./chapel_bk.png")
+        let! ft = JSImage.load (RelativeUrl "./chapel_ft.png")
+        let! rt = JSImage.load (RelativeUrl "./chapel_rt.png")
+        let! lf = JSImage.load (RelativeUrl "./chapel_lf.png")
+        let! dn = JSImage.load (RelativeUrl "./chapel_dn.png")
+        let! up = JSImage.load (RelativeUrl "./chapel_up.png")
+        let texture = JSTextureCube([|ft; bk; up; dn; rt; lf|], true) :> ITexture
         //
         // let msg0 = cval "Hello"
         // let msg1 = cval "World"
@@ -207,7 +238,7 @@ let run() =
                 // first off we need to set the camera
                 Sg.View (AVal.map CameraView.viewTrafo view) //((trafo, view) ||> AVal.map2 (fun m v -> m * CameraView.viewTrafo v))
                 Sg.Proj (AVal.map Frustum.projTrafo proj)
-                Sg.Trafo trafo
+                //Sg.Trafo trafo
                 //Sg.Active active
                 // for shading we simply use Aardvark.Rendering's default shaders doing transformations and 
                 // applying a simple phong-illumination with a headlight.
@@ -248,8 +279,9 @@ let run() =
                 
                 // a yellow octahedron hovering 1 unit above the teapot
                 [
-                    for x in -5.0 .. 1.0 .. 5.0 do
-                        for y in -5.0 .. 1.0 .. 5.0 do
+                    let x = 0.0 in //for x in -5.0 .. 1.0 .. 5.0 do
+                    let y = 0.0 in
+                        //for y in -5.0 .. 1.0 .. 5.0 do
                             sg {
                                 Sg.Translate(x, y, 1.0)
                                 Primitives.Octahedron(C4b.Yellow)
@@ -263,6 +295,16 @@ let run() =
                     Sg.Translate(0.0, 1.0, 0.5)
                     Sg.Text("Aardworx.Rendering.WebGL", align = TextAlignment.Center, font = Roboto.Font, color = AVal.constant C4b.White)
                 }
+                
+                
+                sg {
+                    Sg.Uniform("Skybox", AVal.constant texture)
+                    Sg.Shader {
+                        Shader.env
+                    }
+                    Primitives.ScreenQuad 0.999
+                }
+                
             }
         
         // in order to render the scene we need to compile it to a `RenderTask`
