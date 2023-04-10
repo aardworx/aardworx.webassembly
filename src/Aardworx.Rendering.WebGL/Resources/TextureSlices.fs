@@ -681,6 +681,60 @@ type TextureSliceCommandStreamExtensions private() =
                 for p in pbos do p.Dispose()
                 tex
 
+            | :? JSTextureCube as t ->
+                let size = t.Handles.[0].Size
+            
+                let levels = 
+                    if t.WantMipMaps then 1 + int (floor (Fun.Log2(max (float size.X) (float size.Y))))
+                    else 1
+                    
+                let tex = this.CreateTextureCube(TextureFormat.Rgba8, size.X, levels = levels)
+                
+                this.RunCommand (fun cmd ->
+                    cmd.BaseStream.BindTexture(TextureTarget.TextureCubeMap, tex.Handle)
+                    
+                    for i in 0 .. 5 do
+                        let t = t.Handles.[i]
+                        let target = int TextureTarget.TextureCubeMapPositiveX + i |> unbox<TextureTarget>
+                        cmd.BaseStream.TexSubImage2DJSImage(
+                            target, 0,
+                            0, 0, size.X, size.Y,
+                            PixelFormat.Rgba, PixelType.UnsignedByte, t.Handle
+                        )
+                    
+                    if levels > 1 then
+                        cmd.BaseStream.GenerateMipmap(TextureTarget.TextureCubeMap)
+                        
+                    cmd.BaseStream.BindTexture(TextureTarget.TextureCubeMap, 0u)
+                )
+                
+                tex
+                
+            | :? JSTexture as t ->
+                let size = t.Handle.Size
+                
+                let levels = 
+                    if t.WantMipMaps then 1 + int (floor (Fun.Log2(max (float size.X) (float size.Y))))
+                    else 1
+                                
+                let tex = this.CreateTexture2D(TextureFormat.Rgba8, size, levels = levels)
+                
+                this.RunCommand (fun cmd ->
+                    cmd.BaseStream.BindTexture(TextureTarget.Texture2D, tex.Handle)
+                    
+                    cmd.BaseStream.TexSubImage2DJSImage(
+                        TextureTarget.Texture2D, 0,
+                        0, 0, size.X, size.Y,
+                        PixelFormat.Rgba, PixelType.UnsignedByte, t.Handle.Handle
+                    )
+                    
+                    if levels > 1 then
+                        cmd.BaseStream.GenerateMipmap(TextureTarget.Texture2D)
+                        
+                    cmd.BaseStream.BindTexture(TextureTarget.Texture2D, 0u)
+                )
+                tex
+            
             | :? FileTexture as t ->
                 let img =
                     if System.IO.File.Exists t.FileName then

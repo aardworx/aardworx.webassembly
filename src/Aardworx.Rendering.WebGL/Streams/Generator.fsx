@@ -63,6 +63,11 @@ type MyGL =
     member _.Commit() =
         ()
 
+    [<NativeApi(EntryPoint = "glTexSubImage2DJSImage")>]
+    member _.TexSubImage2DJSImage(target : Silk.NET.OpenGLES.TextureTarget, level : int, xoffset : int, yoffset : int, width : int, height : int, format : Silk.NET.OpenGLES.PixelFormat, typ : Silk.NET.OpenGLES.PixelType, imgHandle : int) =
+        ()
+
+
 
 
 let silkNetCommands =

@@ -256,7 +256,22 @@ EMSCRIPTEN_KEEPALIVE void glMultiDrawElementsIndirect(GLenum mode, uint32_t indi
     free(indirect);
 }
 
-
+EMSCRIPTEN_KEEPALIVE void glTexSubImage2DJSImage(GLenum target, GLint level, GLint xoffset, GLint yoffset, GLint width, GLint height, GLenum format, GLenum type, int image) {
+    EM_ASM_({
+        var handle = ($0 < 0 || !aardvark.imageHandles[$0]) ? null : aardvark.imageHandles[$0];
+        var image = $0;
+        var target = $1;
+        var level = $2;
+        var xoffset = $3;
+        var yoffset = $4;
+        var width = $5;
+        var height = $6;
+        var format = $7;
+        var type = $8;
+        var gl = Module.ctx;
+        gl.texSubImage2D(target, level, xoffset, yoffset, width, height, format, type, handle);
+    }, image, target, level, xoffset, yoffset, width, height, format, type);
+}
 
 
 EMSCRIPTEN_KEEPALIVE void* emGetProcAddress(const char* name) {
@@ -266,5 +281,6 @@ EMSCRIPTEN_KEEPALIVE void* emGetProcAddress(const char* name) {
     if (strcmp(name, "glMultiDrawElements") == 0)return (void*)glMultiDrawElements;
     if (strcmp(name, "glMultiDrawElementsIndirect") == 0)return (void*)glMultiDrawElementsIndirect;
     if (strcmp(name, "glCommit") == 0) return (void*)glCommit;
+    if (strcmp(name, "glTexSubImage2DJSImage") == 0) return (void*)glTexSubImage2DJSImage;
     return emscripten_webgl_get_proc_address(name);
 }

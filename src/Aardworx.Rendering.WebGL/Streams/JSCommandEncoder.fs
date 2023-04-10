@@ -2043,3 +2043,16 @@ type JSCommandEncoder(device : Device) =
         appendCommand $"Module._glMultiDrawElements(Module.HEAPU32[{``mode`` / 4n}], Module.HEAP32[{``indirect`` / 4n}], Module.HEAP32[{``count`` / 4n}], Module.HEAPU32[{``indexType`` / 4n}], Module.HEAP32[{``bindingInfo`` / 4n}]);"
     override this.Commit() = 
         appendCommand $"Module._glCommit();"
+    override this.TexSubImage2DJSImage(``target`` : TextureTarget, ``level`` : int, ``xoffset`` : int, ``yoffset`` : int, ``width`` : int, ``height`` : int, ``format`` : PixelFormat, ``typ`` : PixelType, ``imgHandle`` : int) = 
+        appendCommand $"Module._glTexSubImage2DJSImage({int ``target``}, {``level``}, {``xoffset``}, {``yoffset``}, {``width``}, {``height``}, {int ``format``}, {int ``typ``}, {``imgHandle``});"
+    override this.TexSubImage2DJSImage(``target`` : aptr<TextureTarget>, ``level`` : aptr<int>, ``xoffset`` : aptr<int>, ``yoffset`` : aptr<int>, ``width`` : aptr<int>, ``height`` : aptr<int>, ``format`` : aptr<PixelFormat>, ``typ`` : aptr<PixelType>, ``imgHandle`` : aptr<int>) = 
+        let ``target``= this.Use(``target``).Pointer
+        let ``level``= this.Use(``level``).Pointer
+        let ``xoffset``= this.Use(``xoffset``).Pointer
+        let ``yoffset``= this.Use(``yoffset``).Pointer
+        let ``width``= this.Use(``width``).Pointer
+        let ``height``= this.Use(``height``).Pointer
+        let ``format``= this.Use(``format``).Pointer
+        let ``typ``= this.Use(``typ``).Pointer
+        let ``imgHandle``= this.Use(``imgHandle``).Pointer
+        appendCommand $"Module._glTexSubImage2DJSImage(Module.HEAPU32[{``target`` / 4n}], Module.HEAP32[{``level`` / 4n}], Module.HEAP32[{``xoffset`` / 4n}], Module.HEAP32[{``yoffset`` / 4n}], Module.HEAP32[{``width`` / 4n}], Module.HEAP32[{``height`` / 4n}], Module.HEAPU32[{``format`` / 4n}], Module.HEAPU32[{``typ`` / 4n}], Module.HEAP32[{``imgHandle`` / 4n}]);"

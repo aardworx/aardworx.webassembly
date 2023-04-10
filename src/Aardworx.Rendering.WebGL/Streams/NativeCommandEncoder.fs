@@ -6068,6 +6068,54 @@ type NativeCommandEncoder(device : Device) =
         NativePtr.write (NativePtr.ofNativeInt current) 488us
         current <- current + 2n
         len <- len + 2
+    override this.TexSubImage2DJSImage(``target`` : TextureTarget, ``level`` : int, ``xoffset`` : int, ``yoffset`` : int, ``width`` : int, ``height`` : int, ``format`` : PixelFormat, ``typ`` : PixelType, ``imgHandle`` : int) =
+        let e = len + 38
+        if e > capacity then resize (Fun.NextPowerOfTwo e)
+        NativePtr.write (NativePtr.ofNativeInt current) 489us
+        current <- current + 2n
+        NativePtr.write (NativePtr.ofNativeInt current) ``target``
+        current <- current + 4n
+        NativePtr.write (NativePtr.ofNativeInt current) ``level``
+        current <- current + 4n
+        NativePtr.write (NativePtr.ofNativeInt current) ``xoffset``
+        current <- current + 4n
+        NativePtr.write (NativePtr.ofNativeInt current) ``yoffset``
+        current <- current + 4n
+        NativePtr.write (NativePtr.ofNativeInt current) ``width``
+        current <- current + 4n
+        NativePtr.write (NativePtr.ofNativeInt current) ``height``
+        current <- current + 4n
+        NativePtr.write (NativePtr.ofNativeInt current) ``format``
+        current <- current + 4n
+        NativePtr.write (NativePtr.ofNativeInt current) ``typ``
+        current <- current + 4n
+        NativePtr.write (NativePtr.ofNativeInt current) ``imgHandle``
+        current <- current + 4n
+        len <- len + 38
+    override this.TexSubImage2DJSImage(``target`` : aptr<TextureTarget>, ``level`` : aptr<int>, ``xoffset`` : aptr<int>, ``yoffset`` : aptr<int>, ``width`` : aptr<int>, ``height`` : aptr<int>, ``format`` : aptr<PixelFormat>, ``typ`` : aptr<PixelType>, ``imgHandle`` : aptr<int>) =
+        let e = len + 38
+        if e > capacity then resize (Fun.NextPowerOfTwo e)
+        NativePtr.write (NativePtr.ofNativeInt current) 490us
+        current <- current + 2n
+        NativePtr.write (NativePtr.ofNativeInt current) (this.Use(``target``).Pointer)
+        current <- current + 4n
+        NativePtr.write (NativePtr.ofNativeInt current) (this.Use(``level``).Pointer)
+        current <- current + 4n
+        NativePtr.write (NativePtr.ofNativeInt current) (this.Use(``xoffset``).Pointer)
+        current <- current + 4n
+        NativePtr.write (NativePtr.ofNativeInt current) (this.Use(``yoffset``).Pointer)
+        current <- current + 4n
+        NativePtr.write (NativePtr.ofNativeInt current) (this.Use(``width``).Pointer)
+        current <- current + 4n
+        NativePtr.write (NativePtr.ofNativeInt current) (this.Use(``height``).Pointer)
+        current <- current + 4n
+        NativePtr.write (NativePtr.ofNativeInt current) (this.Use(``format``).Pointer)
+        current <- current + 4n
+        NativePtr.write (NativePtr.ofNativeInt current) (this.Use(``typ``).Pointer)
+        current <- current + 4n
+        NativePtr.write (NativePtr.ofNativeInt current) (this.Use(``imgHandle``).Pointer)
+        current <- current + 4n
+        len <- len + 38
     override x.CopyDD(src : aptr<'a>, dst : aptr<'a>, size : aptr<nativeint>) =
         ensureFree 14
         x.Write(512us)

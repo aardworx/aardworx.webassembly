@@ -496,6 +496,8 @@ typedef enum {
     MultiDrawElements = 486,
     MultiDrawElementsI = 487,
     Commit = 488,
+    TexSubImage2DJSImage = 489,
+    TexSubImage2DJSImageI = 490,
     CopyDD = 512,
     CopyDI = 513,
     CopyID = 514,
@@ -2481,6 +2483,14 @@ int emInterpret(intptr_t code, int length, intptr_t stack) {
         case Commit:
             glCommit();
             code += 0;
+            break;
+        case TexSubImage2DJSImage:
+            glTexSubImage2DJSImage(*(GLenum*)code, *(int*)(code + 4), *(int*)(code + 8), *(int*)(code + 12), *(int*)(code + 16), *(int*)(code + 20), *(GLenum*)(code + 24), *(GLenum*)(code + 28), *(int*)(code + 32));
+            code += 36;
+            break;
+        case TexSubImage2DJSImageI:
+            glTexSubImage2DJSImage(**(GLenum**)code, **(int**)(code + 4), **(int**)(code + 8), **(int**)(code + 12), **(int**)(code + 16), **(int**)(code + 20), **(GLenum**)(code + 24), **(GLenum**)(code + 28), **(int**)(code + 32));
+            code += 36;
             break;
         case CopyDD:
             memcpy(*(void**)(code+4), *(void**)code, **(size_t**)(code+8));

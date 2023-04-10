@@ -56,4 +56,7 @@ void glMultiDrawArrays(GLenum mode, DrawElementsIndirectCommand* indirectBuffer,
 void glMultiDrawElementsIndirect(GLenum mode, uint32_t indirectBuffer, int count, GLenum indexType, VertexBufferBindingInfo* bindingInfo);
 void glMultiDrawElements(GLenum mode, DrawElementsIndirectCommand* indirectBuffer, int count, GLenum indexType, VertexBufferBindingInfo* bindingInfo);
 
+void glTexSubImage2DJSImage(GLenum target, GLint level, GLint xoffset, GLint yoffset, GLint width, GLint height, GLenum format, GLenum type, int image);
+
+
 #endif

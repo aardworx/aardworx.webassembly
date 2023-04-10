@@ -131,6 +131,42 @@ module private JSHelpers =
                 });
             }
 
+            var currentImageId = 0;
+            aardvark.imageHandles = [];
+
+            aardvark.genImage = function() {
+                let img = new Image();
+                img.crossOrigin = "anonymous";
+                let id = currentImageId++;
+                aardvark.imageHandles[id] = img;
+                return id | 0;
+            };
+
+            aardvark.deleteImage = function(img) {
+                if(img < 0 || !aardvark.imageHandles[img]) return;
+                delete aardvark.imageHandles[img];
+            };
+            
+            aardvark.imgLoad = function(img, path, callback) {
+            
+                let ret = function(w, h) {
+                    callback.invokeMethod('Invoke', w, h);
+                };
+            
+                if(img < 0 || !aardvark.imageHandles[img]) ret(-1, -1);
+                
+                let self = aardvark.imageHandles[img];
+                self.onload = function() {
+                    ret((self.width | 0), (self.height | 0));
+                };
+
+                self.oneror = function() {
+                    ret(-1, -1);
+                };
+
+                self.src = path;
+            };
+
 
         }
         """
@@ -310,6 +346,12 @@ module JSActions =
         [<JSInvokable("Invoke")>]
         member x.Invoke(data : int, len : int) = action (nativeint data) len
         
+    [<Sealed>]       
+    type JSActionIntInt(action : int -> int -> unit) =
+        
+        [<JSInvokable("Invoke")>]
+        member x.Invoke(w : int, h : int) = action w h
+        
     [<Sealed>]
     type JSActionStringString(action : string -> string -> unit) =
         
@@ -348,3 +390,74 @@ type JsObj(r : IJSInProcessObjectReference) =
   
     static member New(fields : #seq<string * obj>) =
         newObj fields
+        
+type JSImage(handle : int, size : V2i) =
+    member x.Handle = handle
+    member x.Size = size
+        
+    member x.Dispose() =
+        runtime.Value.InvokeVoid("aardvark.deleteImage", handle)
+        
+    interface System.IDisposable with
+        member x.Dispose() = x.Dispose()
+        
+module JSImage =
+    [<AutoOpen>]
+    module private Interop = 
+        let genImage () : int =
+            runtime.Value.Invoke<int>("aardvark.genImage")
+            
+        let deleteImage (handle : int) =
+            runtime.Value.InvokeVoid("aardvark.deleteImage", handle)
+        
+        let imgLoad (handle : int) (url : string) =
+            Async.FromContinuations (fun (success, error, _cancel) ->
+                let mutable ref : DotNetObjectReference<JSActions.JSActionIntInt> = null
+                let action =
+                    JSActions.JSActionIntInt(fun w h ->
+                        ref.Dispose()
+                        if w > 0 && h > 0 then
+                            success (V2i(w,h))
+                        else
+                            error (System.Exception (sprintf "could not load image from %A" url))
+                    )
+                ref <- DotNetObjectReference.Create(action)
+                runtime.Value.InvokeVoid("aardvark.imgLoad", handle, url, ref)
+                 
+            )
+        
+    let load (url : string) =
+        task {
+            let handle = genImage()
+            let! res = imgLoad handle url
+            return new JSImage(handle, res)
+        }
+        
+    let tryLoad (url : string) =
+        task {
+            let handle = genImage()
+            try
+                let! res = imgLoad handle url
+                return Some (new JSImage(handle, res))
+            with _ ->
+                runtime.Value.InvokeVoid("aardvark.deleteImage", handle)
+                return None
+        }
+        
+        
+
+type JSTexture (handle : JSImage, wantMipMaps : bool) =
+    member x.Handle = handle
+    member x.WantMipMaps = wantMipMaps
+    interface Aardvark.Rendering.ITexture with
+        member x.WantMipMaps = wantMipMaps
+    
+    
+type JSTextureCube (handles : JSImage[], wantMipMaps : bool) =
+    member x.Handles = handles
+    member x.WantMipMaps = wantMipMaps
+    interface Aardvark.Rendering.ITexture with
+        member x.WantMipMaps = wantMipMaps
+    
+    
+        

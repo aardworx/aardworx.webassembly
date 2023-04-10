@@ -512,6 +512,8 @@ type internal GLFunctionPointers() =
     val mutable public glMultiDrawElements : nativeint
     [<DefaultValue>]
     val mutable public glCommit : nativeint
+    [<DefaultValue>]
+    val mutable public glTexSubImage2DJSImage : nativeint
 
 
 module internal GLFunctionPointers =
@@ -774,6 +776,7 @@ module internal GLFunctionPointers =
         res.glMultiDrawElementsIndirect <- getProc ctx ["glMultiDrawElementsIndirect"; "glMultiDrawElementsIndirect"; "glMultiDrawElementsIndirectAMD"; "glMultiDrawElementsIndirectEXT"]
         res.glMultiDrawElements <- getProc ctx ["glMultiDrawElements"; "glMultiDrawElements"; "glMultiDrawElementsEXT"]
         res.glCommit <- getProc ctx ["glCommit"]
+        res.glTexSubImage2DJSImage <- getProc ctx ["glTexSubImage2DJSImage"]
         res
 
     let get (ctx : Silk.NET.Core.Contexts.INativeContext) =
@@ -1278,6 +1281,8 @@ module internal GLDelegates =
     type glMultiDrawElementsDelegate = delegate of ``mode`` : PrimitiveType * ``indirect`` : nativeint * ``count`` : int * ``indexType`` : DrawElementsType * ``bindingInfo`` : nativeint -> unit
     [<SuppressUnmanagedCodeSecurity>]
     type glCommitDelegate = delegate of unit -> unit
+    [<SuppressUnmanagedCodeSecurity>]
+    type glTexSubImage2DJSImageDelegate = delegate of ``target`` : TextureTarget * ``level`` : int * ``xoffset`` : int * ``yoffset`` : int * ``width`` : int * ``height`` : int * ``format`` : PixelFormat * ``typ`` : PixelType * ``imgHandle`` : int -> unit
     type GLDelegates() =
         [<DefaultValue>]
         val mutable public glUniform2iv : glUniform2ivDelegate
@@ -1775,6 +1780,8 @@ module internal GLDelegates =
         val mutable public glMultiDrawElements : glMultiDrawElementsDelegate
         [<DefaultValue>]
         val mutable public glCommit : glCommitDelegate
+        [<DefaultValue>]
+        val mutable public glTexSubImage2DJSImage : glTexSubImage2DJSImageDelegate
     let private cache = System.Collections.Concurrent.ConcurrentDictionary<Silk.NET.Core.Contexts.INativeContext, GLDelegates>()
     let private getDelegate<'t> (ptr : nativeint) =
         if ptr = 0n then Unchecked.defaultof<'t>
@@ -2031,6 +2038,7 @@ module internal GLDelegates =
             res.glMultiDrawElementsIndirect <- if ptrs.glMultiDrawElementsIndirect = 0n then glMultiDrawElementsIndirectDelegate(fun _ _ _ _ _ -> failwith "glMultiDrawElementsIndirect not found") else getDelegate<glMultiDrawElementsIndirectDelegate> ptrs.glMultiDrawElementsIndirect
             res.glMultiDrawElements <- if ptrs.glMultiDrawElements = 0n then glMultiDrawElementsDelegate(fun _ _ _ _ _ -> failwith "glMultiDrawElements not found") else getDelegate<glMultiDrawElementsDelegate> ptrs.glMultiDrawElements
             res.glCommit <- if ptrs.glCommit = 0n then glCommitDelegate(fun () -> failwith "glCommit not found") else getDelegate<glCommitDelegate> ptrs.glCommit
+            res.glTexSubImage2DJSImage <- if ptrs.glTexSubImage2DJSImage = 0n then glTexSubImage2DJSImageDelegate(fun _ _ _ _ _ _ _ _ _ -> failwith "glTexSubImage2DJSImage not found") else getDelegate<glTexSubImage2DJSImageDelegate> ptrs.glTexSubImage2DJSImage
             res
         )
 type ManagedCommandEncoder(device : Device) =
@@ -4083,6 +4091,19 @@ type ManagedCommandEncoder(device : Device) =
         commands.Add <| fun () -> gl.glMultiDrawElements.Invoke(``mode``.Value, ``indirect``.Value, ``count``.Value, ``indexType``.Value, ``bindingInfo``.Value)
     override this.Commit() = 
         commands.Add <| fun () -> gl.glCommit.Invoke()
+    override this.TexSubImage2DJSImage(``target`` : TextureTarget, ``level`` : int, ``xoffset`` : int, ``yoffset`` : int, ``width`` : int, ``height`` : int, ``format`` : PixelFormat, ``typ`` : PixelType, ``imgHandle`` : int) = 
+        commands.Add <| fun () -> gl.glTexSubImage2DJSImage.Invoke(``target``, ``level``, ``xoffset``, ``yoffset``, ``width``, ``height``, ``format``, ``typ``, ``imgHandle``)
+    override this.TexSubImage2DJSImage(``target`` : aptr<TextureTarget>, ``level`` : aptr<int>, ``xoffset`` : aptr<int>, ``yoffset`` : aptr<int>, ``width`` : aptr<int>, ``height`` : aptr<int>, ``format`` : aptr<PixelFormat>, ``typ`` : aptr<PixelType>, ``imgHandle`` : aptr<int>) = 
+        let ``target`` = this.Use ``target``
+        let ``level`` = this.Use ``level``
+        let ``xoffset`` = this.Use ``xoffset``
+        let ``yoffset`` = this.Use ``yoffset``
+        let ``width`` = this.Use ``width``
+        let ``height`` = this.Use ``height``
+        let ``format`` = this.Use ``format``
+        let ``typ`` = this.Use ``typ``
+        let ``imgHandle`` = this.Use ``imgHandle``
+        commands.Add <| fun () -> gl.glTexSubImage2DJSImage.Invoke(``target``.Value, ``level``.Value, ``xoffset``.Value, ``yoffset``.Value, ``width``.Value, ``height``.Value, ``format``.Value, ``typ``.Value, ``imgHandle``.Value)
 type internal ImmediateCommandEncoder(device : Device, currentGL : GL) =
     inherit CommandEncoder(device)
     let gl = GLDelegates.get device.Context
@@ -6051,6 +6072,19 @@ type internal ImmediateCommandEncoder(device : Device, currentGL : GL) =
         gl.glMultiDrawElements.Invoke(``mode``.Value, ``indirect``.Value, ``count``.Value, ``indexType``.Value, ``bindingInfo``.Value)
     override this.Commit() = 
         gl.glCommit.Invoke()
+    override this.TexSubImage2DJSImage(``target`` : TextureTarget, ``level`` : int, ``xoffset`` : int, ``yoffset`` : int, ``width`` : int, ``height`` : int, ``format`` : PixelFormat, ``typ`` : PixelType, ``imgHandle`` : int) = 
+        gl.glTexSubImage2DJSImage.Invoke(``target``, ``level``, ``xoffset``, ``yoffset``, ``width``, ``height``, ``format``, ``typ``, ``imgHandle``)
+    override this.TexSubImage2DJSImage(``target`` : aptr<TextureTarget>, ``level`` : aptr<int>, ``xoffset`` : aptr<int>, ``yoffset`` : aptr<int>, ``width`` : aptr<int>, ``height`` : aptr<int>, ``format`` : aptr<PixelFormat>, ``typ`` : aptr<PixelType>, ``imgHandle`` : aptr<int>) = 
+        this.Acquire ``target``
+        this.Acquire ``level``
+        this.Acquire ``xoffset``
+        this.Acquire ``yoffset``
+        this.Acquire ``width``
+        this.Acquire ``height``
+        this.Acquire ``format``
+        this.Acquire ``typ``
+        this.Acquire ``imgHandle``
+        gl.glTexSubImage2DJSImage.Invoke(``target``.Value, ``level``.Value, ``xoffset``.Value, ``yoffset``.Value, ``width``.Value, ``height``.Value, ``format``.Value, ``typ``.Value, ``imgHandle``.Value)
 type DebugCommandEncoder(device : Device) =
     inherit CommandEncoder(device)
     let gl = GLDelegates.get device.Context
@@ -9137,3 +9171,20 @@ type DebugCommandEncoder(device : Device) =
     override this.Commit() = 
         let run() = gl.glCommit.Invoke()
         commands.Add(((fun () -> "Commit"), run))
+    override this.TexSubImage2DJSImage(``target`` : TextureTarget, ``level`` : int, ``xoffset`` : int, ``yoffset`` : int, ``width`` : int, ``height`` : int, ``format`` : PixelFormat, ``typ`` : PixelType, ``imgHandle`` : int) = 
+        let run() = gl.glTexSubImage2DJSImage.Invoke(``target``, ``level``, ``xoffset``, ``yoffset``, ``width``, ``height``, ``format``, ``typ``, ``imgHandle``)
+        let name() = sprintf "TexSubImage2DJSImage(%A, %A, %A, %A, %A, %A, %A, %A, %A)" ``target`` ``level`` ``xoffset`` ``yoffset`` ``width`` ``height`` ``format`` ``typ`` ``imgHandle``
+        commands.Add((name, run))
+    override this.TexSubImage2DJSImage(``target`` : aptr<TextureTarget>, ``level`` : aptr<int>, ``xoffset`` : aptr<int>, ``yoffset`` : aptr<int>, ``width`` : aptr<int>, ``height`` : aptr<int>, ``format`` : aptr<PixelFormat>, ``typ`` : aptr<PixelType>, ``imgHandle`` : aptr<int>) = 
+        let ``target`` = this.Use ``target``
+        let ``level`` = this.Use ``level``
+        let ``xoffset`` = this.Use ``xoffset``
+        let ``yoffset`` = this.Use ``yoffset``
+        let ``width`` = this.Use ``width``
+        let ``height`` = this.Use ``height``
+        let ``format`` = this.Use ``format``
+        let ``typ`` = this.Use ``typ``
+        let ``imgHandle`` = this.Use ``imgHandle``
+        let run() = gl.glTexSubImage2DJSImage.Invoke(``target``.Value, ``level``.Value, ``xoffset``.Value, ``yoffset``.Value, ``width``.Value, ``height``.Value, ``format``.Value, ``typ``.Value, ``imgHandle``.Value)
+        let name() = sprintf "TexSubImage2DJSImage(%A, %A, %A, %A, %A, %A, %A, %A, %A)" (``target``.Value) (``level``.Value) (``xoffset``.Value) (``yoffset``.Value) (``width``.Value) (``height``.Value) (``format``.Value) (``typ``.Value) (``imgHandle``.Value)
+        commands.Add((name, run))

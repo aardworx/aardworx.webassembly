@@ -507,3 +507,5 @@ type CommandEncoder(device : Device) =
     abstract MultiDrawElements : ``mode`` : PrimitiveType * ``indirect`` : nativeint * ``count`` : int * ``indexType`` : DrawElementsType * ``bindingInfo`` : nativeint -> unit
     abstract MultiDrawElements : ``mode`` : aptr<PrimitiveType> * ``indirect`` : aptr<nativeint> * ``count`` : aptr<int> * ``indexType`` : aptr<DrawElementsType> * ``bindingInfo`` : aptr<nativeint> -> unit
     abstract Commit : unit -> unit
+    abstract TexSubImage2DJSImage : ``target`` : TextureTarget * ``level`` : int * ``xoffset`` : int * ``yoffset`` : int * ``width`` : int * ``height`` : int * ``format`` : PixelFormat * ``typ`` : PixelType * ``imgHandle`` : int -> unit
+    abstract TexSubImage2DJSImage : ``target`` : aptr<TextureTarget> * ``level`` : aptr<int> * ``xoffset`` : aptr<int> * ``yoffset`` : aptr<int> * ``width`` : aptr<int> * ``height`` : aptr<int> * ``format`` : aptr<PixelFormat> * ``typ`` : aptr<PixelType> * ``imgHandle`` : aptr<int> -> unit
