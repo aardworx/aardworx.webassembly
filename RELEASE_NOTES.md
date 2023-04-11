@@ -1,3 +1,6 @@
+### 1.0.0-prerelease0017
+* JSImage and JSTexture
+
 ### 1.0.0-prerelease0016
 * WebGLApplication CommandStreamMode now respected by all CompileRender overloads
 
