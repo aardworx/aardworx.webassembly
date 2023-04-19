@@ -1,3 +1,6 @@
+### 1.0.0-prerelease0018
+* BindVertexArray(0) after executing FragmentProgram
+
 ### 1.0.0-prerelease0017
 * JSImage and JSTexture
 

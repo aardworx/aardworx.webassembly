@@ -208,6 +208,12 @@ let run() =
         let app = new WebGLApplication(CommandStreamMode.Managed)
         let ctrl = createRenderControl app
 
+        let time =
+            let sw = System.Diagnostics.Stopwatch.StartNew()
+            ctrl.Time |> AVal.map (fun _ -> sw.Elapsed)
+        
+        
+        
         // the camera can be controlled with Aardvark.Application's DefaultCameraController
         let view =
             CameraView.lookAt (V3d(3,4,3)) V3d.Zero V3d.OOI
@@ -218,28 +224,32 @@ let run() =
                 Frustum.perspective 90.0 0.1 100.0 (float s.X / float s.Y)
             )
             
-        let sw = System.Diagnostics.Stopwatch.StartNew()
-        let active =
-            ctrl.Time |> AVal.map (fun _ ->
-                if sw.Elapsed.TotalSeconds % 1.0 > 0.5 then
-                    true
-                else
-                    false
-            )
+        
 
         let trafo =
-            ctrl.Time |> AVal.map (fun _ ->
-                Trafo3d.RotationZ sw.Elapsed.TotalSeconds    
+            time |> AVal.map (fun t ->
+                Trafo3d.RotationZ t.TotalSeconds
             )
+        
+        let gridSize = cval 2
+        
+        
+        ctrl.Keyboard.DownWithRepeats.Values.Add (fun k ->
+            match k with
+            | Keys.OemPlus -> transact (fun () -> gridSize.Value <- gridSize.Value + 1)
+            | Keys.OemMinus -> transact (fun () -> gridSize.Value <- max 0 (gridSize.Value - 1))
+            | _ -> ()
+        )
         
         // let's start to setup a scene.
         let scene =
             sg {
                 // first off we need to set the camera
-                Sg.View (AVal.map CameraView.viewTrafo view) //((trafo, view) ||> AVal.map2 (fun m v -> m * CameraView.viewTrafo v))
+                Sg.View (AVal.map CameraView.viewTrafo view) 
                 Sg.Proj (AVal.map Frustum.projTrafo proj)
-                //Sg.Trafo trafo
-                //Sg.Active active
+                
+                Sg.Trafo trafo
+                
                 // for shading we simply use Aardvark.Rendering's default shaders doing transformations and 
                 // applying a simple phong-illumination with a headlight.
                 Sg.Shader {
@@ -260,40 +270,31 @@ let run() =
                     Sg.Translate(3.0, 0.0, 0.0)
                     Primitives.Teapot(C4b.Green)
                 }
-                // active |> ASet.bind (function
-                //     | true ->
-                //         ASet.single (
-                //             sg {
-                //                 Sg.Translate(3.0, 0.0, 0.0)
-                //                 Primitives.Octahedron(C4b.Yellow)
-                //             }
-                //         )
-                //     | false ->
-                //         ASet.single (
-                //             sg {
-                //                 Sg.Translate(3.0, 0.0, 0.0)
-                //                 Primitives.Teapot(C4b.Green)
-                //             }
-                //         )
                 
+                sg {
+                    Sg.Translate(V3d(0.0, 0.0, 3.0))
+                    Primitives.Sphere(0.5, C4b.Yellow)
+                }
                 
-                // a yellow octahedron hovering 1 unit above the teapot
-                [
-                    let x = 0.0 in //for x in -5.0 .. 1.0 .. 5.0 do
-                    let y = 0.0 in
-                        //for y in -5.0 .. 1.0 .. 5.0 do
-                            sg {
-                                Sg.Translate(x, y, 1.0)
-                                Primitives.Octahedron(C4b.Yellow)
-                            }
-                ]
+                sg {
+                    Sg.Translate(gridSize |> AVal.map (fun s -> -V3d(s,s, 0.0) / 2.0))
+                    aset {
+                        for x in ASet.range (AVal.constant 1) gridSize do
+                            for y in ASet.range (AVal.constant 1) gridSize do
+                                sg {
+                                    Sg.Translate(x, y, 1.0)
+                                    Primitives.Sphere(0.5, C4b.Yellow, tessellation = 15)
+                                }
+                    }
+                }
+           
                 
                 // a text (using our font from above) 
                 sg {
                     Sg.Scale 0.3
                     Sg.Trafo (Trafo3d.RotationX Constant.PiHalf)
                     Sg.Translate(0.0, 1.0, 0.5)
-                    Sg.Text("Aardworx.Rendering.WebGL", align = TextAlignment.Center, font = Roboto.Font, color = AVal.constant C4b.White)
+                    Sg.Text(time |> AVal.map string, align = TextAlignment.Center, font = Roboto.Font, color = AVal.constant C4b.White)
                 }
                 
                 

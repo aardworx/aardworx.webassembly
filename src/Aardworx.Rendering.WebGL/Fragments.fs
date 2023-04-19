@@ -197,7 +197,7 @@ type NativeFragmentProgram(device : Device) =
         x.InsertAfter null
         
     member x.Run(token : AdaptiveToken) =
-        device.Run(fun _gl ->
+        device.Run(fun gl ->
             state.CurrentContext <- WebGLContext.Current
 
             x.EvaluateAlways token (fun token ->
@@ -214,6 +214,7 @@ type NativeFragmentProgram(device : Device) =
                 if emRun(first.Pointer, NativePtr.toNativeInt state.TemporaryStorage) <> 0 then
                     failf "CommandProgram execution failed"
             )
+            gl.BindVertexArray 0u
         )
 
 
@@ -405,6 +406,7 @@ type ManagedFragmentProgram(device : Device, mode : CommandStreamMode) =
                         cnt <- cnt + 1
                 )
             )
+            gl.BindVertexArray 0u
         )
 
     member x.Dispose() =
@@ -614,6 +616,7 @@ type JSFragmentProgram(device : Device) =
                         runner.Invoke("run", first.JsObj.Reference, self.Reference)
                 )
             )
+            gl.BindVertexArray 0u
         )
 
     member x.Dispose() =

@@ -109,7 +109,8 @@ type RenderObjectCommandExtensions private() =
         for KeyValue(i, (t, s)) in o.Samplers do
             this.SetTexture(i, t)
             this.SetSampler(i, s)
-        if lineModes.Contains o.Mode then this.SetLineWidth(o.LineWidth)
+        if lineModes.Contains o.Mode then
+            this.SetLineWidth(o.LineWidth)
 
         let calls =
             if o.IsActive.IsConstant then
@@ -123,6 +124,7 @@ type RenderObjectCommandExtensions private() =
                     o.IsActive |> AVal.bind (function true -> calls | _ -> AVal.constant (IndirectBuffer.ofList [])) |> DrawCalls.Indirect
 
         this.Draw(o.Mode, o.IsIndexed, calls)
+
         
     [<Extension>]
     static member Render(this : CommandStream, prev : PreparedRenderObject, o : PreparedRenderObject) =
