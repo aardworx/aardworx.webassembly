@@ -9,6 +9,7 @@
   </PropertyGroup>
   <ItemGroup>
     <None Include="paket.references" />
+    <None Include="paket.template" />
     <Compile Include="BlazorSocket.fs" />
     <Compile Include="RenderControlProperties.fs" />
     <Compile Include="Boot.fs" />

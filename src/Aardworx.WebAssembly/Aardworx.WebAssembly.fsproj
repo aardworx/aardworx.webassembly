@@ -9,6 +9,7 @@
     </PropertyGroup>
     <ItemGroup>
         <None Include="paket.references" />
+        <None Include="paket.template" />
         <None Include="Utilities\CoreUtilities.c" />
         <Compile Include="Utilities\CoreUtilities.fs" />
         <Compile Include="Utilities\Log.fs" />

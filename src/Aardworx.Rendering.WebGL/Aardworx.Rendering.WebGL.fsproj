@@ -9,6 +9,8 @@
       <OutputPath>..\..\bin\$(Configuration)\</OutputPath>
     </PropertyGroup>
     <ItemGroup>
+        <None Include="paket.references" />
+        <None Include="paket.template" />
         <None Include="Aardworx.Rendering.WebGL.targets" />
         <None Include="Native\WebGL.h" />
         <None Include="Native\WebGL.c" />

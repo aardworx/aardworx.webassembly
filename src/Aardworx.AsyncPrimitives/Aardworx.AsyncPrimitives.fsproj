@@ -12,6 +12,7 @@
     <Compile Include="Signals.fs" />
     <Compile Include="Collections.fs" />
     <Content Include="paket.references" />
+    <None Include="paket.template" />
   </ItemGroup>
   <Import Project="..\..\.paket\Paket.Restore.targets" />
 </Project>
