@@ -5,8 +5,10 @@
       <WasmBuildNative>true</WasmBuildNative>
       <DisableImplicitFSharpCoreReference>true</DisableImplicitFSharpCoreReference>
       <OutputPath>..\..\bin\$(Configuration)\</OutputPath>
+      <IsTrimmable>false</IsTrimmable>
     </PropertyGroup>
     <ItemGroup>
+        <None Include="paket.references" />
         <None Include="Utilities\CoreUtilities.c" />
         <Compile Include="Utilities\CoreUtilities.fs" />
         <Compile Include="Utilities\Log.fs" />
@@ -14,6 +16,10 @@
         <None Include="Aardworx.WebAssembly.targets" />
         <Compile Include="Browser.fs" />
         <Compile Include="ApplicationInterop.fs" />
+        <Compile Include="Worker.fs" />
+    </ItemGroup>
+    <ItemGroup>
+      <ProjectReference Include="..\Aardworx.AsyncPrimitives\Aardworx.AsyncPrimitives.fsproj" />
     </ItemGroup>
     <Import Project="..\..\.paket\Paket.Restore.targets" />
 </Project>

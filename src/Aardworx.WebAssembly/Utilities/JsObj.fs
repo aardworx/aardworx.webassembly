@@ -53,9 +53,18 @@ module private JSHelpers =
             };
 
             aardvark.addEventListener = function (target, name, callback, phase) {
-                const handler = { handleEvent: function (a) { callback.invokeMethod('Invoke', DotNet.createJSObjectReference(a)); } };
+                const handler =
+                    {
+                        handleEvent: function (a) {
+                            const r = DotNet.createJSObjectReference(a);
+                            callback.invokeMethod('Invoke', r);
+                            DotNet.disposeJSObjectReference(r);
+                        }
+                    };
                 target.addEventListener(name, handler, phase);
-                return DotNet.createJSObjectReference({ dispose: function() { target.removeEventListener(name, handler, phase); } });
+                let selfRef = null;
+                selfRef = DotNet.createJSObjectReference({ dispose: function() { if(selfRef) { DotNet.disposeJSObjectReference(selfRef); } target.removeEventListener(name, handler, phase); } });
+                return selfRef;
             };
 
             aardvark.requestAnimationFrame = function (callback) {

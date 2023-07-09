@@ -5,8 +5,10 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <DisableImplicitFSharpCoreReference>true</DisableImplicitFSharpCoreReference>
     <OutputPath>..\..\bin\$(Configuration)\</OutputPath>
+    <IsTrimmable>false</IsTrimmable>
   </PropertyGroup>
   <ItemGroup>
+    <None Include="paket.references" />
     <Compile Include="BlazorSocket.fs" />
     <Compile Include="RenderControlProperties.fs" />
     <Compile Include="Boot.fs" />

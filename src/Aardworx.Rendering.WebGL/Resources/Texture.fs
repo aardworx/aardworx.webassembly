@@ -237,7 +237,10 @@ type DeviceTextureExtensions private() =
                                     gl.TexStorage3D(target, uint32 levels, ifmt, uint32 size.X, uint32 size.Y, uint32 (6 * layers))
 
                             | TextureDimension.Texture3D ->
-                                gl.TexStorage3D(target, uint32 levels, ifmt, uint32 size.X, uint32 size.Y, uint32 size.Z)
+                                
+                                gl.TexImage3D(target, 0, int ifmt, uint32 size.X, uint32 size.Y, uint32 size.Z, 0, PixelFormat.Red, PixelType.UnsignedShort, VoidPtr.zero)
+                                
+                                //gl.TexStorage3D(target, uint32 levels, ifmt, uint32 size.X, uint32 size.Y, uint32 size.Z)
 
                             | dim ->
                                 failwithf "bad TextureDimension: %A" dim

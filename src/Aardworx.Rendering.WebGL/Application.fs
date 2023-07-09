@@ -421,7 +421,7 @@ type WebGLApplication(commandStreamMode : CommandStreamMode) =
         """
             (function() {
                 window.compileBlit = function(canvas) {
-                    let gl = canvas.getContext("webgl2", { antialias: false, premultipliedAlpha: false, alpha: true });
+                    let gl = canvas.getContext("webgl2", { antialias: false, premultipliedAlpha: true, alpha: true });
                     let tex = gl.createTexture();
                     let fbo = gl.createFramebuffer();
                     gl.bindTexture(gl.TEXTURE_2D, tex);
@@ -432,6 +432,7 @@ type WebGLApplication(commandStreamMode : CommandStreamMode) =
 
                     gl.bindFramebuffer(gl.DRAW_FRAMEBUFFER, null);
                     gl.drawBuffers([gl.BACK]);    
+                    gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, true);
     
                     return { 
                         blit: function(src) {

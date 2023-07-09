@@ -1435,6 +1435,7 @@ type Element(r : IJSInProcessObjectReference) =
         let y = o.GetProperty<float> "y"
         let w = o.GetProperty<float> "width"
         let h = o.GetProperty<float> "height"
+        o.Reference.Dispose()
         Box2d.FromMinAndSize(x, y, w, h)
 
     /// The Element method getElementsByClassName() returns a live HTMLCollection which contains every descendant element which has the specified class name or names.

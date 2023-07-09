@@ -3,85 +3,17 @@
 
 open Aardvark.Base
 open Aardvark.Dom
+open Aardworx.AsyncPrimitives
 open Aardworx.WebAssembly
 open Microsoft.JSInterop
 open Microsoft.FSharp.NativeInterop
 open System.Runtime.InteropServices
 open System.Threading.Tasks
 open System.Threading
-
+open System.Diagnostics.CodeAnalysis
 #nowarn "9"
 
-type private AsyncSignal(isSet : bool) =
-    static let finished = Task.FromResult()
-    
-    let mutable isSet = isSet
-    let mutable tcs : option<TaskCompletionSource<unit>> = None
-
-    member x.Pulse() =
-        lock x (fun () -> 
-            match tcs with
-            | Some t -> 
-                t.SetResult()
-                tcs <- None
-                isSet <- false
-            | None -> 
-                isSet <- true
-        )
-            
-    member x.Poll() =
-        lock x (fun () ->
-            if isSet then
-                isSet <- false
-                true
-            else
-                false
-        )
-            
-    member x.Wait(ct : CancellationToken) =
-        lock x (fun () ->
-            if isSet then
-                isSet <- false
-                finished
-            else
-                match tcs with
-                | Some tcs -> 
-                    tcs.Task
-                | None -> 
-                    let t = TaskCompletionSource<unit>(TaskCreationOptions.RunContinuationsAsynchronously)
-                    tcs <- Some t
-
-                    if ct.CanBeCanceled then
-                        Async.StartAsTask(Async.AwaitTask(t.Task), cancellationToken = ct)
-                    else
-                        t.Task
-        )
-                
-    member x.Wait() = x.Wait(CancellationToken.None)
-            
-type AsyncCollection<'a>() =
-    let queue = System.Collections.Generic.Queue<'a>()
-
-    let signal = AsyncSignal(false)
-    
-    member x.Take() =
-        lock queue (fun () ->
-            if queue.Count > 0 then
-                Task.FromResult(queue.Dequeue())
-            else
-                task {
-                    do! signal.Wait()
-                    return! x.Take()
-                }
-        )
-    
-    member x.Put(value : 'a) =
-        lock queue (fun () ->
-            queue.Enqueue value
-            signal.Pulse()
-        )
-    
-    
+[<DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)>]
 type BlazorSocket private(name : string) =
 
 
@@ -138,11 +70,17 @@ type BlazorSocket private(name : string) =
                             const ptr = Module._malloc(msg.byteLength);
                             const heapBytes = new Uint8Array(Module.HEAPU8.buffer, ptr, msg.byteLength);
                             heapBytes.set(new Uint8Array(msg));
-                            recvBinary(this.name, ptr, msg.byteLength);
-                            Module._free(ptr);
+                            const name = this.name;
+                            setTimeout(function() {
+                                recvBinary(name, ptr, msg.byteLength);
+                                Module._free(ptr);
+                            }, 0);
                         }
                         else if(typeof msg === "string") {
-                            recvString(this.name, msg);
+                            const name = this.name;
+                            setTimeout(function() {
+                                recvString(name, msg);
+                            }, 0);
                         }
                         else {
                             console.error("bad message: ", msg);
@@ -168,7 +106,7 @@ type BlazorSocket private(name : string) =
 
     static let onConnect = Event<BlazorSocket>()
 
-    let buffer = AsyncCollection<ChannelMessage>()
+    let buffer = AsyncBlockingCollection<ChannelMessage>()
     let onClose = Event<unit>()
     
     do init.Value

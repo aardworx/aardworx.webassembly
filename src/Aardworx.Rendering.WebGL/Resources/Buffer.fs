@@ -55,7 +55,7 @@ type Buffer(device : Device, handle : uint32, sizeInBytes : int64, usage : Buffe
 
         let rEnd = rOffset + rSize
 
-        if rOffset < 0L || rOffset >= sizeInBytes || rSize < 0L || rEnd > sizeInBytes then 
+        if rOffset < 0L || rOffset > sizeInBytes || rSize < 0L || rEnd > sizeInBytes then 
             failf "BufferRange out of bounds [%d, %d) (size: %d)" rOffset rEnd sizeInBytes
 
 
@@ -76,7 +76,7 @@ type Buffer(device : Device, handle : uint32, sizeInBytes : int64, usage : Buffe
 
         let rEnd = rOffset + rSize
 
-        if rOffset < 0L || rOffset >= sizeInBytes || rSize < 0L || rEnd > sizeInBytes then 
+        if rOffset < 0L || rOffset > sizeInBytes || rSize < 0L || rEnd > sizeInBytes then 
             failf "BufferRange out of bounds [%d, %d) (size: %d)" rOffset rEnd sizeInBytes
 
         { new BufferRange with
@@ -168,7 +168,7 @@ and Buffer<'a>(buffer : Buffer) =
             | None -> count - 1
 
         let cnt = 1 + maxIndex - minIndex
-        if minIndex < 0 || minIndex >= count || cnt < 0 || minIndex + cnt > count then 
+        if minIndex < 0 || minIndex > count || cnt < 0 || minIndex + cnt > count then 
             failf "BufferRange out of bounds [%d, %d), size: %d"  minIndex (minIndex + cnt) count
 
         let size = elemSize * int64 cnt
@@ -234,7 +234,7 @@ type DeviceBufferExtensions private() =
 
         let rEnd = rOffset + rSize
 
-        if rOffset < 0L || rOffset >= range.Size || rSize < 0L || rEnd > range.Size then 
+        if rOffset < 0L || rOffset > range.Size || rSize < 0L || rEnd > range.Size then 
             failf "BufferRange out of bounds [%d, %d) (size: %d)" rOffset rEnd range.Size
 
         let buffer = range.Buffer
@@ -258,7 +258,7 @@ type DeviceBufferExtensions private() =
 
         let rEnd = rOffset + rSize
 
-        if rOffset < 0L || rOffset >= range.Size || rSize < 0L || rEnd > range.Size then 
+        if rOffset < 0L || rOffset > range.Size || rSize < 0L || rEnd > range.Size then 
             failf "BufferRange out of bounds [%d, %d) (size: %d)" rOffset rEnd range.Size
 
         let buffer = range.Buffer
@@ -282,7 +282,7 @@ type DeviceBufferExtensions private() =
 
         let endIndex = minIndex + cnt
 
-        if minIndex < 0 || minIndex >= range.Count || cnt < 0 || endIndex > range.Count then 
+        if minIndex < 0 || minIndex > range.Count || cnt < 0 || endIndex > range.Count then 
             failf "BufferRange out of bounds [%d, %d) (size: %d)" minIndex endIndex range.Count
 
         let buffer = range.Buffer
@@ -852,7 +852,8 @@ type DeviceBufferExtensions private() =
                         let res = Array.zeroCreate ib.Count
                         b.Use (fun ptr ->
                             use dst = fixed res
-                            Marshal.Copy(ptr, NativePtr.toNativeInt dst, sizeof<DrawCallInfo> * ib.Count)
+                            let size = min (sizeof<DrawCallInfo> * ib.Count) (int b.SizeInBytes)
+                            Marshal.Copy(ptr, NativePtr.toNativeInt dst, size)
                         )
                         Memory(res)
                     | :? Buffer as b ->

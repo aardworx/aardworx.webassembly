@@ -3,6 +3,7 @@
 open Aardvark.Base
 open Aardvark.Dom
 open Aardvark.Dom.Remote
+open Aardworx.AsyncPrimitives
 open Aardworx.WebAssembly
 open Microsoft.JSInterop
 open System.Threading.Tasks
@@ -188,57 +189,9 @@ module Boot =
                 aardvark.connect(connector);
             })()
         """
-
-    type private AsyncSignal(isSet : bool) =
-        static let finished = Task.FromResult()
-    
-        let mutable isSet = isSet
-        let mutable tcs : option<TaskCompletionSource<unit>> = None
-
-        member x.Pulse() =
-            lock x (fun () -> 
-                match tcs with
-                | Some t -> 
-                    t.SetResult()
-                    tcs <- None
-                    isSet <- false
-                | None -> 
-                    isSet <- true
-            )
-            
-        member x.Poll() =
-            lock x (fun () ->
-                if isSet then
-                    isSet <- false
-                    true
-                else
-                    false
-            )
-            
-        member x.Wait(ct : CancellationToken) =
-            lock x (fun () ->
-                if isSet then
-                    isSet <- false
-                    finished
-                else
-                    match tcs with
-                    | Some tcs -> 
-                        tcs.Task
-                    | None -> 
-                        let t = TaskCompletionSource<unit>(TaskCreationOptions.RunContinuationsAsynchronously)
-                        tcs <- Some t
-
-                        if ct.CanBeCanceled then
-                            Async.StartAsTask(Async.AwaitTask(t.Task), cancellationToken = ct)
-                        else
-                            t.Task
-            )
-                
-        member x.Wait() = x.Wait(CancellationToken.None)
-            
-                 
+   
     let runView (app : WebGLApplication) (view : DomContext -> DomNode) =
-
+        
         let server =
             { new IServer with
                 member x.RegisterWebSocket(action : IChannel -> Task<_>) =
@@ -278,7 +231,7 @@ module Boot =
  
         let runUpdater (state : UpdateState<int64>) (b : HtmlBackend) (action : string -> unit) (updater : Updater<int64>) =
             let mutable running = true
-            let signal = AsyncSignal(true)
+            let signal = AsyncAutoResetEvent(true)
             let sub = updater.AddMarkingCallback signal.Pulse
 
             task {
@@ -288,10 +241,9 @@ module Boot =
                         do! Async.SwitchToThreadPool()
                         try
                             updater.Update(state, b)
-                            let code = b.GetCode().Trim() 
+                            let code = b.GetCode().Trim()
                             if code <> "" then
                                 action code
-                            
                         with e ->
                             printfn "update failed: %A" e
                 sub.Dispose()
@@ -368,12 +320,14 @@ module Boot =
                     }
                     
                 let context : DomContext =
-                    {
-                        Runtime = app.Runtime
-                        Execute = fun code callback ->
+                    { new DomContext with
+                        member x.Runtime = app.Runtime
+                        member x.Execute code callback =
                             match callback with
                             | Some callback -> run code callback
                             | None -> execute code
+                        member x.StartWorker<'t, 'a, 'b when 't :> Aardvark.Dom.AbstractWorker<'a, 'b> and 't : (new : unit -> 't)>() =
+                            WorkerExtensions.run<'t, 'a, 'b>()
                     }
                 let dom = view context
 
@@ -401,7 +355,7 @@ module Boot =
             let mutable model = app.initial
             let adaptiveModel = app.unpersist.init model
             
-            let queue = AsyncCollection<seq<'message>>()
+            let queue = AsyncBlockingCollection<seq<'message>>()
             
             let additional = clist []
             
@@ -425,6 +379,9 @@ module Boot =
                         ctx.Execute js callback
 
                     member x.Runtime = glapp.Runtime
+                    
+                    member x.StartWorker<'t, 'a, 'b when 't :> AbstractWorker<'a, 'b> and 't : (new : unit -> 't)>() =
+                        ctx.StartWorker<'t, 'a, 'b>()
                 }
 
             let loop =
@@ -435,6 +392,7 @@ module Boot =
                         transact (fun () ->
                             app.unpersist.update adaptiveModel model
                         )
+                        do! Task.Yield()
                 }
                 
             let root = app.view env adaptiveModel

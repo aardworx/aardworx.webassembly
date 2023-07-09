@@ -241,9 +241,11 @@ type Runtime(device : Device, defaultCommandStreamMode : CommandStreamMode) as t
                        
                     cmd.PopFramebuffer()
                 )
-          
+           
         member this.ReadPixels(src : IFramebuffer, sem : Symbol, offset : V2i, size : V2i) : PixImage =
-
+            // let res = PixImage<int>(Col.Format.RGBA, size)
+            // res.Volume.Data.Set 0 |> ignore
+            // res :> PixImage
             let src = src :?> Framebuffer
             match Map.tryFind sem src.Signature.AttachmentIndices with
             | Some index ->
@@ -252,15 +254,27 @@ type Runtime(device : Device, defaultCommandStreamMode : CommandStreamMode) as t
                 let (pfmt, ptyp) = ColFormat.toPixelFormatAndType format
                 let img = PixImage.Create(typ, int64 size.X, int64 size.Y)
                 let gc = GCHandle.Alloc(img.Array, GCHandleType.Pinned)
+                
+                //let buffer = device.CreateBuffer(16L, BufferUsage.Dynamic)
+                let pb = APtr.temporary 1
                 try
                     device.RunCommand (fun gl ->
                         gl.PushFramebuffer src
                         gl.ReadBuffer index
-                        gl.BaseStream.ReadPixels(offset.X, src.Size.Y - size.Y - offset.Y, uint32 size.X, uint32 size.Y, pfmt, ptyp, gc.AddrOfPinnedObject())
-
+                        
+                        gl.BaseStream.GenBuffers(APtr.constant 1u, pb)
+                        gl.BaseStream.BindBuffer(APtr.constant BufferTargetARB.PixelPackBuffer, pb)
+                        gl.BaseStream.BufferData(BufferTargetARB.PixelPackBuffer, 16un, 0n, BufferUsageARB.DynamicRead)
+                        //gl.BaseStream.BindBuffer(BufferTargetARB.PixelPackBuffer, buffer.Handle)
+                        gl.BaseStream.ReadPixels(offset.X, src.Size.Y - size.Y - offset.Y, uint32 size.X, uint32 size.Y, pfmt, ptyp, 0n)
+                        gl.BaseStream.GetBufferSubData(BufferTargetARB.PixelPackBuffer, 0n, 16un, gc.AddrOfPinnedObject())
+                        gl.BaseStream.BindBuffer(BufferTargetARB.PixelPackBuffer, 0u)
+                        gl.BaseStream.DeleteBuffers(APtr.constant 1u, pb)
+                        
                         gl.PopFramebuffer()
                     )
                     img.Transformed(ImageTrafo.MirrorY)
+                    
                 finally
                     gc.Free()
             | None ->
@@ -289,19 +303,13 @@ type Runtime(device : Device, defaultCommandStreamMode : CommandStreamMode) as t
             failf "ComputeShaders not supported"
 
         member this.CompileRender(fboSignature, objects) =
-            let signature = fboSignature :?> FramebufferSignature
-
-            let mode =
-                if device.Debug then CommandStreamMode.Debug
-                else defaultCommandStreamMode
-
-            new RenderTask(manager, signature, mode, objects) :> IRenderTask
+            this.CompileRender(fboSignature, objects)
 
         member this.CompileClear(fboSignature, clearValues : aval<ClearValues>) =
             let fboSignature = fboSignature :?> FramebufferSignature
             
             let fboHandle = NativePtr.alloc 1
-            let cmd = device.CreateCommandStream()
+            let cmd = device.CreateCommandStream(defaultCommandStreamMode)
             cmd.PushFramebuffer()
             cmd.SetFramebuffer(FramebufferTarget.Framebuffer, fboSignature, APtr.ofNativePtr fboHandle)
             cmd.Clear clearValues
@@ -489,6 +497,16 @@ type Runtime(device : Device, defaultCommandStreamMode : CommandStreamMode) as t
             //    | _ ->
             //        raise (System.NotImplementedException())
             //)
+        member this.Upload(tex, tensor, fmt, offset, size) =
+            let tfmt = tex.Texture.Format
+            use pbo = device.GetPixelBuffer(tfmt, size)
+            pbo.Write(tensor, fmt)
+            let dst = tex.Texture :?> Texture
+            let dstSub = dst.[tex.Level, tex.Slice, offset .. offset + size - V3i.III]
+            
+            device.RunCommand (fun cmd ->
+                cmd.Copy(pbo, dstSub)
+            )
             
 
         member this.Copy(src: IBackendTexture, srcBaseSlice: int, srcBaseLevel: int, dst: IBackendTexture, dstBaseSlice: int, dstBaseLevel: int, slices: int, levels: int): unit = 
@@ -508,7 +526,6 @@ type Runtime(device : Device, defaultCommandStreamMode : CommandStreamMode) as t
         member this.DownloadStencil(texture, level, slice, offset, target) = raise (System.NotImplementedException())
         member this.ResourceManager = raise (System.NotImplementedException())
         member this.Run(arg1, arg2) = raise (System.NotImplementedException())
-        member this.Upload(tex, tensor, fmt, offset, size) = raise (System.NotImplementedException())
 
 
     // new(ctx) = new Runtime(new Device(ctx))

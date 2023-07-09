@@ -115,8 +115,8 @@ module private Converters =
         let ofCullMode =    
             LookupTable.lookupTable [
                 CullMode.None, unbox<CullFaceMode> 0
-                CullMode.Front, CullFaceMode.Front
-                CullMode.Back, CullFaceMode.Back
+                CullMode.Front, CullFaceMode.Back
+                CullMode.Back, CullFaceMode.Front
                 CullMode.FrontAndBack, CullFaceMode.FrontAndBack
             ]
 
@@ -383,18 +383,6 @@ type CommandStream private(state : CommandStreamState, ownState : bool, backend 
             | CommandStreamMode.Javascript ->
                 new JSCommandEncoder(state.Device) :> CommandEncoder
         new CommandStream(state, false, backend)
-
-    new(state : CommandStreamState) = 
-        let backend = 
-            if state.Device.Debug then
-                new DebugCommandEncoder(state.Device) :> CommandEncoder
-            else
-                new JSCommandEncoder(state.Device) :> CommandEncoder
-        new CommandStream(state, false, backend)
-
-    new(device : Device) = 
-        let backend = new JSCommandEncoder(device) :> CommandEncoder
-        new CommandStream(new CommandStreamState(device), true, backend)
 
     new(device : Device, mode : CommandStreamMode) = 
         let backend = 
@@ -1381,10 +1369,6 @@ type CommandStream private(state : CommandStreamState, ownState : bool, backend 
 [<AbstractClass; Sealed; Extension>]
 type DeviceCommandStreamExtensions private() =
 
-    [<Extension>]
-    static member CreateCommandStream (device : Device) =
-        new CommandStream(device)
-        
     [<Extension>]
     static member CreateCommandStream (device : Device, mode : CommandStreamMode) =
         new CommandStream(device, mode)

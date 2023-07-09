@@ -4,6 +4,9 @@ Microsoft.AspNetCore.Components.WebAssembly
 Microsoft.AspNetCore.Components.WebAssembly.DevServer
 FSharp.Data.Adaptive
 Aardvark.Base
+Aardvark.Dom.Core
 Aardvark.Base.FSharp
 Aardvark.Base.Tensors
 Aardvark.Application
+Tewr.BlazorWorker.BackgroundService
+Tewr.BlazorWorker.Extensions.JSRuntime

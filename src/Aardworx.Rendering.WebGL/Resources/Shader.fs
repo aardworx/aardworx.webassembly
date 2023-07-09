@@ -1118,7 +1118,7 @@ type ShaderExtensions private() =
                 
                 let stageCode = 
                     versionRx.Replace(glsl.code, fun m ->
-                        sprintf "%s\n#define SHADER_STAGE\nprecision highp float;\nprecision highp int;\nprecision highp sampler2DShadow;\n" m.Value 
+                        sprintf "%s\n#define SHADER_STAGE\nprecision highp float;\nprecision highp int;\nprecision highp sampler2DShadow;\nprecision highp sampler3D;\nprecision highp sampler2D;\n" m.Value 
                     )
 
                 //Log.line "%s" stageCode
@@ -1162,7 +1162,7 @@ type ShaderExtensions private() =
                     |> List.map (fun s ->
                         let stageCode = 
                             versionRx.Replace(glsl.code, fun m ->
-                                sprintf "%s\n#define %A\nprecision highp float;\nprecision highp int;\nprecision highp sampler2DShadow;\n" m.Value s
+                                sprintf "%s\n#define %A\nprecision highp float;\nprecision highp int;\nprecision highp sampler2DShadow;\nprecision highp sampler3D;\nprecision highp sampler2D;\n" m.Value s
                             )
                         device.CreateShader(s, stageCode)
                     )

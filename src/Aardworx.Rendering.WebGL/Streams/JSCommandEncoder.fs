@@ -47,29 +47,37 @@ type JSCommandEncoder(device : Device) =
             cachedAction <- Some a
             a
     
+    let destroyCachedAction() =
+        match cachedAction with
+        | Some a ->
+            a.Dispose()
+            cachedAction <- None
+        | None ->
+            ()
+    
     let run(self : JsObj) =
         let action = getAction()
         action.InvokeVoid("run", self.Reference :> obj)
     
     let appendCommands (str : string[]) =
-        cachedAction <- None
+        destroyCachedAction()
         for str in str do
             commands.AppendFormat("{0}\n", str) |> ignore
     let appendCommand (str : string) =
-        cachedAction <- None
+        destroyCachedAction()
         commands.AppendFormat("{0}\n", str) |> ignore
     
     override this.Destroy() =
         for c in cleanup do c()
         cleanup.Clear()
         commands.Clear() |> ignore
-        cachedAction <- None
+        destroyCachedAction()
     
     override this.Clear() =
         for c in cleanup do c()
         cleanup.Clear()
         commands.Clear() |> ignore
-        cachedAction <- None
+        destroyCachedAction()
     
     override x.Begin() =
         appendCommand "if(!self.stack) { self.stack = new ArrayBuffer(65536); self.stackOffset = 0; }"
