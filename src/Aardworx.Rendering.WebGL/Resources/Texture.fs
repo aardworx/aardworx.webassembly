@@ -238,7 +238,19 @@ type DeviceTextureExtensions private() =
 
                             | TextureDimension.Texture3D ->
                                 
-                                gl.TexImage3D(target, 0, int ifmt, uint32 size.X, uint32 size.Y, uint32 size.Z, 0, PixelFormat.Red, PixelType.UnsignedShort, VoidPtr.zero)
+                                let fmt, typ =
+                                    match ifmt with
+                                    | SizedInternalFormat.R8 -> PixelFormat.Red, PixelType.UnsignedByte
+                                    | SizedInternalFormat.R16 -> PixelFormat.Red, PixelType.UnsignedShort
+                                    | SizedInternalFormat.Rgb8 -> PixelFormat.Rgb, PixelType.UnsignedByte
+                                    | SizedInternalFormat.Rgba8 -> PixelFormat.Rgba, PixelType.UnsignedByte
+                                    
+                                    | SizedInternalFormat.R32f -> PixelFormat.Red, PixelType.Float
+                                    | SizedInternalFormat.RG32f -> PixelFormat.RG, PixelType.Float
+                                    | SizedInternalFormat.Rgb32f -> PixelFormat.Rgb, PixelType.Float
+                                    | SizedInternalFormat.Rgba32f -> PixelFormat.Rgba, PixelType.Float
+                                    | fmt -> failwithf "bad volume format: %A" fmt
+                                gl.TexImage3D(target, 0, int ifmt, uint32 size.X, uint32 size.Y, uint32 size.Z, 0, fmt, typ, VoidPtr.zero)
                                 
                                 //gl.TexStorage3D(target, uint32 levels, ifmt, uint32 size.X, uint32 size.Y, uint32 size.Z)
 
