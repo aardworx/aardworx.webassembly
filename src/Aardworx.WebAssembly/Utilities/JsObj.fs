@@ -1,5 +1,6 @@
 ﻿namespace rec Aardworx.WebAssembly
 
+open System.Runtime.InteropServices.JavaScript
 open Microsoft.AspNetCore.Components.WebAssembly.Hosting
 open Microsoft.JSInterop
 open Microsoft.JSInterop.WebAssembly
@@ -83,46 +84,42 @@ module private JSHelpers =
                 else return aardvark.wrap({});
             };
 
-            aardvark.loadImage = function (offset, size, callback) {
-                const blob = new Blob([HEAPU8.subarray(offset, offset + size)], { type: "image/jpeg"});
-                const image = new Image();
-                let url = null;
-                image.onload = function (e) {
-                    const canvas = document.createElement("canvas");
-                    canvas.width = image.width;
-                    canvas.height = image.height;
-                    const ctx = canvas.getContext("2d");
-                    ctx.drawImage(image, 0, 0);
-                    const img = ctx.getImageData(0, 0, image.width, image.height);
+            //aardvark.loadImage = function (offset, size, callback) {
+            //    const blob = new Blob([HEAPU8.subarray(offset, offset + size)], { type: "image/jpeg"});
+            //    const image = new Image();
+            //    let url = null;
+            //    image.onload = function (e) {
+            //        const canvas = document.createElement("canvas");
+            //        canvas.width = image.width;
+            //        canvas.height = image.height;
+            //        const ctx = canvas.getContext("2d");
+            //        ctx.drawImage(image, 0, 0);
+            //        const img = ctx.getImageData(0, 0, image.width, image.height);
+            //        var buf = Module._malloc(img.data.length);
+            //        Module.HEAPU8.set(img.data, buf);
+            //        callback.invokeMethod('Invoke', img.width, img.height, buf);
+            //        Module._free(buf);
+            //        URL.revokeObjectURL(url);
+            //    };
+            //    url = URL.createObjectURL(blob);
+            //    image.src = url;
+            //    
+            //};
+            //aardvark.loadImageURL = function (url, callback) {
+            //    const image = new Image();
+            //    image.onload = function (e) {
+            //        const canvas = document.createElement("canvas");
+            //        const ctx = canvas.getContext("2d");
+            //        ctx.drawImage(image, 0, 0);
+            //        const img = ctx.getImageData(0, 0, image.width, image.height);
 
-                    var buf = Module._malloc(img.data.length);
-                    Module.HEAPU8.set(img.data, buf);
-                    callback.invokeMethod('Invoke', img.width, img.height, buf);
-                    Module._free(buf);
-                    URL.revokeObjectURL(url);
-                };
-                url = URL.createObjectURL(blob);
-                image.src = url;
-                
-            };
-
-
-            aardvark.loadImageURL = function (url, callback) {
-                const image = new Image();
-                image.onload = function (e) {
-                    const canvas = document.createElement("canvas");
-                    const ctx = canvas.getContext("2d");
-                    ctx.drawImage(image, 0, 0);
-                    const img = ctx.getImageData(0, 0, image.width, image.height);
-
-                    var buf = Module._malloc(img.data.length);
-                    Module.HEAPU8.set(img.data, buf);
-                    callback.invokeMethod('Invoke', img.width, img.height, buf);
-                    Module._free(buf);
-                };
-                image.src = url;
-
-            };
+            //        var buf = Module._malloc(img.data.length);
+            //        Module.HEAPU8.set(img.data, buf);
+            //        callback.invokeMethod('Invoke', img.width, img.height, buf);
+            //        Module._free(buf);
+            //    };
+            //    image.src = url;
+            //};
 
             aardvark.mountFileSystem = function(callback) {
                 FS.mkdir('/aardvark');
@@ -156,10 +153,14 @@ module private JSHelpers =
                 delete aardvark.imageHandles[img];
             };
             
-            aardvark.imgLoad = function(img, path, callback) {
             
+            let imgLoadCallback = Module.mono_bind_static_method("[Aardworx.WebAssembly] Aardworx.WebAssembly.JSImageInterop:Callback");
+            aardvark.imgLoad = function(img, path) {
+            
+                console.warn("load image: " + path);
                 let ret = function(w, h) {
-                    callback.invokeMethod('Invoke', w, h);
+                    imgLoadCallback(img, w, h);
+                    console.warn("loaded image: " + w + ", " + h);
                 };
             
                 if(img < 0 || !aardvark.imageHandles[img]) ret(-1, -1);
@@ -409,8 +410,32 @@ type JSImage(handle : int, size : V2i) =
         
     interface System.IDisposable with
         member x.Dispose() = x.Dispose()
+   
+[<System.Runtime.Versioning.SupportedOSPlatform("browser")>]
+type internal JSImageInterop() =
+    
+    static let callbackTable =
+        Dict<int, string * (V2i -> unit) * (exn -> unit)>()
+    
+    [<JSExport>]
+    static member Callback (handle : int,w : int) (h : int) =
+        match callbackTable.TryRemove handle with
+        | (true, (url, success, error)) ->
+            if w > 0 && h > 0 then
+                success (V2i(w, h))
+            else
+                error (System.Exception (sprintf "could not load image from %A" url))
+        | _ ->
+            ()
         
+    static member Register(handle : int, url : string, success : V2i -> unit, error : exn -> unit) =
+        callbackTable.[handle] <- (url, success, error)
+    
+        
+        
+[<System.Runtime.Versioning.SupportedOSPlatform("browser")>]
 module JSImage =
+    
     [<AutoOpen>]
     module private Interop = 
         let genImage () : int =
@@ -421,18 +446,8 @@ module JSImage =
         
         let imgLoad (handle : int) (url : string) =
             Async.FromContinuations (fun (success, error, _cancel) ->
-                let mutable ref : DotNetObjectReference<JSActions.JSActionIntInt> = null
-                let action =
-                    JSActions.JSActionIntInt(fun w h ->
-                        ref.Dispose()
-                        if w > 0 && h > 0 then
-                            success (V2i(w,h))
-                        else
-                            error (System.Exception (sprintf "could not load image from %A" url))
-                    )
-                ref <- DotNetObjectReference.Create(action)
-                runtime.Value.InvokeVoid("aardvark.imgLoad", handle, url, ref)
-                 
+                JSImageInterop.Register(handle, url, success, error)
+                runtime.Value.InvokeVoid("aardvark.imgLoad", handle, url)
             )
         
     let load (url : string) =

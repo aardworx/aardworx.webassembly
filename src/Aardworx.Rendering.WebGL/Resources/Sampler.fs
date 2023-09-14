@@ -124,18 +124,18 @@ type DeviceSamplerExtensions private() =
                     //    float32 state.MipLodBias
                     //)
                     
-                    gl.SamplerParameter(
+                    WrappedCommands.glSamplerParameterf(
                         handle, SamplerParameterF.TextureMinLod,
                         float32 state.MinLod
                     )
                     
-                    gl.SamplerParameter(
+                    WrappedCommands.glSamplerParameterf(
                         handle, SamplerParameterF.TextureMaxLod,
                         float32 state.MaxLod
                     )
 
                     if device.Info.Features.TextureFilterAnisotropic then
-                        gl.SamplerParameter(
+                        WrappedCommands.glSamplerParameterf(
                             handle, SamplerParameterF.TextureMaxAnisotropy, 
                             float32 state.MaxAnisotropy
                         )

@@ -6,6 +6,7 @@
     </PropertyGroup>
     <ItemGroup>
         <NativeFileReference Include="$(MSBuildThisFileDirectory)Native\WebGL.c" ScanForPInvokes="true" />
+        <NativeFileReference Include="$(MSBuildThisFileDirectory)Streams\WrappedCommands.c" ScanForPInvokes="true" />
         <NativeFileReference Include="$(MSBuildThisFileDirectory)Streams\Interpreter.c" ScanForPInvokes="true" />
     </ItemGroup>
 </Project>

@@ -7,484 +7,484 @@
 #include "../Native/WebGL.h"
 
 typedef enum {
-    Uniform2iv = 0,
-    Uniform2ivI = 1,
-    Uniform3f = 2,
-    Uniform3fI = 3,
-    Uniform3fv = 4,
-    Uniform3fvI = 5,
-    Uniform3i = 6,
-    Uniform3iI = 7,
-    Uniform3iv = 8,
-    Uniform3ivI = 9,
-    Uniform4f = 10,
-    Uniform4fI = 11,
-    Uniform4fv = 12,
-    Uniform4fvI = 13,
-    Uniform4i = 14,
-    Uniform4iI = 15,
-    Uniform4iv = 16,
-    Uniform4ivI = 17,
-    UniformMatrix2fv = 18,
-    UniformMatrix2fvI = 19,
-    UniformMatrix3fv = 20,
-    UniformMatrix3fvI = 21,
-    UniformMatrix4fv = 22,
-    UniformMatrix4fvI = 23,
-    UseProgram = 24,
-    UseProgramI = 25,
-    ValidateProgram = 26,
-    ValidateProgramI = 27,
-    VertexAttrib1f = 28,
-    VertexAttrib1fI = 29,
-    VertexAttrib1fv = 30,
-    VertexAttrib1fvI = 31,
-    VertexAttrib2f = 32,
-    VertexAttrib2fI = 33,
-    VertexAttrib2fv = 34,
-    VertexAttrib2fvI = 35,
-    VertexAttrib3f = 36,
-    VertexAttrib3fI = 37,
-    VertexAttrib3fv = 38,
-    VertexAttrib3fvI = 39,
-    VertexAttrib4f = 40,
-    VertexAttrib4fI = 41,
-    VertexAttrib4fv = 42,
-    VertexAttrib4fvI = 43,
-    VertexAttribPointer = 44,
-    VertexAttribPointerI = 45,
-    Viewport = 46,
-    ViewportI = 47,
-    TexImage2D = 48,
-    TexImage2DI = 49,
-    TexParameterf = 50,
-    TexParameterfI = 51,
-    TexParameterfv = 52,
-    TexParameterfvI = 53,
-    TexParameteri = 54,
-    TexParameteriI = 55,
-    TexParameteriv = 56,
-    TexParameterivI = 57,
-    TexSubImage2D = 58,
-    TexSubImage2DI = 59,
-    Uniform1f = 60,
-    Uniform1fI = 61,
-    Uniform1fv = 62,
-    Uniform1fvI = 63,
-    Uniform1i = 64,
-    Uniform1iI = 65,
-    Uniform1iv = 66,
-    Uniform1ivI = 67,
-    Uniform2f = 68,
-    Uniform2fI = 69,
-    Uniform2fv = 70,
-    Uniform2fvI = 71,
-    Uniform2i = 72,
-    Uniform2iI = 73,
-    ReadPixels = 74,
-    ReadPixelsI = 75,
-    ReleaseShaderCompiler = 76,
-    RenderbufferStorage = 77,
-    RenderbufferStorageI = 78,
-    SampleCoverage = 79,
-    SampleCoverageI = 80,
-    Scissor = 81,
-    ScissorI = 82,
-    ShaderBinary = 83,
-    ShaderBinaryI = 84,
-    ShaderSource = 85,
-    ShaderSourceI = 86,
-    StencilFunc = 87,
-    StencilFuncI = 88,
-    StencilFuncSeparate = 89,
-    StencilFuncSeparateI = 90,
-    StencilMask = 91,
-    StencilMaskI = 92,
-    StencilMaskSeparate = 93,
-    StencilMaskSeparateI = 94,
-    StencilOp = 95,
-    StencilOpI = 96,
-    StencilOpSeparate = 97,
-    StencilOpSeparateI = 98,
-    GetShaderInfoLog = 99,
-    GetShaderInfoLogI = 100,
-    GetShaderPrecisionFormat = 101,
-    GetShaderPrecisionFormatI = 102,
-    GetShaderSource = 103,
-    GetShaderSourceI = 104,
-    GetString = 105,
-    GetStringI = 106,
-    GetTexParameterfv = 107,
-    GetTexParameterfvI = 108,
-    GetTexParameteriv = 109,
-    GetTexParameterivI = 110,
-    GetUniformfv = 111,
-    GetUniformfvI = 112,
-    GetUniformiv = 113,
-    GetUniformivI = 114,
-    GetUniformLocation = 115,
-    GetUniformLocationI = 116,
-    GetVertexAttribfv = 117,
-    GetVertexAttribfvI = 118,
-    GetVertexAttribiv = 119,
-    GetVertexAttribivI = 120,
-    GetVertexAttribPointerv = 121,
-    GetVertexAttribPointervI = 122,
-    Hint = 123,
-    HintI = 124,
-    IsBuffer = 125,
-    IsBufferI = 126,
-    IsEnabled = 127,
-    IsEnabledI = 128,
-    IsFramebuffer = 129,
-    IsFramebufferI = 130,
-    IsProgram = 131,
-    IsProgramI = 132,
-    IsRenderbuffer = 133,
-    IsRenderbufferI = 134,
-    IsShader = 135,
-    IsShaderI = 136,
-    IsTexture = 137,
-    IsTextureI = 138,
-    LineWidth = 139,
-    LineWidthI = 140,
-    LinkProgram = 141,
-    LinkProgramI = 142,
-    PixelStorei = 143,
-    PixelStoreiI = 144,
-    PolygonOffset = 145,
-    PolygonOffsetI = 146,
-    GetActiveUniform = 147,
-    GetActiveUniformI = 148,
-    GetAttachedShaders = 149,
-    GetAttachedShadersI = 150,
-    GetAttribLocation = 151,
-    GetAttribLocationI = 152,
-    GetBooleanv = 153,
-    GetBooleanvI = 154,
-    GetBufferParameteriv = 155,
-    GetBufferParameterivI = 156,
-    GetError = 157,
-    GetErrorI = 158,
-    GetFloatv = 159,
-    GetFloatvI = 160,
-    GetFramebufferAttachmentParameteriv = 161,
-    GetFramebufferAttachmentParameterivI = 162,
-    GetIntegerv = 163,
-    GetIntegervI = 164,
-    GetProgramiv = 165,
-    GetProgramivI = 166,
-    GetProgramInfoLog = 167,
-    GetProgramInfoLogI = 168,
-    GetRenderbufferParameteriv = 169,
-    GetRenderbufferParameterivI = 170,
-    GetShaderiv = 171,
-    GetShaderivI = 172,
-    GetActiveAttrib = 173,
-    GetActiveAttribI = 174,
-    DeleteBuffers = 175,
-    DeleteBuffersI = 176,
-    DeleteFramebuffers = 177,
-    DeleteFramebuffersI = 178,
-    DeleteProgram = 179,
-    DeleteProgramI = 180,
-    DeleteRenderbuffers = 181,
-    DeleteRenderbuffersI = 182,
-    DeleteShader = 183,
-    DeleteShaderI = 184,
-    DeleteTextures = 185,
-    DeleteTexturesI = 186,
-    DepthFunc = 187,
-    DepthFuncI = 188,
-    DepthMask = 189,
-    DepthMaskI = 190,
-    DepthRangef = 191,
-    DepthRangefI = 192,
-    DetachShader = 193,
-    DetachShaderI = 194,
-    Disable = 195,
-    DisableI = 196,
-    DisableVertexAttribArray = 197,
-    DisableVertexAttribArrayI = 198,
-    DrawArrays = 199,
-    DrawArraysI = 200,
-    DrawElements = 201,
-    DrawElementsI = 202,
-    Enable = 203,
-    EnableI = 204,
-    EnableVertexAttribArray = 205,
-    EnableVertexAttribArrayI = 206,
-    Finish = 207,
-    Flush = 208,
-    FramebufferRenderbuffer = 209,
-    FramebufferRenderbufferI = 210,
-    FramebufferTexture2D = 211,
-    FramebufferTexture2DI = 212,
-    FrontFace = 213,
-    FrontFaceI = 214,
-    GenBuffers = 215,
-    GenBuffersI = 216,
-    GenerateMipmap = 217,
-    GenerateMipmapI = 218,
-    GenFramebuffers = 219,
-    GenFramebuffersI = 220,
-    GenRenderbuffers = 221,
-    GenRenderbuffersI = 222,
-    GenTextures = 223,
-    GenTexturesI = 224,
-    BlendFuncSeparate = 225,
-    BlendFuncSeparateI = 226,
-    BufferData = 227,
-    BufferDataI = 228,
-    BufferSubData = 229,
-    BufferSubDataI = 230,
-    CheckFramebufferStatus = 231,
-    CheckFramebufferStatusI = 232,
-    Clear = 233,
-    ClearI = 234,
-    ClearColor = 235,
-    ClearColorI = 236,
-    ClearDepthf = 237,
-    ClearDepthfI = 238,
-    ClearStencil = 239,
-    ClearStencilI = 240,
-    ColorMask = 241,
-    ColorMaskI = 242,
-    CompileShader = 243,
-    CompileShaderI = 244,
-    CompressedTexImage2D = 245,
-    CompressedTexImage2DI = 246,
-    CompressedTexSubImage2D = 247,
-    CompressedTexSubImage2DI = 248,
-    CopyTexImage2D = 249,
-    CopyTexImage2DI = 250,
-    CopyTexSubImage2D = 251,
-    CopyTexSubImage2DI = 252,
-    CreateProgram = 253,
-    CreateProgramI = 254,
-    CreateShader = 255,
-    CreateShaderI = 256,
-    CullFace = 257,
-    CullFaceI = 258,
-    TransformFeedbackVaryings = 259,
-    TransformFeedbackVaryingsI = 260,
-    Uniform1ui = 261,
-    Uniform1uiI = 262,
-    Uniform1uiv = 263,
-    Uniform1uivI = 264,
-    Uniform2ui = 265,
-    Uniform2uiI = 266,
-    Uniform2uiv = 267,
-    Uniform2uivI = 268,
-    Uniform3ui = 269,
-    Uniform3uiI = 270,
-    Uniform3uiv = 271,
-    Uniform3uivI = 272,
-    Uniform4ui = 273,
-    Uniform4uiI = 274,
-    Uniform4uiv = 275,
-    Uniform4uivI = 276,
-    UniformBlockBinding = 277,
-    UniformBlockBindingI = 278,
-    UniformMatrix2x3fv = 279,
-    UniformMatrix2x3fvI = 280,
-    UniformMatrix2x4fv = 281,
-    UniformMatrix2x4fvI = 282,
-    UniformMatrix3x2fv = 283,
-    UniformMatrix3x2fvI = 284,
-    UniformMatrix3x4fv = 285,
-    UniformMatrix3x4fvI = 286,
-    UniformMatrix4x2fv = 287,
-    UniformMatrix4x2fvI = 288,
-    UniformMatrix4x3fv = 289,
-    UniformMatrix4x3fvI = 290,
-    VertexAttribDivisor = 291,
-    VertexAttribDivisorI = 292,
-    VertexAttribI4i = 293,
-    VertexAttribI4iI = 294,
-    VertexAttribI4ui = 295,
-    VertexAttribI4uiI = 296,
-    VertexAttribI4iv = 297,
-    VertexAttribI4ivI = 298,
-    VertexAttribI4uiv = 299,
-    VertexAttribI4uivI = 300,
-    VertexAttribIPointer = 301,
-    VertexAttribIPointerI = 302,
-    WaitSync = 303,
-    WaitSyncI = 304,
-    ActiveTexture = 305,
-    ActiveTextureI = 306,
-    AttachShader = 307,
-    AttachShaderI = 308,
-    BindAttribLocation = 309,
-    BindAttribLocationI = 310,
-    BindBuffer = 311,
-    BindBufferI = 312,
-    BindFramebuffer = 313,
-    BindFramebufferI = 314,
-    BindRenderbuffer = 315,
-    BindRenderbufferI = 316,
-    BindTexture = 317,
-    BindTextureI = 318,
-    BlendColor = 319,
-    BlendColorI = 320,
-    BlendEquation = 321,
-    BlendEquationI = 322,
-    BlendEquationSeparate = 323,
-    BlendEquationSeparateI = 324,
-    BlendFunc = 325,
-    BlendFuncI = 326,
-    SamplerParameteri = 327,
-    SamplerParameteriI = 328,
-    SamplerParameteriv = 329,
-    SamplerParameterivI = 330,
-    SamplerParameterf = 331,
-    SamplerParameterfI = 332,
-    SamplerParameterfv = 333,
-    SamplerParameterfvI = 334,
-    TexImage3D = 335,
-    TexImage3DI = 336,
-    TexStorage2D = 337,
-    TexStorage2DI = 338,
-    TexStorage3D = 339,
-    TexStorage3DI = 340,
-    TexSubImage3D = 341,
-    TexSubImage3DI = 342,
-    GetTransformFeedbackVarying = 343,
-    GetTransformFeedbackVaryingI = 344,
-    GetUniformuiv = 345,
-    GetUniformuivI = 346,
-    GetUniformBlockIndex = 347,
-    GetUniformBlockIndexI = 348,
-    GetUniformIndices = 349,
-    GetUniformIndicesI = 350,
-    GetVertexAttribIiv = 351,
-    GetVertexAttribIivI = 352,
-    GetVertexAttribIuiv = 353,
-    GetVertexAttribIuivI = 354,
-    InvalidateFramebuffer = 355,
-    InvalidateFramebufferI = 356,
-    InvalidateSubFramebuffer = 357,
-    InvalidateSubFramebufferI = 358,
-    IsQuery = 359,
-    IsQueryI = 360,
-    IsSampler = 361,
-    IsSamplerI = 362,
-    IsSync = 363,
-    IsSyncI = 364,
-    IsTransformFeedback = 365,
-    IsTransformFeedbackI = 366,
-    IsVertexArray = 367,
-    IsVertexArrayI = 368,
-    PauseTransformFeedback = 369,
-    ProgramBinary = 370,
-    ProgramBinaryI = 371,
-    ProgramParameteri = 372,
-    ProgramParameteriI = 373,
-    ReadBuffer = 374,
-    ReadBufferI = 375,
-    RenderbufferStorageMultisample = 376,
-    RenderbufferStorageMultisampleI = 377,
-    ResumeTransformFeedback = 378,
-    GetInteger64v = 379,
-    GetInteger64vI = 380,
-    GetInteger64i_v = 381,
-    GetInteger64i_vI = 382,
-    GetInternalformativ = 383,
-    GetInternalformativI = 384,
-    GetProgramBinary = 385,
-    GetProgramBinaryI = 386,
-    GetQueryiv = 387,
-    GetQueryivI = 388,
-    GetQueryObjectuiv = 389,
-    GetQueryObjectuivI = 390,
-    GetSamplerParameteriv = 391,
-    GetSamplerParameterivI = 392,
-    GetSamplerParameterfv = 393,
-    GetSamplerParameterfvI = 394,
-    GetStringi = 395,
-    GetStringiI = 396,
-    GetSynciv = 397,
-    GetSyncivI = 398,
-    DrawElementsInstanced = 399,
-    DrawElementsInstancedI = 400,
-    DrawRangeElements = 401,
-    DrawRangeElementsI = 402,
-    EndQuery = 403,
-    EndQueryI = 404,
-    EndTransformFeedback = 405,
-    FenceSync = 406,
-    FenceSyncI = 407,
-    FramebufferTextureLayer = 408,
-    FramebufferTextureLayerI = 409,
-    GenQueries = 410,
-    GenQueriesI = 411,
-    GenSamplers = 412,
-    GenSamplersI = 413,
-    GenTransformFeedbacks = 414,
-    GenTransformFeedbacksI = 415,
-    GenVertexArrays = 416,
-    GenVertexArraysI = 417,
-    GetActiveUniformBlockiv = 418,
-    GetActiveUniformBlockivI = 419,
-    GetActiveUniformBlockName = 420,
-    GetActiveUniformBlockNameI = 421,
-    GetActiveUniformsiv = 422,
-    GetActiveUniformsivI = 423,
-    GetBufferParameteri64v = 424,
-    GetBufferParameteri64vI = 425,
-    GetFragDataLocation = 426,
-    GetFragDataLocationI = 427,
-    GetIntegeri_v = 428,
-    GetIntegeri_vI = 429,
-    BindBufferBase = 430,
-    BindBufferBaseI = 431,
-    BindBufferRange = 432,
-    BindBufferRangeI = 433,
-    BindSampler = 434,
-    BindSamplerI = 435,
-    BindTransformFeedback = 436,
-    BindTransformFeedbackI = 437,
-    BindVertexArray = 438,
-    BindVertexArrayI = 439,
-    BlitFramebuffer = 440,
-    BlitFramebufferI = 441,
-    ClearBufferiv = 442,
-    ClearBufferivI = 443,
-    ClearBufferuiv = 444,
-    ClearBufferuivI = 445,
-    ClearBufferfv = 446,
-    ClearBufferfvI = 447,
-    ClearBufferfi = 448,
-    ClearBufferfiI = 449,
-    ClientWaitSync = 450,
-    ClientWaitSyncI = 451,
-    CompressedTexImage3D = 452,
-    CompressedTexImage3DI = 453,
-    CompressedTexSubImage3D = 454,
-    CompressedTexSubImage3DI = 455,
-    CopyBufferSubData = 456,
-    CopyBufferSubDataI = 457,
-    CopyTexSubImage3D = 458,
-    CopyTexSubImage3DI = 459,
-    DeleteQueries = 460,
-    DeleteQueriesI = 461,
-    DeleteSamplers = 462,
-    DeleteSamplersI = 463,
-    DeleteSync = 464,
-    DeleteSyncI = 465,
-    DeleteTransformFeedbacks = 466,
-    DeleteTransformFeedbacksI = 467,
-    DeleteVertexArrays = 468,
-    DeleteVertexArraysI = 469,
-    DrawArraysInstanced = 470,
-    DrawArraysInstancedI = 471,
-    DrawBuffers = 472,
-    DrawBuffersI = 473,
-    BeginQuery = 474,
-    BeginQueryI = 475,
-    BeginTransformFeedback = 476,
-    BeginTransformFeedbackI = 477,
+    BeginQuery = 0,
+    BeginQueryI = 1,
+    BeginTransformFeedback = 2,
+    BeginTransformFeedbackI = 3,
+    BindBufferBase = 4,
+    BindBufferBaseI = 5,
+    BindBufferRange = 6,
+    BindBufferRangeI = 7,
+    BindSampler = 8,
+    BindSamplerI = 9,
+    BindTransformFeedback = 10,
+    BindTransformFeedbackI = 11,
+    BindVertexArray = 12,
+    BindVertexArrayI = 13,
+    BlitFramebuffer = 14,
+    BlitFramebufferI = 15,
+    ClearBufferiv = 16,
+    ClearBufferivI = 17,
+    ClearBufferuiv = 18,
+    ClearBufferuivI = 19,
+    ClearBufferfv = 20,
+    ClearBufferfvI = 21,
+    ClearBufferfi = 22,
+    ClearBufferfiI = 23,
+    ClientWaitSync = 24,
+    ClientWaitSyncI = 25,
+    CompressedTexImage3D = 26,
+    CompressedTexImage3DI = 27,
+    CompressedTexSubImage3D = 28,
+    CompressedTexSubImage3DI = 29,
+    CopyBufferSubData = 30,
+    CopyBufferSubDataI = 31,
+    CopyTexSubImage3D = 32,
+    CopyTexSubImage3DI = 33,
+    DeleteQueries = 34,
+    DeleteQueriesI = 35,
+    DeleteSamplers = 36,
+    DeleteSamplersI = 37,
+    DeleteSync = 38,
+    DeleteSyncI = 39,
+    DeleteTransformFeedbacks = 40,
+    DeleteTransformFeedbacksI = 41,
+    DeleteVertexArrays = 42,
+    DeleteVertexArraysI = 43,
+    DrawArraysInstanced = 44,
+    DrawArraysInstancedI = 45,
+    DrawBuffers = 46,
+    DrawBuffersI = 47,
+    DrawElementsInstanced = 48,
+    DrawElementsInstancedI = 49,
+    DrawRangeElements = 50,
+    DrawRangeElementsI = 51,
+    EndQuery = 52,
+    EndQueryI = 53,
+    EndTransformFeedback = 54,
+    FenceSync = 55,
+    FenceSyncI = 56,
+    FramebufferTextureLayer = 57,
+    FramebufferTextureLayerI = 58,
+    GenQueries = 59,
+    GenQueriesI = 60,
+    GenSamplers = 61,
+    GenSamplersI = 62,
+    GenTransformFeedbacks = 63,
+    GenTransformFeedbacksI = 64,
+    GenVertexArrays = 65,
+    GenVertexArraysI = 66,
+    GetActiveUniformBlockiv = 67,
+    GetActiveUniformBlockivI = 68,
+    GetActiveUniformBlockName = 69,
+    GetActiveUniformBlockNameI = 70,
+    GetActiveUniformsiv = 71,
+    GetActiveUniformsivI = 72,
+    GetBufferParameteri64v = 73,
+    GetBufferParameteri64vI = 74,
+    GetFragDataLocation = 75,
+    GetFragDataLocationI = 76,
+    GetIntegeri_v = 77,
+    GetIntegeri_vI = 78,
+    GetInteger64v = 79,
+    GetInteger64vI = 80,
+    GetInteger64i_v = 81,
+    GetInteger64i_vI = 82,
+    GetInternalformativ = 83,
+    GetInternalformativI = 84,
+    GetProgramBinary = 85,
+    GetProgramBinaryI = 86,
+    GetQueryiv = 87,
+    GetQueryivI = 88,
+    GetQueryObjectuiv = 89,
+    GetQueryObjectuivI = 90,
+    GetSamplerParameteriv = 91,
+    GetSamplerParameterivI = 92,
+    GetSamplerParameterfv = 93,
+    GetSamplerParameterfvI = 94,
+    GetStringi = 95,
+    GetStringiI = 96,
+    GetSynciv = 97,
+    GetSyncivI = 98,
+    GetTransformFeedbackVarying = 99,
+    GetTransformFeedbackVaryingI = 100,
+    GetUniformuiv = 101,
+    GetUniformuivI = 102,
+    GetUniformBlockIndex = 103,
+    GetUniformBlockIndexI = 104,
+    GetUniformIndices = 105,
+    GetUniformIndicesI = 106,
+    GetVertexAttribIiv = 107,
+    GetVertexAttribIivI = 108,
+    GetVertexAttribIuiv = 109,
+    GetVertexAttribIuivI = 110,
+    InvalidateFramebuffer = 111,
+    InvalidateFramebufferI = 112,
+    InvalidateSubFramebuffer = 113,
+    InvalidateSubFramebufferI = 114,
+    IsQuery = 115,
+    IsQueryI = 116,
+    IsSampler = 117,
+    IsSamplerI = 118,
+    IsSync = 119,
+    IsSyncI = 120,
+    IsTransformFeedback = 121,
+    IsTransformFeedbackI = 122,
+    IsVertexArray = 123,
+    IsVertexArrayI = 124,
+    PauseTransformFeedback = 125,
+    ProgramBinary = 126,
+    ProgramBinaryI = 127,
+    ProgramParameteri = 128,
+    ProgramParameteriI = 129,
+    ReadBuffer = 130,
+    ReadBufferI = 131,
+    RenderbufferStorageMultisample = 132,
+    RenderbufferStorageMultisampleI = 133,
+    ResumeTransformFeedback = 134,
+    SamplerParameteri = 135,
+    SamplerParameteriI = 136,
+    SamplerParameteriv = 137,
+    SamplerParameterivI = 138,
+    SamplerParameterf = 139,
+    SamplerParameterfI = 140,
+    SamplerParameterfv = 141,
+    SamplerParameterfvI = 142,
+    TexImage3D = 143,
+    TexImage3DI = 144,
+    TexStorage2D = 145,
+    TexStorage2DI = 146,
+    TexStorage3D = 147,
+    TexStorage3DI = 148,
+    TexSubImage3D = 149,
+    TexSubImage3DI = 150,
+    TransformFeedbackVaryings = 151,
+    TransformFeedbackVaryingsI = 152,
+    Uniform1ui = 153,
+    Uniform1uiI = 154,
+    Uniform1uiv = 155,
+    Uniform1uivI = 156,
+    Uniform2ui = 157,
+    Uniform2uiI = 158,
+    Uniform2uiv = 159,
+    Uniform2uivI = 160,
+    Uniform3ui = 161,
+    Uniform3uiI = 162,
+    Uniform3uiv = 163,
+    Uniform3uivI = 164,
+    Uniform4ui = 165,
+    Uniform4uiI = 166,
+    Uniform4uiv = 167,
+    Uniform4uivI = 168,
+    UniformBlockBinding = 169,
+    UniformBlockBindingI = 170,
+    UniformMatrix2x3fv = 171,
+    UniformMatrix2x3fvI = 172,
+    UniformMatrix2x4fv = 173,
+    UniformMatrix2x4fvI = 174,
+    UniformMatrix3x2fv = 175,
+    UniformMatrix3x2fvI = 176,
+    UniformMatrix3x4fv = 177,
+    UniformMatrix3x4fvI = 178,
+    UniformMatrix4x2fv = 179,
+    UniformMatrix4x2fvI = 180,
+    UniformMatrix4x3fv = 181,
+    UniformMatrix4x3fvI = 182,
+    VertexAttribDivisor = 183,
+    VertexAttribDivisorI = 184,
+    VertexAttribI4i = 185,
+    VertexAttribI4iI = 186,
+    VertexAttribI4ui = 187,
+    VertexAttribI4uiI = 188,
+    VertexAttribI4iv = 189,
+    VertexAttribI4ivI = 190,
+    VertexAttribI4uiv = 191,
+    VertexAttribI4uivI = 192,
+    VertexAttribIPointer = 193,
+    VertexAttribIPointerI = 194,
+    WaitSync = 195,
+    WaitSyncI = 196,
+    ActiveTexture = 197,
+    ActiveTextureI = 198,
+    AttachShader = 199,
+    AttachShaderI = 200,
+    BindAttribLocation = 201,
+    BindAttribLocationI = 202,
+    BindBuffer = 203,
+    BindBufferI = 204,
+    BindFramebuffer = 205,
+    BindFramebufferI = 206,
+    BindRenderbuffer = 207,
+    BindRenderbufferI = 208,
+    BindTexture = 209,
+    BindTextureI = 210,
+    BlendColor = 211,
+    BlendColorI = 212,
+    BlendEquation = 213,
+    BlendEquationI = 214,
+    BlendEquationSeparate = 215,
+    BlendEquationSeparateI = 216,
+    BlendFunc = 217,
+    BlendFuncI = 218,
+    BlendFuncSeparate = 219,
+    BlendFuncSeparateI = 220,
+    BufferData = 221,
+    BufferDataI = 222,
+    BufferSubData = 223,
+    BufferSubDataI = 224,
+    CheckFramebufferStatus = 225,
+    CheckFramebufferStatusI = 226,
+    Clear = 227,
+    ClearI = 228,
+    ClearColor = 229,
+    ClearColorI = 230,
+    ClearDepthf = 231,
+    ClearDepthfI = 232,
+    ClearStencil = 233,
+    ClearStencilI = 234,
+    ColorMask = 235,
+    ColorMaskI = 236,
+    CompileShader = 237,
+    CompileShaderI = 238,
+    CompressedTexImage2D = 239,
+    CompressedTexImage2DI = 240,
+    CompressedTexSubImage2D = 241,
+    CompressedTexSubImage2DI = 242,
+    CopyTexImage2D = 243,
+    CopyTexImage2DI = 244,
+    CopyTexSubImage2D = 245,
+    CopyTexSubImage2DI = 246,
+    CreateProgram = 247,
+    CreateProgramI = 248,
+    CreateShader = 249,
+    CreateShaderI = 250,
+    CullFace = 251,
+    CullFaceI = 252,
+    DeleteBuffers = 253,
+    DeleteBuffersI = 254,
+    DeleteFramebuffers = 255,
+    DeleteFramebuffersI = 256,
+    DeleteProgram = 257,
+    DeleteProgramI = 258,
+    DeleteRenderbuffers = 259,
+    DeleteRenderbuffersI = 260,
+    DeleteShader = 261,
+    DeleteShaderI = 262,
+    DeleteTextures = 263,
+    DeleteTexturesI = 264,
+    DepthFunc = 265,
+    DepthFuncI = 266,
+    DepthMask = 267,
+    DepthMaskI = 268,
+    DepthRangef = 269,
+    DepthRangefI = 270,
+    DetachShader = 271,
+    DetachShaderI = 272,
+    Disable = 273,
+    DisableI = 274,
+    DisableVertexAttribArray = 275,
+    DisableVertexAttribArrayI = 276,
+    DrawArrays = 277,
+    DrawArraysI = 278,
+    DrawElements = 279,
+    DrawElementsI = 280,
+    Enable = 281,
+    EnableI = 282,
+    EnableVertexAttribArray = 283,
+    EnableVertexAttribArrayI = 284,
+    Finish = 285,
+    Flush = 286,
+    FramebufferRenderbuffer = 287,
+    FramebufferRenderbufferI = 288,
+    FramebufferTexture2D = 289,
+    FramebufferTexture2DI = 290,
+    FrontFace = 291,
+    FrontFaceI = 292,
+    GenBuffers = 293,
+    GenBuffersI = 294,
+    GenerateMipmap = 295,
+    GenerateMipmapI = 296,
+    GenFramebuffers = 297,
+    GenFramebuffersI = 298,
+    GenRenderbuffers = 299,
+    GenRenderbuffersI = 300,
+    GenTextures = 301,
+    GenTexturesI = 302,
+    GetActiveAttrib = 303,
+    GetActiveAttribI = 304,
+    GetActiveUniform = 305,
+    GetActiveUniformI = 306,
+    GetAttachedShaders = 307,
+    GetAttachedShadersI = 308,
+    GetAttribLocation = 309,
+    GetAttribLocationI = 310,
+    GetBooleanv = 311,
+    GetBooleanvI = 312,
+    GetBufferParameteriv = 313,
+    GetBufferParameterivI = 314,
+    GetError = 315,
+    GetErrorI = 316,
+    GetFloatv = 317,
+    GetFloatvI = 318,
+    GetFramebufferAttachmentParameteriv = 319,
+    GetFramebufferAttachmentParameterivI = 320,
+    GetIntegerv = 321,
+    GetIntegervI = 322,
+    GetProgramiv = 323,
+    GetProgramivI = 324,
+    GetProgramInfoLog = 325,
+    GetProgramInfoLogI = 326,
+    GetRenderbufferParameteriv = 327,
+    GetRenderbufferParameterivI = 328,
+    GetShaderiv = 329,
+    GetShaderivI = 330,
+    GetShaderInfoLog = 331,
+    GetShaderInfoLogI = 332,
+    GetShaderPrecisionFormat = 333,
+    GetShaderPrecisionFormatI = 334,
+    GetShaderSource = 335,
+    GetShaderSourceI = 336,
+    GetString = 337,
+    GetStringI = 338,
+    GetTexParameterfv = 339,
+    GetTexParameterfvI = 340,
+    GetTexParameteriv = 341,
+    GetTexParameterivI = 342,
+    GetUniformfv = 343,
+    GetUniformfvI = 344,
+    GetUniformiv = 345,
+    GetUniformivI = 346,
+    GetUniformLocation = 347,
+    GetUniformLocationI = 348,
+    GetVertexAttribfv = 349,
+    GetVertexAttribfvI = 350,
+    GetVertexAttribiv = 351,
+    GetVertexAttribivI = 352,
+    GetVertexAttribPointerv = 353,
+    GetVertexAttribPointervI = 354,
+    Hint = 355,
+    HintI = 356,
+    IsBuffer = 357,
+    IsBufferI = 358,
+    IsEnabled = 359,
+    IsEnabledI = 360,
+    IsFramebuffer = 361,
+    IsFramebufferI = 362,
+    IsProgram = 363,
+    IsProgramI = 364,
+    IsRenderbuffer = 365,
+    IsRenderbufferI = 366,
+    IsShader = 367,
+    IsShaderI = 368,
+    IsTexture = 369,
+    IsTextureI = 370,
+    LineWidth = 371,
+    LineWidthI = 372,
+    LinkProgram = 373,
+    LinkProgramI = 374,
+    PixelStorei = 375,
+    PixelStoreiI = 376,
+    PolygonOffset = 377,
+    PolygonOffsetI = 378,
+    ReadPixels = 379,
+    ReadPixelsI = 380,
+    ReleaseShaderCompiler = 381,
+    RenderbufferStorage = 382,
+    RenderbufferStorageI = 383,
+    SampleCoverage = 384,
+    SampleCoverageI = 385,
+    Scissor = 386,
+    ScissorI = 387,
+    ShaderBinary = 388,
+    ShaderBinaryI = 389,
+    ShaderSource = 390,
+    ShaderSourceI = 391,
+    StencilFunc = 392,
+    StencilFuncI = 393,
+    StencilFuncSeparate = 394,
+    StencilFuncSeparateI = 395,
+    StencilMask = 396,
+    StencilMaskI = 397,
+    StencilMaskSeparate = 398,
+    StencilMaskSeparateI = 399,
+    StencilOp = 400,
+    StencilOpI = 401,
+    StencilOpSeparate = 402,
+    StencilOpSeparateI = 403,
+    TexImage2D = 404,
+    TexImage2DI = 405,
+    TexParameterf = 406,
+    TexParameterfI = 407,
+    TexParameterfv = 408,
+    TexParameterfvI = 409,
+    TexParameteri = 410,
+    TexParameteriI = 411,
+    TexParameteriv = 412,
+    TexParameterivI = 413,
+    TexSubImage2D = 414,
+    TexSubImage2DI = 415,
+    Uniform1f = 416,
+    Uniform1fI = 417,
+    Uniform1fv = 418,
+    Uniform1fvI = 419,
+    Uniform1i = 420,
+    Uniform1iI = 421,
+    Uniform1iv = 422,
+    Uniform1ivI = 423,
+    Uniform2f = 424,
+    Uniform2fI = 425,
+    Uniform2fv = 426,
+    Uniform2fvI = 427,
+    Uniform2i = 428,
+    Uniform2iI = 429,
+    Uniform2iv = 430,
+    Uniform2ivI = 431,
+    Uniform3f = 432,
+    Uniform3fI = 433,
+    Uniform3fv = 434,
+    Uniform3fvI = 435,
+    Uniform3i = 436,
+    Uniform3iI = 437,
+    Uniform3iv = 438,
+    Uniform3ivI = 439,
+    Uniform4f = 440,
+    Uniform4fI = 441,
+    Uniform4fv = 442,
+    Uniform4fvI = 443,
+    Uniform4i = 444,
+    Uniform4iI = 445,
+    Uniform4iv = 446,
+    Uniform4ivI = 447,
+    UniformMatrix2fv = 448,
+    UniformMatrix2fvI = 449,
+    UniformMatrix3fv = 450,
+    UniformMatrix3fvI = 451,
+    UniformMatrix4fv = 452,
+    UniformMatrix4fvI = 453,
+    UseProgram = 454,
+    UseProgramI = 455,
+    ValidateProgram = 456,
+    ValidateProgramI = 457,
+    VertexAttrib1f = 458,
+    VertexAttrib1fI = 459,
+    VertexAttrib1fv = 460,
+    VertexAttrib1fvI = 461,
+    VertexAttrib2f = 462,
+    VertexAttrib2fI = 463,
+    VertexAttrib2fv = 464,
+    VertexAttrib2fvI = 465,
+    VertexAttrib3f = 466,
+    VertexAttrib3fI = 467,
+    VertexAttrib3fv = 468,
+    VertexAttrib3fvI = 469,
+    VertexAttrib4f = 470,
+    VertexAttrib4fI = 471,
+    VertexAttrib4fv = 472,
+    VertexAttrib4fvI = 473,
+    VertexAttribPointer = 474,
+    VertexAttribPointerI = 475,
+    Viewport = 476,
+    ViewportI = 477,
     GetBufferSubData = 478,
     GetBufferSubDataI = 479,
     MultiDrawArraysIndirect = 480,
@@ -528,1041 +528,609 @@ int emInterpret(intptr_t code, int length, intptr_t stack) {
         OpCode op = (OpCode)(*(uint16_t*)code);
         code += 2;
         switch(op) {
-        case Uniform2iv:
-            glUniform2iv(*(GLint*)code, *(GLsizei*)(code + 4), *(const GLint **)(code + 8));
-            code += 12;
+        case BeginQuery:
+            glBeginQuery(*(GLenum*)code, *(GLuint*)(code + 4));
+            code += 8;
             break;
-        case Uniform2ivI:
-            glUniform2iv(**(GLint**)code, **(GLsizei**)(code + 4), *(const GLint **)(code + 8));
-            code += 12;
+        case BeginQueryI:
+            glBeginQuery(**(GLenum**)code, **(GLuint**)(code + 4));
+            code += 8;
             break;
-        case Uniform3f:
-            glUniform3f(*(GLint*)code, *(GLfloat*)(code + 4), *(GLfloat*)(code + 8), *(GLfloat*)(code + 12));
-            code += 16;
-            break;
-        case Uniform3fI:
-            glUniform3f(**(GLint**)code, **(GLfloat**)(code + 4), **(GLfloat**)(code + 8), **(GLfloat**)(code + 12));
-            code += 16;
-            break;
-        case Uniform3fv:
-            glUniform3fv(*(GLint*)code, *(GLsizei*)(code + 4), *(const GLfloat **)(code + 8));
-            code += 12;
-            break;
-        case Uniform3fvI:
-            glUniform3fv(**(GLint**)code, **(GLsizei**)(code + 4), *(const GLfloat **)(code + 8));
-            code += 12;
-            break;
-        case Uniform3i:
-            glUniform3i(*(GLint*)code, *(GLint*)(code + 4), *(GLint*)(code + 8), *(GLint*)(code + 12));
-            code += 16;
-            break;
-        case Uniform3iI:
-            glUniform3i(**(GLint**)code, **(GLint**)(code + 4), **(GLint**)(code + 8), **(GLint**)(code + 12));
-            code += 16;
-            break;
-        case Uniform3iv:
-            glUniform3iv(*(GLint*)code, *(GLsizei*)(code + 4), *(const GLint **)(code + 8));
-            code += 12;
-            break;
-        case Uniform3ivI:
-            glUniform3iv(**(GLint**)code, **(GLsizei**)(code + 4), *(const GLint **)(code + 8));
-            code += 12;
-            break;
-        case Uniform4f:
-            glUniform4f(*(GLint*)code, *(GLfloat*)(code + 4), *(GLfloat*)(code + 8), *(GLfloat*)(code + 12), *(GLfloat*)(code + 16));
-            code += 20;
-            break;
-        case Uniform4fI:
-            glUniform4f(**(GLint**)code, **(GLfloat**)(code + 4), **(GLfloat**)(code + 8), **(GLfloat**)(code + 12), **(GLfloat**)(code + 16));
-            code += 20;
-            break;
-        case Uniform4fv:
-            glUniform4fv(*(GLint*)code, *(GLsizei*)(code + 4), *(const GLfloat **)(code + 8));
-            code += 12;
-            break;
-        case Uniform4fvI:
-            glUniform4fv(**(GLint**)code, **(GLsizei**)(code + 4), *(const GLfloat **)(code + 8));
-            code += 12;
-            break;
-        case Uniform4i:
-            glUniform4i(*(GLint*)code, *(GLint*)(code + 4), *(GLint*)(code + 8), *(GLint*)(code + 12), *(GLint*)(code + 16));
-            code += 20;
-            break;
-        case Uniform4iI:
-            glUniform4i(**(GLint**)code, **(GLint**)(code + 4), **(GLint**)(code + 8), **(GLint**)(code + 12), **(GLint**)(code + 16));
-            code += 20;
-            break;
-        case Uniform4iv:
-            glUniform4iv(*(GLint*)code, *(GLsizei*)(code + 4), *(const GLint **)(code + 8));
-            code += 12;
-            break;
-        case Uniform4ivI:
-            glUniform4iv(**(GLint**)code, **(GLsizei**)(code + 4), *(const GLint **)(code + 8));
-            code += 12;
-            break;
-        case UniformMatrix2fv:
-            glUniformMatrix2fv(*(GLint*)code, *(GLsizei*)(code + 4), *(GLboolean*)(code + 8), *(const GLfloat **)(code + 12));
-            code += 16;
-            break;
-        case UniformMatrix2fvI:
-            glUniformMatrix2fv(**(GLint**)code, **(GLsizei**)(code + 4), **(GLboolean**)(code + 8), *(const GLfloat **)(code + 12));
-            code += 16;
-            break;
-        case UniformMatrix3fv:
-            glUniformMatrix3fv(*(GLint*)code, *(GLsizei*)(code + 4), *(GLboolean*)(code + 8), *(const GLfloat **)(code + 12));
-            code += 16;
-            break;
-        case UniformMatrix3fvI:
-            glUniformMatrix3fv(**(GLint**)code, **(GLsizei**)(code + 4), **(GLboolean**)(code + 8), *(const GLfloat **)(code + 12));
-            code += 16;
-            break;
-        case UniformMatrix4fv:
-            glUniformMatrix4fv(*(GLint*)code, *(GLsizei*)(code + 4), *(GLboolean*)(code + 8), *(const GLfloat **)(code + 12));
-            code += 16;
-            break;
-        case UniformMatrix4fvI:
-            glUniformMatrix4fv(**(GLint**)code, **(GLsizei**)(code + 4), **(GLboolean**)(code + 8), *(const GLfloat **)(code + 12));
-            code += 16;
-            break;
-        case UseProgram:
-            glUseProgram(*(GLuint*)code);
+        case BeginTransformFeedback:
+            glBeginTransformFeedback(*(GLenum*)code);
             code += 4;
             break;
-        case UseProgramI:
-            glUseProgram(**(GLuint**)code);
+        case BeginTransformFeedbackI:
+            glBeginTransformFeedback(**(GLenum**)code);
             code += 4;
             break;
-        case ValidateProgram:
-            glValidateProgram(*(GLuint*)code);
-            code += 4;
-            break;
-        case ValidateProgramI:
-            glValidateProgram(**(GLuint**)code);
-            code += 4;
-            break;
-        case VertexAttrib1f:
-            glVertexAttrib1f(*(GLuint*)code, *(GLfloat*)(code + 4));
-            code += 8;
-            break;
-        case VertexAttrib1fI:
-            glVertexAttrib1f(**(GLuint**)code, **(GLfloat**)(code + 4));
-            code += 8;
-            break;
-        case VertexAttrib1fv:
-            glVertexAttrib1fv(*(GLuint*)code, *(const GLfloat **)(code + 4));
-            code += 8;
-            break;
-        case VertexAttrib1fvI:
-            glVertexAttrib1fv(**(GLuint**)code, *(const GLfloat **)(code + 4));
-            code += 8;
-            break;
-        case VertexAttrib2f:
-            glVertexAttrib2f(*(GLuint*)code, *(GLfloat*)(code + 4), *(GLfloat*)(code + 8));
+        case BindBufferBase:
+            glBindBufferBase(*(GLenum*)code, *(GLuint*)(code + 4), *(GLuint*)(code + 8));
             code += 12;
             break;
-        case VertexAttrib2fI:
-            glVertexAttrib2f(**(GLuint**)code, **(GLfloat**)(code + 4), **(GLfloat**)(code + 8));
+        case BindBufferBaseI:
+            glBindBufferBase(**(GLenum**)code, **(GLuint**)(code + 4), **(GLuint**)(code + 8));
             code += 12;
             break;
-        case VertexAttrib2fv:
-            glVertexAttrib2fv(*(GLuint*)code, *(const GLfloat **)(code + 4));
-            code += 8;
-            break;
-        case VertexAttrib2fvI:
-            glVertexAttrib2fv(**(GLuint**)code, *(const GLfloat **)(code + 4));
-            code += 8;
-            break;
-        case VertexAttrib3f:
-            glVertexAttrib3f(*(GLuint*)code, *(GLfloat*)(code + 4), *(GLfloat*)(code + 8), *(GLfloat*)(code + 12));
-            code += 16;
-            break;
-        case VertexAttrib3fI:
-            glVertexAttrib3f(**(GLuint**)code, **(GLfloat**)(code + 4), **(GLfloat**)(code + 8), **(GLfloat**)(code + 12));
-            code += 16;
-            break;
-        case VertexAttrib3fv:
-            glVertexAttrib3fv(*(GLuint*)code, *(const GLfloat **)(code + 4));
-            code += 8;
-            break;
-        case VertexAttrib3fvI:
-            glVertexAttrib3fv(**(GLuint**)code, *(const GLfloat **)(code + 4));
-            code += 8;
-            break;
-        case VertexAttrib4f:
-            glVertexAttrib4f(*(GLuint*)code, *(GLfloat*)(code + 4), *(GLfloat*)(code + 8), *(GLfloat*)(code + 12), *(GLfloat*)(code + 16));
+        case BindBufferRange:
+            glBindBufferRange(*(GLenum*)code, *(GLuint*)(code + 4), *(GLuint*)(code + 8), *(GLintptr*)(code + 12), *(GLsizeiptr*)(code + 16));
             code += 20;
             break;
-        case VertexAttrib4fI:
-            glVertexAttrib4f(**(GLuint**)code, **(GLfloat**)(code + 4), **(GLfloat**)(code + 8), **(GLfloat**)(code + 12), **(GLfloat**)(code + 16));
+        case BindBufferRangeI:
+            glBindBufferRange(**(GLenum**)code, **(GLuint**)(code + 4), **(GLuint**)(code + 8), **(GLintptr**)(code + 12), **(GLsizeiptr**)(code + 16));
             code += 20;
             break;
-        case VertexAttrib4fv:
-            glVertexAttrib4fv(*(GLuint*)code, *(const GLfloat **)(code + 4));
+        case BindSampler:
+            glBindSampler(*(GLuint*)code, *(GLuint*)(code + 4));
             code += 8;
             break;
-        case VertexAttrib4fvI:
-            glVertexAttrib4fv(**(GLuint**)code, *(const GLfloat **)(code + 4));
+        case BindSamplerI:
+            glBindSampler(**(GLuint**)code, **(GLuint**)(code + 4));
             code += 8;
             break;
-        case VertexAttribPointer:
-            glVertexAttribPointer(*(GLuint*)code, *(GLint*)(code + 4), *(GLenum*)(code + 8), *(GLboolean*)(code + 12), *(GLsizei*)(code + 16), *(const void **)(code + 20));
+        case BindTransformFeedback:
+            glBindTransformFeedback(*(GLenum*)code, *(GLuint*)(code + 4));
+            code += 8;
+            break;
+        case BindTransformFeedbackI:
+            glBindTransformFeedback(**(GLenum**)code, **(GLuint**)(code + 4));
+            code += 8;
+            break;
+        case BindVertexArray:
+            glBindVertexArray(*(GLuint*)code);
+            code += 4;
+            break;
+        case BindVertexArrayI:
+            glBindVertexArray(**(GLuint**)code);
+            code += 4;
+            break;
+        case BlitFramebuffer:
+            glBlitFramebuffer(*(GLint*)code, *(GLint*)(code + 4), *(GLint*)(code + 8), *(GLint*)(code + 12), *(GLint*)(code + 16), *(GLint*)(code + 20), *(GLint*)(code + 24), *(GLint*)(code + 28), *(GLbitfield*)(code + 32), *(GLenum*)(code + 36));
+            code += 40;
+            break;
+        case BlitFramebufferI:
+            glBlitFramebuffer(**(GLint**)code, **(GLint**)(code + 4), **(GLint**)(code + 8), **(GLint**)(code + 12), **(GLint**)(code + 16), **(GLint**)(code + 20), **(GLint**)(code + 24), **(GLint**)(code + 28), **(GLbitfield**)(code + 32), **(GLenum**)(code + 36));
+            code += 40;
+            break;
+        case ClearBufferiv:
+            glClearBufferiv(*(GLenum*)code, *(GLint*)(code + 4), *(const GLint **)(code + 8));
+            code += 12;
+            break;
+        case ClearBufferivI:
+            glClearBufferiv(**(GLenum**)code, **(GLint**)(code + 4), *(const GLint **)(code + 8));
+            code += 12;
+            break;
+        case ClearBufferuiv:
+            glClearBufferuiv(*(GLenum*)code, *(GLint*)(code + 4), *(const GLuint **)(code + 8));
+            code += 12;
+            break;
+        case ClearBufferuivI:
+            glClearBufferuiv(**(GLenum**)code, **(GLint**)(code + 4), *(const GLuint **)(code + 8));
+            code += 12;
+            break;
+        case ClearBufferfv:
+            glClearBufferfv(*(GLenum*)code, *(GLint*)(code + 4), *(const GLfloat **)(code + 8));
+            code += 12;
+            break;
+        case ClearBufferfvI:
+            glClearBufferfv(**(GLenum**)code, **(GLint**)(code + 4), *(const GLfloat **)(code + 8));
+            code += 12;
+            break;
+        case ClearBufferfi:
+            glClearBufferfi(*(GLenum*)code, *(GLint*)(code + 4), *(GLfloat*)(code + 8), *(GLint*)(code + 12));
+            code += 16;
+            break;
+        case ClearBufferfiI:
+            glClearBufferfi(**(GLenum**)code, **(GLint**)(code + 4), **(GLfloat**)(code + 8), **(GLint**)(code + 12));
+            code += 16;
+            break;
+        case ClientWaitSync:
+            *(GLenum*)(code + 12) = glClientWaitSync(*(GLsync*)code, *(GLbitfield*)(code + 4), *(GLuint64*)(code + 8));
+            code += 16;
+            break;
+        case ClientWaitSyncI:
+            *(GLenum*)(code + 12) = glClientWaitSync(**(GLsync**)code, **(GLbitfield**)(code + 4), **(GLuint64**)(code + 8));
+            code += 16;
+            break;
+        case CompressedTexImage3D:
+            glCompressedTexImage3D(*(GLenum*)code, *(GLint*)(code + 4), *(GLenum*)(code + 8), *(GLsizei*)(code + 12), *(GLsizei*)(code + 16), *(GLsizei*)(code + 20), *(GLint*)(code + 24), *(GLsizei*)(code + 28), *(const void **)(code + 32));
+            code += 36;
+            break;
+        case CompressedTexImage3DI:
+            glCompressedTexImage3D(**(GLenum**)code, **(GLint**)(code + 4), **(GLenum**)(code + 8), **(GLsizei**)(code + 12), **(GLsizei**)(code + 16), **(GLsizei**)(code + 20), **(GLint**)(code + 24), **(GLsizei**)(code + 28), **(const void ***)(code + 32));
+            code += 36;
+            break;
+        case CompressedTexSubImage3D:
+            glCompressedTexSubImage3D(*(GLenum*)code, *(GLint*)(code + 4), *(GLint*)(code + 8), *(GLint*)(code + 12), *(GLint*)(code + 16), *(GLsizei*)(code + 20), *(GLsizei*)(code + 24), *(GLsizei*)(code + 28), *(GLenum*)(code + 32), *(GLsizei*)(code + 36), *(const void **)(code + 40));
+            code += 44;
+            break;
+        case CompressedTexSubImage3DI:
+            glCompressedTexSubImage3D(**(GLenum**)code, **(GLint**)(code + 4), **(GLint**)(code + 8), **(GLint**)(code + 12), **(GLint**)(code + 16), **(GLsizei**)(code + 20), **(GLsizei**)(code + 24), **(GLsizei**)(code + 28), **(GLenum**)(code + 32), **(GLsizei**)(code + 36), **(const void ***)(code + 40));
+            code += 44;
+            break;
+        case CopyBufferSubData:
+            glCopyBufferSubData(*(GLenum*)code, *(GLenum*)(code + 4), *(GLintptr*)(code + 8), *(GLintptr*)(code + 12), *(GLsizeiptr*)(code + 16));
+            code += 20;
+            break;
+        case CopyBufferSubDataI:
+            glCopyBufferSubData(**(GLenum**)code, **(GLenum**)(code + 4), **(GLintptr**)(code + 8), **(GLintptr**)(code + 12), **(GLsizeiptr**)(code + 16));
+            code += 20;
+            break;
+        case CopyTexSubImage3D:
+            glCopyTexSubImage3D(*(GLenum*)code, *(GLint*)(code + 4), *(GLint*)(code + 8), *(GLint*)(code + 12), *(GLint*)(code + 16), *(GLint*)(code + 20), *(GLint*)(code + 24), *(GLsizei*)(code + 28), *(GLsizei*)(code + 32));
+            code += 36;
+            break;
+        case CopyTexSubImage3DI:
+            glCopyTexSubImage3D(**(GLenum**)code, **(GLint**)(code + 4), **(GLint**)(code + 8), **(GLint**)(code + 12), **(GLint**)(code + 16), **(GLint**)(code + 20), **(GLint**)(code + 24), **(GLsizei**)(code + 28), **(GLsizei**)(code + 32));
+            code += 36;
+            break;
+        case DeleteQueries:
+            glDeleteQueries(*(GLsizei*)code, *(const GLuint **)(code + 4));
+            code += 8;
+            break;
+        case DeleteQueriesI:
+            glDeleteQueries(**(GLsizei**)code, *(const GLuint **)(code + 4));
+            code += 8;
+            break;
+        case DeleteSamplers:
+            glDeleteSamplers(*(GLsizei*)code, *(const GLuint **)(code + 4));
+            code += 8;
+            break;
+        case DeleteSamplersI:
+            glDeleteSamplers(**(GLsizei**)code, *(const GLuint **)(code + 4));
+            code += 8;
+            break;
+        case DeleteSync:
+            glDeleteSync(*(GLsync*)code);
+            code += 4;
+            break;
+        case DeleteSyncI:
+            glDeleteSync(**(GLsync**)code);
+            code += 4;
+            break;
+        case DeleteTransformFeedbacks:
+            glDeleteTransformFeedbacks(*(GLsizei*)code, *(const GLuint **)(code + 4));
+            code += 8;
+            break;
+        case DeleteTransformFeedbacksI:
+            glDeleteTransformFeedbacks(**(GLsizei**)code, *(const GLuint **)(code + 4));
+            code += 8;
+            break;
+        case DeleteVertexArrays:
+            glDeleteVertexArrays(*(GLsizei*)code, *(const GLuint **)(code + 4));
+            code += 8;
+            break;
+        case DeleteVertexArraysI:
+            glDeleteVertexArrays(**(GLsizei**)code, *(const GLuint **)(code + 4));
+            code += 8;
+            break;
+        case DrawArraysInstanced:
+            glDrawArraysInstanced(*(GLenum*)code, *(GLint*)(code + 4), *(GLsizei*)(code + 8), *(GLsizei*)(code + 12));
+            code += 16;
+            break;
+        case DrawArraysInstancedI:
+            glDrawArraysInstanced(**(GLenum**)code, **(GLint**)(code + 4), **(GLsizei**)(code + 8), **(GLsizei**)(code + 12));
+            code += 16;
+            break;
+        case DrawBuffers:
+            glDrawBuffers(*(GLsizei*)code, *(const GLenum **)(code + 4));
+            code += 8;
+            break;
+        case DrawBuffersI:
+            glDrawBuffers(**(GLsizei**)code, **(const GLenum ***)(code + 4));
+            code += 8;
+            break;
+        case DrawElementsInstanced:
+            glDrawElementsInstanced(*(GLenum*)code, *(GLsizei*)(code + 4), *(GLenum*)(code + 8), *(const void **)(code + 12), *(GLsizei*)(code + 16));
+            code += 20;
+            break;
+        case DrawElementsInstancedI:
+            glDrawElementsInstanced(**(GLenum**)code, **(GLsizei**)(code + 4), **(GLenum**)(code + 8), **(const void ***)(code + 12), **(GLsizei**)(code + 16));
+            code += 20;
+            break;
+        case DrawRangeElements:
+            glDrawRangeElements(*(GLenum*)code, *(GLuint*)(code + 4), *(GLuint*)(code + 8), *(GLsizei*)(code + 12), *(GLenum*)(code + 16), *(const void **)(code + 20));
             code += 24;
             break;
-        case VertexAttribPointerI:
-            glVertexAttribPointer(**(GLuint**)code, **(GLint**)(code + 4), **(GLenum**)(code + 8), **(GLboolean**)(code + 12), **(GLsizei**)(code + 16), *(const void **)(code + 20));
+        case DrawRangeElementsI:
+            glDrawRangeElements(**(GLenum**)code, **(GLuint**)(code + 4), **(GLuint**)(code + 8), **(GLsizei**)(code + 12), **(GLenum**)(code + 16), **(const void ***)(code + 20));
             code += 24;
             break;
-        case Viewport:
-            glViewport(*(GLint*)code, *(GLint*)(code + 4), *(GLsizei*)(code + 8), *(GLsizei*)(code + 12));
-            code += 16;
+        case EndQuery:
+            glEndQuery(*(GLenum*)code);
+            code += 4;
             break;
-        case ViewportI:
-            glViewport(**(GLint**)code, **(GLint**)(code + 4), **(GLsizei**)(code + 8), **(GLsizei**)(code + 12));
-            code += 16;
+        case EndQueryI:
+            glEndQuery(**(GLenum**)code);
+            code += 4;
             break;
-        case TexImage2D:
-            glTexImage2D(*(GLenum*)code, *(GLint*)(code + 4), *(GLint*)(code + 8), *(GLsizei*)(code + 12), *(GLsizei*)(code + 16), *(GLint*)(code + 20), *(GLenum*)(code + 24), *(GLenum*)(code + 28), *(const void **)(code + 32));
-            code += 36;
-            break;
-        case TexImage2DI:
-            glTexImage2D(**(GLenum**)code, **(GLint**)(code + 4), **(GLint**)(code + 8), **(GLsizei**)(code + 12), **(GLsizei**)(code + 16), **(GLint**)(code + 20), **(GLenum**)(code + 24), **(GLenum**)(code + 28), **(const void ***)(code + 32));
-            code += 36;
-            break;
-        case TexParameterf:
-            glTexParameterf(*(GLenum*)code, *(GLenum*)(code + 4), *(GLfloat*)(code + 8));
-            code += 12;
-            break;
-        case TexParameterfI:
-            glTexParameterf(**(GLenum**)code, **(GLenum**)(code + 4), **(GLfloat**)(code + 8));
-            code += 12;
-            break;
-        case TexParameterfv:
-            glTexParameterfv(*(GLenum*)code, *(GLenum*)(code + 4), *(const GLfloat **)(code + 8));
-            code += 12;
-            break;
-        case TexParameterfvI:
-            glTexParameterfv(**(GLenum**)code, **(GLenum**)(code + 4), *(const GLfloat **)(code + 8));
-            code += 12;
-            break;
-        case TexParameteri:
-            glTexParameteri(*(GLenum*)code, *(GLenum*)(code + 4), *(GLint*)(code + 8));
-            code += 12;
-            break;
-        case TexParameteriI:
-            glTexParameteri(**(GLenum**)code, **(GLenum**)(code + 4), **(GLint**)(code + 8));
-            code += 12;
-            break;
-        case TexParameteriv:
-            glTexParameteriv(*(GLenum*)code, *(GLenum*)(code + 4), *(const GLint **)(code + 8));
-            code += 12;
-            break;
-        case TexParameterivI:
-            glTexParameteriv(**(GLenum**)code, **(GLenum**)(code + 4), *(const GLint **)(code + 8));
-            code += 12;
-            break;
-        case TexSubImage2D:
-            glTexSubImage2D(*(GLenum*)code, *(GLint*)(code + 4), *(GLint*)(code + 8), *(GLint*)(code + 12), *(GLsizei*)(code + 16), *(GLsizei*)(code + 20), *(GLenum*)(code + 24), *(GLenum*)(code + 28), *(const void **)(code + 32));
-            code += 36;
-            break;
-        case TexSubImage2DI:
-            glTexSubImage2D(**(GLenum**)code, **(GLint**)(code + 4), **(GLint**)(code + 8), **(GLint**)(code + 12), **(GLsizei**)(code + 16), **(GLsizei**)(code + 20), **(GLenum**)(code + 24), **(GLenum**)(code + 28), **(const void ***)(code + 32));
-            code += 36;
-            break;
-        case Uniform1f:
-            glUniform1f(*(GLint*)code, *(GLfloat*)(code + 4));
-            code += 8;
-            break;
-        case Uniform1fI:
-            glUniform1f(**(GLint**)code, **(GLfloat**)(code + 4));
-            code += 8;
-            break;
-        case Uniform1fv:
-            glUniform1fv(*(GLint*)code, *(GLsizei*)(code + 4), *(const GLfloat **)(code + 8));
-            code += 12;
-            break;
-        case Uniform1fvI:
-            glUniform1fv(**(GLint**)code, **(GLsizei**)(code + 4), *(const GLfloat **)(code + 8));
-            code += 12;
-            break;
-        case Uniform1i:
-            glUniform1i(*(GLint*)code, *(GLint*)(code + 4));
-            code += 8;
-            break;
-        case Uniform1iI:
-            glUniform1i(**(GLint**)code, **(GLint**)(code + 4));
-            code += 8;
-            break;
-        case Uniform1iv:
-            glUniform1iv(*(GLint*)code, *(GLsizei*)(code + 4), *(const GLint **)(code + 8));
-            code += 12;
-            break;
-        case Uniform1ivI:
-            glUniform1iv(**(GLint**)code, **(GLsizei**)(code + 4), *(const GLint **)(code + 8));
-            code += 12;
-            break;
-        case Uniform2f:
-            glUniform2f(*(GLint*)code, *(GLfloat*)(code + 4), *(GLfloat*)(code + 8));
-            code += 12;
-            break;
-        case Uniform2fI:
-            glUniform2f(**(GLint**)code, **(GLfloat**)(code + 4), **(GLfloat**)(code + 8));
-            code += 12;
-            break;
-        case Uniform2fv:
-            glUniform2fv(*(GLint*)code, *(GLsizei*)(code + 4), *(const GLfloat **)(code + 8));
-            code += 12;
-            break;
-        case Uniform2fvI:
-            glUniform2fv(**(GLint**)code, **(GLsizei**)(code + 4), *(const GLfloat **)(code + 8));
-            code += 12;
-            break;
-        case Uniform2i:
-            glUniform2i(*(GLint*)code, *(GLint*)(code + 4), *(GLint*)(code + 8));
-            code += 12;
-            break;
-        case Uniform2iI:
-            glUniform2i(**(GLint**)code, **(GLint**)(code + 4), **(GLint**)(code + 8));
-            code += 12;
-            break;
-        case ReadPixels:
-            glReadPixels(*(GLint*)code, *(GLint*)(code + 4), *(GLsizei*)(code + 8), *(GLsizei*)(code + 12), *(GLenum*)(code + 16), *(GLenum*)(code + 20), *(void **)(code + 24));
-            code += 28;
-            break;
-        case ReadPixelsI:
-            glReadPixels(**(GLint**)code, **(GLint**)(code + 4), **(GLsizei**)(code + 8), **(GLsizei**)(code + 12), **(GLenum**)(code + 16), **(GLenum**)(code + 20), *(void **)(code + 24));
-            code += 28;
-            break;
-        case ReleaseShaderCompiler:
-            glReleaseShaderCompiler();
+        case EndTransformFeedback:
+            glEndTransformFeedback();
             code += 0;
             break;
-        case RenderbufferStorage:
-            glRenderbufferStorage(*(GLenum*)code, *(GLenum*)(code + 4), *(GLsizei*)(code + 8), *(GLsizei*)(code + 12));
-            code += 16;
+        case FenceSync:
+            *(GLsync*)(code + 8) = glFenceSync(*(GLenum*)code, *(GLbitfield*)(code + 4));
+            code += 12;
             break;
-        case RenderbufferStorageI:
-            glRenderbufferStorage(**(GLenum**)code, **(GLenum**)(code + 4), **(GLsizei**)(code + 8), **(GLsizei**)(code + 12));
-            code += 16;
+        case FenceSyncI:
+            *(GLsync*)(code + 8) = glFenceSync(**(GLenum**)code, **(GLbitfield**)(code + 4));
+            code += 12;
             break;
-        case SampleCoverage:
-            glSampleCoverage(*(GLfloat*)code, *(GLboolean*)(code + 4));
-            code += 8;
-            break;
-        case SampleCoverageI:
-            glSampleCoverage(**(GLfloat**)code, **(GLboolean**)(code + 4));
-            code += 8;
-            break;
-        case Scissor:
-            glScissor(*(GLint*)code, *(GLint*)(code + 4), *(GLsizei*)(code + 8), *(GLsizei*)(code + 12));
-            code += 16;
-            break;
-        case ScissorI:
-            glScissor(**(GLint**)code, **(GLint**)(code + 4), **(GLsizei**)(code + 8), **(GLsizei**)(code + 12));
-            code += 16;
-            break;
-        case ShaderBinary:
-            glShaderBinary(*(GLsizei*)code, *(const GLuint **)(code + 4), *(GLenum*)(code + 8), *(const void **)(code + 12), *(GLsizei*)(code + 16));
+        case FramebufferTextureLayer:
+            glFramebufferTextureLayer(*(GLenum*)code, *(GLenum*)(code + 4), *(GLuint*)(code + 8), *(GLint*)(code + 12), *(GLint*)(code + 16));
             code += 20;
             break;
-        case ShaderBinaryI:
-            glShaderBinary(**(GLsizei**)code, *(const GLuint **)(code + 4), **(GLenum**)(code + 8), *(const void **)(code + 12), **(GLsizei**)(code + 16));
+        case FramebufferTextureLayerI:
+            glFramebufferTextureLayer(**(GLenum**)code, **(GLenum**)(code + 4), **(GLuint**)(code + 8), **(GLint**)(code + 12), **(GLint**)(code + 16));
             code += 20;
             break;
-        case ShaderSource:
-            glShaderSource(*(GLuint*)code, *(GLsizei*)(code + 4), *(const GLchar ***)(code + 8), *(const GLint **)(code + 12));
+        case GenQueries:
+            glGenQueries(*(GLsizei*)code, *(GLuint **)(code + 4));
+            code += 8;
+            break;
+        case GenQueriesI:
+            glGenQueries(**(GLsizei**)code, *(GLuint **)(code + 4));
+            code += 8;
+            break;
+        case GenSamplers:
+            glGenSamplers(*(GLsizei*)code, *(GLuint **)(code + 4));
+            code += 8;
+            break;
+        case GenSamplersI:
+            glGenSamplers(**(GLsizei**)code, *(GLuint **)(code + 4));
+            code += 8;
+            break;
+        case GenTransformFeedbacks:
+            glGenTransformFeedbacks(*(GLsizei*)code, *(GLuint **)(code + 4));
+            code += 8;
+            break;
+        case GenTransformFeedbacksI:
+            glGenTransformFeedbacks(**(GLsizei**)code, *(GLuint **)(code + 4));
+            code += 8;
+            break;
+        case GenVertexArrays:
+            glGenVertexArrays(*(GLsizei*)code, *(GLuint **)(code + 4));
+            code += 8;
+            break;
+        case GenVertexArraysI:
+            glGenVertexArrays(**(GLsizei**)code, *(GLuint **)(code + 4));
+            code += 8;
+            break;
+        case GetActiveUniformBlockiv:
+            glGetActiveUniformBlockiv(*(GLuint*)code, *(GLuint*)(code + 4), *(GLenum*)(code + 8), *(GLint **)(code + 12));
             code += 16;
             break;
-        case ShaderSourceI:
-            glShaderSource(**(GLuint**)code, **(GLsizei**)(code + 4), *(const GLchar ***)(code + 8), *(const GLint **)(code + 12));
+        case GetActiveUniformBlockivI:
+            glGetActiveUniformBlockiv(**(GLuint**)code, **(GLuint**)(code + 4), **(GLenum**)(code + 8), *(GLint **)(code + 12));
             code += 16;
             break;
-        case StencilFunc:
-            glStencilFunc(*(GLenum*)code, *(GLint*)(code + 4), *(GLuint*)(code + 8));
+        case GetActiveUniformBlockName:
+            glGetActiveUniformBlockName(*(GLuint*)code, *(GLuint*)(code + 4), *(GLsizei*)(code + 8), *(GLsizei **)(code + 12), *(GLchar **)(code + 16));
+            code += 20;
+            break;
+        case GetActiveUniformBlockNameI:
+            glGetActiveUniformBlockName(**(GLuint**)code, **(GLuint**)(code + 4), **(GLsizei**)(code + 8), *(GLsizei **)(code + 12), *(GLchar **)(code + 16));
+            code += 20;
+            break;
+        case GetActiveUniformsiv:
+            glGetActiveUniformsiv(*(GLuint*)code, *(GLsizei*)(code + 4), *(const GLuint **)(code + 8), *(GLenum*)(code + 12), *(GLint **)(code + 16));
+            code += 20;
+            break;
+        case GetActiveUniformsivI:
+            glGetActiveUniformsiv(**(GLuint**)code, **(GLsizei**)(code + 4), *(const GLuint **)(code + 8), **(GLenum**)(code + 12), *(GLint **)(code + 16));
+            code += 20;
+            break;
+        case GetBufferParameteri64v:
+            glGetBufferParameteri64v(*(GLenum*)code, *(GLenum*)(code + 4), *(GLint64 **)(code + 8));
             code += 12;
             break;
-        case StencilFuncI:
-            glStencilFunc(**(GLenum**)code, **(GLint**)(code + 4), **(GLuint**)(code + 8));
+        case GetBufferParameteri64vI:
+            glGetBufferParameteri64v(**(GLenum**)code, **(GLenum**)(code + 4), *(GLint64 **)(code + 8));
             code += 12;
             break;
-        case StencilFuncSeparate:
-            glStencilFuncSeparate(*(GLenum*)code, *(GLenum*)(code + 4), *(GLint*)(code + 8), *(GLuint*)(code + 12));
-            code += 16;
-            break;
-        case StencilFuncSeparateI:
-            glStencilFuncSeparate(**(GLenum**)code, **(GLenum**)(code + 4), **(GLint**)(code + 8), **(GLuint**)(code + 12));
-            code += 16;
-            break;
-        case StencilMask:
-            glStencilMask(*(GLuint*)code);
-            code += 4;
-            break;
-        case StencilMaskI:
-            glStencilMask(**(GLuint**)code);
-            code += 4;
-            break;
-        case StencilMaskSeparate:
-            glStencilMaskSeparate(*(GLenum*)code, *(GLuint*)(code + 4));
-            code += 8;
-            break;
-        case StencilMaskSeparateI:
-            glStencilMaskSeparate(**(GLenum**)code, **(GLuint**)(code + 4));
-            code += 8;
-            break;
-        case StencilOp:
-            glStencilOp(*(GLenum*)code, *(GLenum*)(code + 4), *(GLenum*)(code + 8));
+        case GetFragDataLocation:
+            *(int*)(code + 8) = glGetFragDataLocation(*(GLuint*)code, *(const GLchar **)(code + 4));
             code += 12;
             break;
-        case StencilOpI:
-            glStencilOp(**(GLenum**)code, **(GLenum**)(code + 4), **(GLenum**)(code + 8));
+        case GetFragDataLocationI:
+            *(int*)(code + 8) = glGetFragDataLocation(**(GLuint**)code, *(const GLchar **)(code + 4));
             code += 12;
             break;
-        case StencilOpSeparate:
-            glStencilOpSeparate(*(GLenum*)code, *(GLenum*)(code + 4), *(GLenum*)(code + 8), *(GLenum*)(code + 12));
-            code += 16;
-            break;
-        case StencilOpSeparateI:
-            glStencilOpSeparate(**(GLenum**)code, **(GLenum**)(code + 4), **(GLenum**)(code + 8), **(GLenum**)(code + 12));
-            code += 16;
-            break;
-        case GetShaderInfoLog:
-            glGetShaderInfoLog(*(GLuint*)code, *(GLsizei*)(code + 4), *(GLsizei **)(code + 8), *(GLchar **)(code + 12));
-            code += 16;
-            break;
-        case GetShaderInfoLogI:
-            glGetShaderInfoLog(**(GLuint**)code, **(GLsizei**)(code + 4), *(GLsizei **)(code + 8), *(GLchar **)(code + 12));
-            code += 16;
-            break;
-        case GetShaderPrecisionFormat:
-            glGetShaderPrecisionFormat(*(GLenum*)code, *(GLenum*)(code + 4), *(GLint **)(code + 8), *(GLint **)(code + 12));
-            code += 16;
-            break;
-        case GetShaderPrecisionFormatI:
-            glGetShaderPrecisionFormat(**(GLenum**)code, **(GLenum**)(code + 4), *(GLint **)(code + 8), *(GLint **)(code + 12));
-            code += 16;
-            break;
-        case GetShaderSource:
-            glGetShaderSource(*(GLuint*)code, *(GLsizei*)(code + 4), *(GLsizei **)(code + 8), *(GLchar **)(code + 12));
-            code += 16;
-            break;
-        case GetShaderSourceI:
-            glGetShaderSource(**(GLuint**)code, **(GLsizei**)(code + 4), *(GLsizei **)(code + 8), *(GLchar **)(code + 12));
-            code += 16;
-            break;
-        case GetString:
-            *(const GLubyte**)(code + 4) = glGetString(*(GLenum*)code);
-            code += 8;
-            break;
-        case GetStringI:
-            *(const GLubyte**)(code + 4) = glGetString(**(GLenum**)code);
-            code += 8;
-            break;
-        case GetTexParameterfv:
-            glGetTexParameterfv(*(GLenum*)code, *(GLenum*)(code + 4), *(GLfloat **)(code + 8));
+        case GetIntegeri_v:
+            glGetIntegeri_v(*(GLenum*)code, *(GLuint*)(code + 4), *(GLint **)(code + 8));
             code += 12;
             break;
-        case GetTexParameterfvI:
-            glGetTexParameterfv(**(GLenum**)code, **(GLenum**)(code + 4), *(GLfloat **)(code + 8));
+        case GetIntegeri_vI:
+            glGetIntegeri_v(**(GLenum**)code, **(GLuint**)(code + 4), *(GLint **)(code + 8));
             code += 12;
             break;
-        case GetTexParameteriv:
-            glGetTexParameteriv(*(GLenum*)code, *(GLenum*)(code + 4), *(GLint **)(code + 8));
+        case GetInteger64v:
+            glGetInteger64v(*(GLenum*)code, *(GLint64 **)(code + 4));
+            code += 8;
+            break;
+        case GetInteger64vI:
+            glGetInteger64v(**(GLenum**)code, *(GLint64 **)(code + 4));
+            code += 8;
+            break;
+        case GetInteger64i_v:
+            glGetInteger64i_v(*(GLenum*)code, *(GLuint*)(code + 4), *(GLint64 **)(code + 8));
             code += 12;
             break;
-        case GetTexParameterivI:
-            glGetTexParameteriv(**(GLenum**)code, **(GLenum**)(code + 4), *(GLint **)(code + 8));
+        case GetInteger64i_vI:
+            glGetInteger64i_v(**(GLenum**)code, **(GLuint**)(code + 4), *(GLint64 **)(code + 8));
             code += 12;
             break;
-        case GetUniformfv:
-            glGetUniformfv(*(GLuint*)code, *(GLint*)(code + 4), *(GLfloat **)(code + 8));
+        case GetInternalformativ:
+            glGetInternalformativ(*(GLenum*)code, *(GLenum*)(code + 4), *(GLenum*)(code + 8), *(GLsizei*)(code + 12), *(GLint **)(code + 16));
+            code += 20;
+            break;
+        case GetInternalformativI:
+            glGetInternalformativ(**(GLenum**)code, **(GLenum**)(code + 4), **(GLenum**)(code + 8), **(GLsizei**)(code + 12), *(GLint **)(code + 16));
+            code += 20;
+            break;
+        case GetProgramBinary:
+            glGetProgramBinary(*(GLuint*)code, *(GLsizei*)(code + 4), *(GLsizei **)(code + 8), *(GLenum **)(code + 12), *(void **)(code + 16));
+            code += 20;
+            break;
+        case GetProgramBinaryI:
+            glGetProgramBinary(**(GLuint**)code, **(GLsizei**)(code + 4), *(GLsizei **)(code + 8), *(GLenum **)(code + 12), *(void **)(code + 16));
+            code += 20;
+            break;
+        case GetQueryiv:
+            glGetQueryiv(*(GLenum*)code, *(GLenum*)(code + 4), *(GLint **)(code + 8));
             code += 12;
             break;
-        case GetUniformfvI:
-            glGetUniformfv(**(GLuint**)code, **(GLint**)(code + 4), *(GLfloat **)(code + 8));
+        case GetQueryivI:
+            glGetQueryiv(**(GLenum**)code, **(GLenum**)(code + 4), *(GLint **)(code + 8));
             code += 12;
             break;
-        case GetUniformiv:
-            glGetUniformiv(*(GLuint*)code, *(GLint*)(code + 4), *(GLint **)(code + 8));
+        case GetQueryObjectuiv:
+            glGetQueryObjectuiv(*(GLuint*)code, *(GLenum*)(code + 4), *(GLuint **)(code + 8));
             code += 12;
             break;
-        case GetUniformivI:
-            glGetUniformiv(**(GLuint**)code, **(GLint**)(code + 4), *(GLint **)(code + 8));
+        case GetQueryObjectuivI:
+            glGetQueryObjectuiv(**(GLuint**)code, **(GLenum**)(code + 4), *(GLuint **)(code + 8));
             code += 12;
             break;
-        case GetUniformLocation:
-            *(int*)(code + 8) = glGetUniformLocation(*(GLuint*)code, *(const GLchar **)(code + 4));
+        case GetSamplerParameteriv:
+            glGetSamplerParameteriv(*(GLuint*)code, *(GLenum*)(code + 4), *(GLint **)(code + 8));
             code += 12;
             break;
-        case GetUniformLocationI:
-            *(int*)(code + 8) = glGetUniformLocation(**(GLuint**)code, *(const GLchar **)(code + 4));
+        case GetSamplerParameterivI:
+            glGetSamplerParameteriv(**(GLuint**)code, **(GLenum**)(code + 4), *(GLint **)(code + 8));
             code += 12;
             break;
-        case GetVertexAttribfv:
-            glGetVertexAttribfv(*(GLuint*)code, *(GLenum*)(code + 4), *(GLfloat **)(code + 8));
+        case GetSamplerParameterfv:
+            glGetSamplerParameterfv(*(GLuint*)code, *(GLenum*)(code + 4), *(GLfloat **)(code + 8));
             code += 12;
             break;
-        case GetVertexAttribfvI:
-            glGetVertexAttribfv(**(GLuint**)code, **(GLenum**)(code + 4), *(GLfloat **)(code + 8));
+        case GetSamplerParameterfvI:
+            glGetSamplerParameterfv(**(GLuint**)code, **(GLenum**)(code + 4), *(GLfloat **)(code + 8));
             code += 12;
             break;
-        case GetVertexAttribiv:
-            glGetVertexAttribiv(*(GLuint*)code, *(GLenum*)(code + 4), *(GLint **)(code + 8));
+        case GetStringi:
+            *(const GLubyte**)(code + 8) = glGetStringi(*(GLenum*)code, *(GLuint*)(code + 4));
             code += 12;
             break;
-        case GetVertexAttribivI:
-            glGetVertexAttribiv(**(GLuint**)code, **(GLenum**)(code + 4), *(GLint **)(code + 8));
+        case GetStringiI:
+            *(const GLubyte**)(code + 8) = glGetStringi(**(GLenum**)code, **(GLuint**)(code + 4));
             code += 12;
             break;
-        case GetVertexAttribPointerv:
-            glGetVertexAttribPointerv(*(GLuint*)code, *(GLenum*)(code + 4), *(void ***)(code + 8));
-            code += 12;
+        case GetSynciv:
+            glGetSynciv(*(GLsync*)code, *(GLenum*)(code + 4), *(GLsizei*)(code + 8), *(GLsizei **)(code + 12), *(GLint **)(code + 16));
+            code += 20;
             break;
-        case GetVertexAttribPointervI:
-            glGetVertexAttribPointerv(**(GLuint**)code, **(GLenum**)(code + 4), *(void ***)(code + 8));
-            code += 12;
+        case GetSyncivI:
+            glGetSynciv(**(GLsync**)code, **(GLenum**)(code + 4), **(GLsizei**)(code + 8), *(GLsizei **)(code + 12), *(GLint **)(code + 16));
+            code += 20;
             break;
-        case Hint:
-            glHint(*(GLenum*)code, *(GLenum*)(code + 4));
-            code += 8;
-            break;
-        case HintI:
-            glHint(**(GLenum**)code, **(GLenum**)(code + 4));
-            code += 8;
-            break;
-        case IsBuffer:
-            *(int*)(code + 4) = glIsBuffer(*(GLuint*)code);
-            code += 8;
-            break;
-        case IsBufferI:
-            *(int*)(code + 4) = glIsBuffer(**(GLuint**)code);
-            code += 8;
-            break;
-        case IsEnabled:
-            *(int*)(code + 4) = glIsEnabled(*(GLenum*)code);
-            code += 8;
-            break;
-        case IsEnabledI:
-            *(int*)(code + 4) = glIsEnabled(**(GLenum**)code);
-            code += 8;
-            break;
-        case IsFramebuffer:
-            *(int*)(code + 4) = glIsFramebuffer(*(GLuint*)code);
-            code += 8;
-            break;
-        case IsFramebufferI:
-            *(int*)(code + 4) = glIsFramebuffer(**(GLuint**)code);
-            code += 8;
-            break;
-        case IsProgram:
-            *(int*)(code + 4) = glIsProgram(*(GLuint*)code);
-            code += 8;
-            break;
-        case IsProgramI:
-            *(int*)(code + 4) = glIsProgram(**(GLuint**)code);
-            code += 8;
-            break;
-        case IsRenderbuffer:
-            *(int*)(code + 4) = glIsRenderbuffer(*(GLuint*)code);
-            code += 8;
-            break;
-        case IsRenderbufferI:
-            *(int*)(code + 4) = glIsRenderbuffer(**(GLuint**)code);
-            code += 8;
-            break;
-        case IsShader:
-            *(int*)(code + 4) = glIsShader(*(GLuint*)code);
-            code += 8;
-            break;
-        case IsShaderI:
-            *(int*)(code + 4) = glIsShader(**(GLuint**)code);
-            code += 8;
-            break;
-        case IsTexture:
-            *(int*)(code + 4) = glIsTexture(*(GLuint*)code);
-            code += 8;
-            break;
-        case IsTextureI:
-            *(int*)(code + 4) = glIsTexture(**(GLuint**)code);
-            code += 8;
-            break;
-        case LineWidth:
-            glLineWidth(*(GLfloat*)code);
-            code += 4;
-            break;
-        case LineWidthI:
-            glLineWidth(**(GLfloat**)code);
-            code += 4;
-            break;
-        case LinkProgram:
-            glLinkProgram(*(GLuint*)code);
-            code += 4;
-            break;
-        case LinkProgramI:
-            glLinkProgram(**(GLuint**)code);
-            code += 4;
-            break;
-        case PixelStorei:
-            glPixelStorei(*(GLenum*)code, *(GLint*)(code + 4));
-            code += 8;
-            break;
-        case PixelStoreiI:
-            glPixelStorei(**(GLenum**)code, **(GLint**)(code + 4));
-            code += 8;
-            break;
-        case PolygonOffset:
-            glPolygonOffset(*(GLfloat*)code, *(GLfloat*)(code + 4));
-            code += 8;
-            break;
-        case PolygonOffsetI:
-            glPolygonOffset(**(GLfloat**)code, **(GLfloat**)(code + 4));
-            code += 8;
-            break;
-        case GetActiveUniform:
-            glGetActiveUniform(*(GLuint*)code, *(GLuint*)(code + 4), *(GLsizei*)(code + 8), *(GLsizei **)(code + 12), *(GLint **)(code + 16), *(GLenum **)(code + 20), *(GLchar **)(code + 24));
+        case GetTransformFeedbackVarying:
+            glGetTransformFeedbackVarying(*(GLuint*)code, *(GLuint*)(code + 4), *(GLsizei*)(code + 8), *(GLsizei **)(code + 12), *(GLsizei **)(code + 16), *(GLenum **)(code + 20), *(GLchar **)(code + 24));
             code += 28;
             break;
-        case GetActiveUniformI:
-            glGetActiveUniform(**(GLuint**)code, **(GLuint**)(code + 4), **(GLsizei**)(code + 8), *(GLsizei **)(code + 12), *(GLint **)(code + 16), *(GLenum **)(code + 20), *(GLchar **)(code + 24));
+        case GetTransformFeedbackVaryingI:
+            glGetTransformFeedbackVarying(**(GLuint**)code, **(GLuint**)(code + 4), **(GLsizei**)(code + 8), *(GLsizei **)(code + 12), *(GLsizei **)(code + 16), *(GLenum **)(code + 20), *(GLchar **)(code + 24));
             code += 28;
             break;
-        case GetAttachedShaders:
-            glGetAttachedShaders(*(GLuint*)code, *(GLsizei*)(code + 4), *(GLsizei **)(code + 8), *(GLuint **)(code + 12));
+        case GetUniformuiv:
+            glGetUniformuiv(*(GLuint*)code, *(GLint*)(code + 4), *(GLuint **)(code + 8));
+            code += 12;
+            break;
+        case GetUniformuivI:
+            glGetUniformuiv(**(GLuint**)code, **(GLint**)(code + 4), *(GLuint **)(code + 8));
+            code += 12;
+            break;
+        case GetUniformBlockIndex:
+            *(uint32_t*)(code + 8) = glGetUniformBlockIndex(*(GLuint*)code, *(const GLchar **)(code + 4));
+            code += 12;
+            break;
+        case GetUniformBlockIndexI:
+            *(uint32_t*)(code + 8) = glGetUniformBlockIndex(**(GLuint**)code, *(const GLchar **)(code + 4));
+            code += 12;
+            break;
+        case GetUniformIndices:
+            glGetUniformIndices(*(GLuint*)code, *(GLsizei*)(code + 4), *(const GLchar *const**)(code + 8), *(GLuint **)(code + 12));
             code += 16;
             break;
-        case GetAttachedShadersI:
-            glGetAttachedShaders(**(GLuint**)code, **(GLsizei**)(code + 4), *(GLsizei **)(code + 8), *(GLuint **)(code + 12));
+        case GetUniformIndicesI:
+            glGetUniformIndices(**(GLuint**)code, **(GLsizei**)(code + 4), *(const GLchar *const**)(code + 8), *(GLuint **)(code + 12));
             code += 16;
             break;
-        case GetAttribLocation:
-            *(int*)(code + 8) = glGetAttribLocation(*(GLuint*)code, *(const GLchar **)(code + 4));
+        case GetVertexAttribIiv:
+            glGetVertexAttribIiv(*(GLuint*)code, *(GLenum*)(code + 4), *(GLint **)(code + 8));
             code += 12;
             break;
-        case GetAttribLocationI:
-            *(int*)(code + 8) = glGetAttribLocation(**(GLuint**)code, *(const GLchar **)(code + 4));
+        case GetVertexAttribIivI:
+            glGetVertexAttribIiv(**(GLuint**)code, **(GLenum**)(code + 4), *(GLint **)(code + 8));
             code += 12;
             break;
-        case GetBooleanv:
-            glGetBooleanv(*(GLenum*)code, *(GLboolean **)(code + 4));
-            code += 8;
-            break;
-        case GetBooleanvI:
-            glGetBooleanv(**(GLenum**)code, *(GLboolean **)(code + 4));
-            code += 8;
-            break;
-        case GetBufferParameteriv:
-            glGetBufferParameteriv(*(GLenum*)code, *(GLenum*)(code + 4), *(GLint **)(code + 8));
+        case GetVertexAttribIuiv:
+            glGetVertexAttribIuiv(*(GLuint*)code, *(GLenum*)(code + 4), *(GLuint **)(code + 8));
             code += 12;
             break;
-        case GetBufferParameterivI:
-            glGetBufferParameteriv(**(GLenum**)code, **(GLenum**)(code + 4), *(GLint **)(code + 8));
+        case GetVertexAttribIuivI:
+            glGetVertexAttribIuiv(**(GLuint**)code, **(GLenum**)(code + 4), *(GLuint **)(code + 8));
             code += 12;
             break;
-        case GetError:
-            *(GLenum*)(code + 0) = glGetError();
-            code += 4;
-            break;
-        case GetErrorI:
-            *(GLenum*)(code + 0) = glGetError();
-            code += 4;
-            break;
-        case GetFloatv:
-            glGetFloatv(*(GLenum*)code, *(GLfloat **)(code + 4));
-            code += 8;
-            break;
-        case GetFloatvI:
-            glGetFloatv(**(GLenum**)code, *(GLfloat **)(code + 4));
-            code += 8;
-            break;
-        case GetFramebufferAttachmentParameteriv:
-            glGetFramebufferAttachmentParameteriv(*(GLenum*)code, *(GLenum*)(code + 4), *(GLenum*)(code + 8), *(GLint **)(code + 12));
-            code += 16;
-            break;
-        case GetFramebufferAttachmentParameterivI:
-            glGetFramebufferAttachmentParameteriv(**(GLenum**)code, **(GLenum**)(code + 4), **(GLenum**)(code + 8), *(GLint **)(code + 12));
-            code += 16;
-            break;
-        case GetIntegerv:
-            glGetIntegerv(*(GLenum*)code, *(GLint **)(code + 4));
-            code += 8;
-            break;
-        case GetIntegervI:
-            glGetIntegerv(**(GLenum**)code, *(GLint **)(code + 4));
-            code += 8;
-            break;
-        case GetProgramiv:
-            glGetProgramiv(*(GLuint*)code, *(GLenum*)(code + 4), *(GLint **)(code + 8));
+        case InvalidateFramebuffer:
+            glInvalidateFramebuffer(*(GLenum*)code, *(GLsizei*)(code + 4), *(const GLenum **)(code + 8));
             code += 12;
             break;
-        case GetProgramivI:
-            glGetProgramiv(**(GLuint**)code, **(GLenum**)(code + 4), *(GLint **)(code + 8));
+        case InvalidateFramebufferI:
+            glInvalidateFramebuffer(**(GLenum**)code, **(GLsizei**)(code + 4), *(const GLenum **)(code + 8));
             code += 12;
             break;
-        case GetProgramInfoLog:
-            glGetProgramInfoLog(*(GLuint*)code, *(GLsizei*)(code + 4), *(GLsizei **)(code + 8), *(GLchar **)(code + 12));
-            code += 16;
-            break;
-        case GetProgramInfoLogI:
-            glGetProgramInfoLog(**(GLuint**)code, **(GLsizei**)(code + 4), *(GLsizei **)(code + 8), *(GLchar **)(code + 12));
-            code += 16;
-            break;
-        case GetRenderbufferParameteriv:
-            glGetRenderbufferParameteriv(*(GLenum*)code, *(GLenum*)(code + 4), *(GLint **)(code + 8));
-            code += 12;
-            break;
-        case GetRenderbufferParameterivI:
-            glGetRenderbufferParameteriv(**(GLenum**)code, **(GLenum**)(code + 4), *(GLint **)(code + 8));
-            code += 12;
-            break;
-        case GetShaderiv:
-            glGetShaderiv(*(GLuint*)code, *(GLenum*)(code + 4), *(GLint **)(code + 8));
-            code += 12;
-            break;
-        case GetShaderivI:
-            glGetShaderiv(**(GLuint**)code, **(GLenum**)(code + 4), *(GLint **)(code + 8));
-            code += 12;
-            break;
-        case GetActiveAttrib:
-            glGetActiveAttrib(*(GLuint*)code, *(GLuint*)(code + 4), *(GLsizei*)(code + 8), *(GLsizei **)(code + 12), *(GLint **)(code + 16), *(GLenum **)(code + 20), *(GLchar **)(code + 24));
+        case InvalidateSubFramebuffer:
+            glInvalidateSubFramebuffer(*(GLenum*)code, *(GLsizei*)(code + 4), *(const GLenum **)(code + 8), *(GLint*)(code + 12), *(GLint*)(code + 16), *(GLsizei*)(code + 20), *(GLsizei*)(code + 24));
             code += 28;
             break;
-        case GetActiveAttribI:
-            glGetActiveAttrib(**(GLuint**)code, **(GLuint**)(code + 4), **(GLsizei**)(code + 8), *(GLsizei **)(code + 12), *(GLint **)(code + 16), *(GLenum **)(code + 20), *(GLchar **)(code + 24));
+        case InvalidateSubFramebufferI:
+            glInvalidateSubFramebuffer(**(GLenum**)code, **(GLsizei**)(code + 4), *(const GLenum **)(code + 8), **(GLint**)(code + 12), **(GLint**)(code + 16), **(GLsizei**)(code + 20), **(GLsizei**)(code + 24));
             code += 28;
             break;
-        case DeleteBuffers:
-            glDeleteBuffers(*(GLsizei*)code, *(const GLuint **)(code + 4));
+        case IsQuery:
+            *(int*)(code + 4) = glIsQuery(*(GLuint*)code);
             code += 8;
             break;
-        case DeleteBuffersI:
-            glDeleteBuffers(**(GLsizei**)code, *(const GLuint **)(code + 4));
+        case IsQueryI:
+            *(int*)(code + 4) = glIsQuery(**(GLuint**)code);
             code += 8;
             break;
-        case DeleteFramebuffers:
-            glDeleteFramebuffers(*(GLsizei*)code, *(const GLuint **)(code + 4));
+        case IsSampler:
+            *(int*)(code + 4) = glIsSampler(*(GLuint*)code);
             code += 8;
             break;
-        case DeleteFramebuffersI:
-            glDeleteFramebuffers(**(GLsizei**)code, *(const GLuint **)(code + 4));
+        case IsSamplerI:
+            *(int*)(code + 4) = glIsSampler(**(GLuint**)code);
             code += 8;
             break;
-        case DeleteProgram:
-            glDeleteProgram(*(GLuint*)code);
-            code += 4;
-            break;
-        case DeleteProgramI:
-            glDeleteProgram(**(GLuint**)code);
-            code += 4;
-            break;
-        case DeleteRenderbuffers:
-            glDeleteRenderbuffers(*(GLsizei*)code, *(const GLuint **)(code + 4));
+        case IsSync:
+            *(int*)(code + 4) = glIsSync(*(GLsync*)code);
             code += 8;
             break;
-        case DeleteRenderbuffersI:
-            glDeleteRenderbuffers(**(GLsizei**)code, *(const GLuint **)(code + 4));
+        case IsSyncI:
+            *(int*)(code + 4) = glIsSync(**(GLsync**)code);
             code += 8;
             break;
-        case DeleteShader:
-            glDeleteShader(*(GLuint*)code);
-            code += 4;
-            break;
-        case DeleteShaderI:
-            glDeleteShader(**(GLuint**)code);
-            code += 4;
-            break;
-        case DeleteTextures:
-            glDeleteTextures(*(GLsizei*)code, *(const GLuint **)(code + 4));
+        case IsTransformFeedback:
+            *(int*)(code + 4) = glIsTransformFeedback(*(GLuint*)code);
             code += 8;
             break;
-        case DeleteTexturesI:
-            glDeleteTextures(**(GLsizei**)code, *(const GLuint **)(code + 4));
+        case IsTransformFeedbackI:
+            *(int*)(code + 4) = glIsTransformFeedback(**(GLuint**)code);
             code += 8;
             break;
-        case DepthFunc:
-            glDepthFunc(*(GLenum*)code);
-            code += 4;
-            break;
-        case DepthFuncI:
-            glDepthFunc(**(GLenum**)code);
-            code += 4;
-            break;
-        case DepthMask:
-            glDepthMask(*(GLboolean*)code);
-            code += 4;
-            break;
-        case DepthMaskI:
-            glDepthMask(**(GLboolean**)code);
-            code += 4;
-            break;
-        case DepthRangef:
-            glDepthRangef(*(GLclampf*)code, *(GLclampf*)(code + 4));
+        case IsVertexArray:
+            *(int*)(code + 4) = glIsVertexArray(*(GLuint*)code);
             code += 8;
             break;
-        case DepthRangefI:
-            glDepthRangef(**(GLclampf**)code, **(GLclampf**)(code + 4));
+        case IsVertexArrayI:
+            *(int*)(code + 4) = glIsVertexArray(**(GLuint**)code);
             code += 8;
             break;
-        case DetachShader:
-            glDetachShader(*(GLuint*)code, *(GLuint*)(code + 4));
-            code += 8;
-            break;
-        case DetachShaderI:
-            glDetachShader(**(GLuint**)code, **(GLuint**)(code + 4));
-            code += 8;
-            break;
-        case Disable:
-            glDisable(*(GLenum*)code);
-            code += 4;
-            break;
-        case DisableI:
-            glDisable(**(GLenum**)code);
-            code += 4;
-            break;
-        case DisableVertexAttribArray:
-            glDisableVertexAttribArray(*(GLuint*)code);
-            code += 4;
-            break;
-        case DisableVertexAttribArrayI:
-            glDisableVertexAttribArray(**(GLuint**)code);
-            code += 4;
-            break;
-        case DrawArrays:
-            glDrawArrays(*(GLenum*)code, *(GLint*)(code + 4), *(GLsizei*)(code + 8));
-            code += 12;
-            break;
-        case DrawArraysI:
-            glDrawArrays(**(GLenum**)code, **(GLint**)(code + 4), **(GLsizei**)(code + 8));
-            code += 12;
-            break;
-        case DrawElements:
-            glDrawElements(*(GLenum*)code, *(GLsizei*)(code + 4), *(GLenum*)(code + 8), *(const void **)(code + 12));
-            code += 16;
-            break;
-        case DrawElementsI:
-            glDrawElements(**(GLenum**)code, **(GLsizei**)(code + 4), **(GLenum**)(code + 8), **(const void ***)(code + 12));
-            code += 16;
-            break;
-        case Enable:
-            glEnable(*(GLenum*)code);
-            code += 4;
-            break;
-        case EnableI:
-            glEnable(**(GLenum**)code);
-            code += 4;
-            break;
-        case EnableVertexAttribArray:
-            glEnableVertexAttribArray(*(GLuint*)code);
-            code += 4;
-            break;
-        case EnableVertexAttribArrayI:
-            glEnableVertexAttribArray(**(GLuint**)code);
-            code += 4;
-            break;
-        case Finish:
-            glFinish();
+        case PauseTransformFeedback:
+            glPauseTransformFeedback();
             code += 0;
             break;
-        case Flush:
-            glFlush();
+        case ProgramBinary:
+            glProgramBinary(*(GLuint*)code, *(GLenum*)(code + 4), *(const void **)(code + 8), *(GLint*)(code + 12));
+            code += 16;
+            break;
+        case ProgramBinaryI:
+            glProgramBinary(**(GLuint**)code, **(GLenum**)(code + 4), *(const void **)(code + 8), **(GLint**)(code + 12));
+            code += 16;
+            break;
+        case ProgramParameteri:
+            glProgramParameteri(*(GLuint*)code, *(GLenum*)(code + 4), *(GLint*)(code + 8));
+            code += 12;
+            break;
+        case ProgramParameteriI:
+            glProgramParameteri(**(GLuint**)code, **(GLenum**)(code + 4), **(GLint**)(code + 8));
+            code += 12;
+            break;
+        case ReadBuffer:
+            glReadBuffer(*(GLenum*)code);
+            code += 4;
+            break;
+        case ReadBufferI:
+            glReadBuffer(**(GLenum**)code);
+            code += 4;
+            break;
+        case RenderbufferStorageMultisample:
+            glRenderbufferStorageMultisample(*(GLenum*)code, *(GLsizei*)(code + 4), *(GLenum*)(code + 8), *(GLsizei*)(code + 12), *(GLsizei*)(code + 16));
+            code += 20;
+            break;
+        case RenderbufferStorageMultisampleI:
+            glRenderbufferStorageMultisample(**(GLenum**)code, **(GLsizei**)(code + 4), **(GLenum**)(code + 8), **(GLsizei**)(code + 12), **(GLsizei**)(code + 16));
+            code += 20;
+            break;
+        case ResumeTransformFeedback:
+            glResumeTransformFeedback();
             code += 0;
             break;
-        case FramebufferRenderbuffer:
-            glFramebufferRenderbuffer(*(GLenum*)code, *(GLenum*)(code + 4), *(GLenum*)(code + 8), *(GLuint*)(code + 12));
-            code += 16;
+        case SamplerParameteri:
+            glSamplerParameteri(*(GLuint*)code, *(GLenum*)(code + 4), *(GLint*)(code + 8));
+            code += 12;
             break;
-        case FramebufferRenderbufferI:
-            glFramebufferRenderbuffer(**(GLenum**)code, **(GLenum**)(code + 4), **(GLenum**)(code + 8), **(GLuint**)(code + 12));
-            code += 16;
+        case SamplerParameteriI:
+            glSamplerParameteri(**(GLuint**)code, **(GLenum**)(code + 4), **(GLint**)(code + 8));
+            code += 12;
             break;
-        case FramebufferTexture2D:
-            glFramebufferTexture2D(*(GLenum*)code, *(GLenum*)(code + 4), *(GLenum*)(code + 8), *(GLuint*)(code + 12), *(GLint*)(code + 16));
+        case SamplerParameteriv:
+            glSamplerParameteriv(*(GLuint*)code, *(GLenum*)(code + 4), *(const GLint **)(code + 8));
+            code += 12;
+            break;
+        case SamplerParameterivI:
+            glSamplerParameteriv(**(GLuint**)code, **(GLenum**)(code + 4), *(const GLint **)(code + 8));
+            code += 12;
+            break;
+        case SamplerParameterf:
+            glSamplerParameterf(*(GLuint*)code, *(GLenum*)(code + 4), *(GLfloat*)(code + 8));
+            code += 12;
+            break;
+        case SamplerParameterfI:
+            glSamplerParameterf(**(GLuint**)code, **(GLenum**)(code + 4), **(GLfloat**)(code + 8));
+            code += 12;
+            break;
+        case SamplerParameterfv:
+            glSamplerParameterfv(*(GLuint*)code, *(GLenum*)(code + 4), *(const GLfloat **)(code + 8));
+            code += 12;
+            break;
+        case SamplerParameterfvI:
+            glSamplerParameterfv(**(GLuint**)code, **(GLenum**)(code + 4), *(const GLfloat **)(code + 8));
+            code += 12;
+            break;
+        case TexImage3D:
+            glTexImage3D(*(GLenum*)code, *(GLint*)(code + 4), *(GLenum*)(code + 8), *(GLsizei*)(code + 12), *(GLsizei*)(code + 16), *(GLsizei*)(code + 20), *(GLint*)(code + 24), *(GLenum*)(code + 28), *(GLenum*)(code + 32), *(const void **)(code + 36));
+            code += 40;
+            break;
+        case TexImage3DI:
+            glTexImage3D(**(GLenum**)code, **(GLint**)(code + 4), **(GLenum**)(code + 8), **(GLsizei**)(code + 12), **(GLsizei**)(code + 16), **(GLsizei**)(code + 20), **(GLint**)(code + 24), **(GLenum**)(code + 28), **(GLenum**)(code + 32), **(const void ***)(code + 36));
+            code += 40;
+            break;
+        case TexStorage2D:
+            glTexStorage2D(*(GLenum*)code, *(GLsizei*)(code + 4), *(GLenum*)(code + 8), *(GLsizei*)(code + 12), *(GLsizei*)(code + 16));
             code += 20;
             break;
-        case FramebufferTexture2DI:
-            glFramebufferTexture2D(**(GLenum**)code, **(GLenum**)(code + 4), **(GLenum**)(code + 8), **(GLuint**)(code + 12), **(GLint**)(code + 16));
+        case TexStorage2DI:
+            glTexStorage2D(**(GLenum**)code, **(GLsizei**)(code + 4), **(GLenum**)(code + 8), **(GLsizei**)(code + 12), **(GLsizei**)(code + 16));
             code += 20;
             break;
-        case FrontFace:
-            glFrontFace(*(GLenum*)code);
-            code += 4;
+        case TexStorage3D:
+            glTexStorage3D(*(GLenum*)code, *(GLsizei*)(code + 4), *(GLenum*)(code + 8), *(GLsizei*)(code + 12), *(GLsizei*)(code + 16), *(GLsizei*)(code + 20));
+            code += 24;
             break;
-        case FrontFaceI:
-            glFrontFace(**(GLenum**)code);
-            code += 4;
+        case TexStorage3DI:
+            glTexStorage3D(**(GLenum**)code, **(GLsizei**)(code + 4), **(GLenum**)(code + 8), **(GLsizei**)(code + 12), **(GLsizei**)(code + 16), **(GLsizei**)(code + 20));
+            code += 24;
             break;
-        case GenBuffers:
-            glGenBuffers(*(GLsizei*)code, *(GLuint **)(code + 4));
-            code += 8;
+        case TexSubImage3D:
+            glTexSubImage3D(*(GLenum*)code, *(GLint*)(code + 4), *(GLint*)(code + 8), *(GLint*)(code + 12), *(GLint*)(code + 16), *(GLsizei*)(code + 20), *(GLsizei*)(code + 24), *(GLsizei*)(code + 28), *(GLenum*)(code + 32), *(GLenum*)(code + 36), *(const void **)(code + 40));
+            code += 44;
             break;
-        case GenBuffersI:
-            glGenBuffers(**(GLsizei**)code, *(GLuint **)(code + 4));
-            code += 8;
-            break;
-        case GenerateMipmap:
-            glGenerateMipmap(*(GLenum*)code);
-            code += 4;
-            break;
-        case GenerateMipmapI:
-            glGenerateMipmap(**(GLenum**)code);
-            code += 4;
-            break;
-        case GenFramebuffers:
-            glGenFramebuffers(*(GLsizei*)code, *(GLuint **)(code + 4));
-            code += 8;
-            break;
-        case GenFramebuffersI:
-            glGenFramebuffers(**(GLsizei**)code, *(GLuint **)(code + 4));
-            code += 8;
-            break;
-        case GenRenderbuffers:
-            glGenRenderbuffers(*(GLsizei*)code, *(GLuint **)(code + 4));
-            code += 8;
-            break;
-        case GenRenderbuffersI:
-            glGenRenderbuffers(**(GLsizei**)code, *(GLuint **)(code + 4));
-            code += 8;
-            break;
-        case GenTextures:
-            glGenTextures(*(GLsizei*)code, *(GLuint **)(code + 4));
-            code += 8;
-            break;
-        case GenTexturesI:
-            glGenTextures(**(GLsizei**)code, *(GLuint **)(code + 4));
-            code += 8;
-            break;
-        case BlendFuncSeparate:
-            glBlendFuncSeparate(*(GLenum*)code, *(GLenum*)(code + 4), *(GLenum*)(code + 8), *(GLenum*)(code + 12));
-            code += 16;
-            break;
-        case BlendFuncSeparateI:
-            glBlendFuncSeparate(**(GLenum**)code, **(GLenum**)(code + 4), **(GLenum**)(code + 8), **(GLenum**)(code + 12));
-            code += 16;
-            break;
-        case BufferData:
-            glBufferData(*(GLenum*)code, *(GLsizeiptr*)(code + 4), *(const void **)(code + 8), *(GLenum*)(code + 12));
-            code += 16;
-            break;
-        case BufferDataI:
-            glBufferData(**(GLenum**)code, **(GLsizeiptr**)(code + 4), **(const void ***)(code + 8), **(GLenum**)(code + 12));
-            code += 16;
-            break;
-        case BufferSubData:
-            glBufferSubData(*(GLenum*)code, *(GLintptr*)(code + 4), *(GLsizeiptr*)(code + 8), *(const void **)(code + 12));
-            code += 16;
-            break;
-        case BufferSubDataI:
-            glBufferSubData(**(GLenum**)code, **(GLintptr**)(code + 4), **(GLsizeiptr**)(code + 8), **(const void ***)(code + 12));
-            code += 16;
-            break;
-        case CheckFramebufferStatus:
-            *(GLenum*)(code + 4) = glCheckFramebufferStatus(*(GLenum*)code);
-            code += 8;
-            break;
-        case CheckFramebufferStatusI:
-            *(GLenum*)(code + 4) = glCheckFramebufferStatus(**(GLenum**)code);
-            code += 8;
-            break;
-        case Clear:
-            glClear(*(GLbitfield*)code);
-            code += 4;
-            break;
-        case ClearI:
-            glClear(**(GLbitfield**)code);
-            code += 4;
-            break;
-        case ClearColor:
-            glClearColor(*(GLfloat*)code, *(GLfloat*)(code + 4), *(GLfloat*)(code + 8), *(GLfloat*)(code + 12));
-            code += 16;
-            break;
-        case ClearColorI:
-            glClearColor(**(GLfloat**)code, **(GLfloat**)(code + 4), **(GLfloat**)(code + 8), **(GLfloat**)(code + 12));
-            code += 16;
-            break;
-        case ClearDepthf:
-            glClearDepthf(*(GLclampf*)code);
-            code += 4;
-            break;
-        case ClearDepthfI:
-            glClearDepthf(**(GLclampf**)code);
-            code += 4;
-            break;
-        case ClearStencil:
-            glClearStencil(*(GLint*)code);
-            code += 4;
-            break;
-        case ClearStencilI:
-            glClearStencil(**(GLint**)code);
-            code += 4;
-            break;
-        case ColorMask:
-            glColorMask(*(GLboolean*)code, *(GLboolean*)(code + 4), *(GLboolean*)(code + 8), *(GLboolean*)(code + 12));
-            code += 16;
-            break;
-        case ColorMaskI:
-            glColorMask(**(GLboolean**)code, **(GLboolean**)(code + 4), **(GLboolean**)(code + 8), **(GLboolean**)(code + 12));
-            code += 16;
-            break;
-        case CompileShader:
-            glCompileShader(*(GLuint*)code);
-            code += 4;
-            break;
-        case CompileShaderI:
-            glCompileShader(**(GLuint**)code);
-            code += 4;
-            break;
-        case CompressedTexImage2D:
-            glCompressedTexImage2D(*(GLenum*)code, *(GLint*)(code + 4), *(GLenum*)(code + 8), *(GLsizei*)(code + 12), *(GLsizei*)(code + 16), *(GLint*)(code + 20), *(GLsizei*)(code + 24), *(const void **)(code + 28));
-            code += 32;
-            break;
-        case CompressedTexImage2DI:
-            glCompressedTexImage2D(**(GLenum**)code, **(GLint**)(code + 4), **(GLenum**)(code + 8), **(GLsizei**)(code + 12), **(GLsizei**)(code + 16), **(GLint**)(code + 20), **(GLsizei**)(code + 24), **(const void ***)(code + 28));
-            code += 32;
-            break;
-        case CompressedTexSubImage2D:
-            glCompressedTexSubImage2D(*(GLenum*)code, *(GLint*)(code + 4), *(GLint*)(code + 8), *(GLint*)(code + 12), *(GLsizei*)(code + 16), *(GLsizei*)(code + 20), *(GLenum*)(code + 24), *(GLsizei*)(code + 28), *(const void **)(code + 32));
-            code += 36;
-            break;
-        case CompressedTexSubImage2DI:
-            glCompressedTexSubImage2D(**(GLenum**)code, **(GLint**)(code + 4), **(GLint**)(code + 8), **(GLint**)(code + 12), **(GLsizei**)(code + 16), **(GLsizei**)(code + 20), **(GLenum**)(code + 24), **(GLsizei**)(code + 28), **(const void ***)(code + 32));
-            code += 36;
-            break;
-        case CopyTexImage2D:
-            glCopyTexImage2D(*(GLenum*)code, *(GLint*)(code + 4), *(GLenum*)(code + 8), *(GLint*)(code + 12), *(GLint*)(code + 16), *(GLsizei*)(code + 20), *(GLsizei*)(code + 24), *(GLint*)(code + 28));
-            code += 32;
-            break;
-        case CopyTexImage2DI:
-            glCopyTexImage2D(**(GLenum**)code, **(GLint**)(code + 4), **(GLenum**)(code + 8), **(GLint**)(code + 12), **(GLint**)(code + 16), **(GLsizei**)(code + 20), **(GLsizei**)(code + 24), **(GLint**)(code + 28));
-            code += 32;
-            break;
-        case CopyTexSubImage2D:
-            glCopyTexSubImage2D(*(GLenum*)code, *(GLint*)(code + 4), *(GLint*)(code + 8), *(GLint*)(code + 12), *(GLint*)(code + 16), *(GLint*)(code + 20), *(GLsizei*)(code + 24), *(GLsizei*)(code + 28));
-            code += 32;
-            break;
-        case CopyTexSubImage2DI:
-            glCopyTexSubImage2D(**(GLenum**)code, **(GLint**)(code + 4), **(GLint**)(code + 8), **(GLint**)(code + 12), **(GLint**)(code + 16), **(GLint**)(code + 20), **(GLsizei**)(code + 24), **(GLsizei**)(code + 28));
-            code += 32;
-            break;
-        case CreateProgram:
-            *(uint32_t*)(code + 0) = glCreateProgram();
-            code += 4;
-            break;
-        case CreateProgramI:
-            *(uint32_t*)(code + 0) = glCreateProgram();
-            code += 4;
-            break;
-        case CreateShader:
-            *(uint32_t*)(code + 4) = glCreateShader(*(GLenum*)code);
-            code += 8;
-            break;
-        case CreateShaderI:
-            *(uint32_t*)(code + 4) = glCreateShader(**(GLenum**)code);
-            code += 8;
-            break;
-        case CullFace:
-            glCullFace(*(GLenum*)code);
-            code += 4;
-            break;
-        case CullFaceI:
-            glCullFace(**(GLenum**)code);
-            code += 4;
+        case TexSubImage3DI:
+            glTexSubImage3D(**(GLenum**)code, **(GLint**)(code + 4), **(GLint**)(code + 8), **(GLint**)(code + 12), **(GLint**)(code + 16), **(GLsizei**)(code + 20), **(GLsizei**)(code + 24), **(GLsizei**)(code + 28), **(GLenum**)(code + 32), **(GLenum**)(code + 36), **(const void ***)(code + 40));
+            code += 44;
             break;
         case TransformFeedbackVaryings:
             glTransformFeedbackVaryings(*(GLuint*)code, *(GLsizei*)(code + 4), *(const GLchar *const**)(code + 8), *(GLenum*)(code + 12));
@@ -1836,609 +1404,1041 @@ int emInterpret(intptr_t code, int length, intptr_t stack) {
             glBlendFunc(**(GLenum**)code, **(GLenum**)(code + 4));
             code += 8;
             break;
-        case SamplerParameteri:
-            glSamplerParameteri(*(GLuint*)code, *(GLenum*)(code + 4), *(GLint*)(code + 8));
-            code += 12;
-            break;
-        case SamplerParameteriI:
-            glSamplerParameteri(**(GLuint**)code, **(GLenum**)(code + 4), **(GLint**)(code + 8));
-            code += 12;
-            break;
-        case SamplerParameteriv:
-            glSamplerParameteriv(*(GLuint*)code, *(GLenum*)(code + 4), *(const GLint **)(code + 8));
-            code += 12;
-            break;
-        case SamplerParameterivI:
-            glSamplerParameteriv(**(GLuint**)code, **(GLenum**)(code + 4), *(const GLint **)(code + 8));
-            code += 12;
-            break;
-        case SamplerParameterf:
-            glSamplerParameterf(*(GLuint*)code, *(GLenum*)(code + 4), *(GLfloat*)(code + 8));
-            code += 12;
-            break;
-        case SamplerParameterfI:
-            glSamplerParameterf(**(GLuint**)code, **(GLenum**)(code + 4), **(GLfloat**)(code + 8));
-            code += 12;
-            break;
-        case SamplerParameterfv:
-            glSamplerParameterfv(*(GLuint*)code, *(GLenum*)(code + 4), *(const GLfloat **)(code + 8));
-            code += 12;
-            break;
-        case SamplerParameterfvI:
-            glSamplerParameterfv(**(GLuint**)code, **(GLenum**)(code + 4), *(const GLfloat **)(code + 8));
-            code += 12;
-            break;
-        case TexImage3D:
-            glTexImage3D(*(GLenum*)code, *(GLint*)(code + 4), *(GLenum*)(code + 8), *(GLsizei*)(code + 12), *(GLsizei*)(code + 16), *(GLsizei*)(code + 20), *(GLint*)(code + 24), *(GLenum*)(code + 28), *(GLenum*)(code + 32), *(const void **)(code + 36));
-            code += 40;
-            break;
-        case TexImage3DI:
-            glTexImage3D(**(GLenum**)code, **(GLint**)(code + 4), **(GLenum**)(code + 8), **(GLsizei**)(code + 12), **(GLsizei**)(code + 16), **(GLsizei**)(code + 20), **(GLint**)(code + 24), **(GLenum**)(code + 28), **(GLenum**)(code + 32), **(const void ***)(code + 36));
-            code += 40;
-            break;
-        case TexStorage2D:
-            glTexStorage2D(*(GLenum*)code, *(GLsizei*)(code + 4), *(GLenum*)(code + 8), *(GLsizei*)(code + 12), *(GLsizei*)(code + 16));
-            code += 20;
-            break;
-        case TexStorage2DI:
-            glTexStorage2D(**(GLenum**)code, **(GLsizei**)(code + 4), **(GLenum**)(code + 8), **(GLsizei**)(code + 12), **(GLsizei**)(code + 16));
-            code += 20;
-            break;
-        case TexStorage3D:
-            glTexStorage3D(*(GLenum*)code, *(GLsizei*)(code + 4), *(GLenum*)(code + 8), *(GLsizei*)(code + 12), *(GLsizei*)(code + 16), *(GLsizei*)(code + 20));
-            code += 24;
-            break;
-        case TexStorage3DI:
-            glTexStorage3D(**(GLenum**)code, **(GLsizei**)(code + 4), **(GLenum**)(code + 8), **(GLsizei**)(code + 12), **(GLsizei**)(code + 16), **(GLsizei**)(code + 20));
-            code += 24;
-            break;
-        case TexSubImage3D:
-            glTexSubImage3D(*(GLenum*)code, *(GLint*)(code + 4), *(GLint*)(code + 8), *(GLint*)(code + 12), *(GLint*)(code + 16), *(GLsizei*)(code + 20), *(GLsizei*)(code + 24), *(GLsizei*)(code + 28), *(GLenum*)(code + 32), *(GLenum*)(code + 36), *(const void **)(code + 40));
-            code += 44;
-            break;
-        case TexSubImage3DI:
-            glTexSubImage3D(**(GLenum**)code, **(GLint**)(code + 4), **(GLint**)(code + 8), **(GLint**)(code + 12), **(GLint**)(code + 16), **(GLsizei**)(code + 20), **(GLsizei**)(code + 24), **(GLsizei**)(code + 28), **(GLenum**)(code + 32), **(GLenum**)(code + 36), **(const void ***)(code + 40));
-            code += 44;
-            break;
-        case GetTransformFeedbackVarying:
-            glGetTransformFeedbackVarying(*(GLuint*)code, *(GLuint*)(code + 4), *(GLsizei*)(code + 8), *(GLsizei **)(code + 12), *(GLsizei **)(code + 16), *(GLenum **)(code + 20), *(GLchar **)(code + 24));
-            code += 28;
-            break;
-        case GetTransformFeedbackVaryingI:
-            glGetTransformFeedbackVarying(**(GLuint**)code, **(GLuint**)(code + 4), **(GLsizei**)(code + 8), *(GLsizei **)(code + 12), *(GLsizei **)(code + 16), *(GLenum **)(code + 20), *(GLchar **)(code + 24));
-            code += 28;
-            break;
-        case GetUniformuiv:
-            glGetUniformuiv(*(GLuint*)code, *(GLint*)(code + 4), *(GLuint **)(code + 8));
-            code += 12;
-            break;
-        case GetUniformuivI:
-            glGetUniformuiv(**(GLuint**)code, **(GLint**)(code + 4), *(GLuint **)(code + 8));
-            code += 12;
-            break;
-        case GetUniformBlockIndex:
-            *(uint32_t*)(code + 8) = glGetUniformBlockIndex(*(GLuint*)code, *(const GLchar **)(code + 4));
-            code += 12;
-            break;
-        case GetUniformBlockIndexI:
-            *(uint32_t*)(code + 8) = glGetUniformBlockIndex(**(GLuint**)code, *(const GLchar **)(code + 4));
-            code += 12;
-            break;
-        case GetUniformIndices:
-            glGetUniformIndices(*(GLuint*)code, *(GLsizei*)(code + 4), *(const GLchar *const**)(code + 8), *(GLuint **)(code + 12));
+        case BlendFuncSeparate:
+            glBlendFuncSeparate(*(GLenum*)code, *(GLenum*)(code + 4), *(GLenum*)(code + 8), *(GLenum*)(code + 12));
             code += 16;
             break;
-        case GetUniformIndicesI:
-            glGetUniformIndices(**(GLuint**)code, **(GLsizei**)(code + 4), *(const GLchar *const**)(code + 8), *(GLuint **)(code + 12));
+        case BlendFuncSeparateI:
+            glBlendFuncSeparate(**(GLenum**)code, **(GLenum**)(code + 4), **(GLenum**)(code + 8), **(GLenum**)(code + 12));
             code += 16;
             break;
-        case GetVertexAttribIiv:
-            glGetVertexAttribIiv(*(GLuint*)code, *(GLenum*)(code + 4), *(GLint **)(code + 8));
+        case BufferData:
+            glBufferData(*(GLenum*)code, *(GLsizeiptr*)(code + 4), *(const void **)(code + 8), *(GLenum*)(code + 12));
+            code += 16;
+            break;
+        case BufferDataI:
+            glBufferData(**(GLenum**)code, **(GLsizeiptr**)(code + 4), **(const void ***)(code + 8), **(GLenum**)(code + 12));
+            code += 16;
+            break;
+        case BufferSubData:
+            glBufferSubData(*(GLenum*)code, *(GLintptr*)(code + 4), *(GLsizeiptr*)(code + 8), *(const void **)(code + 12));
+            code += 16;
+            break;
+        case BufferSubDataI:
+            glBufferSubData(**(GLenum**)code, **(GLintptr**)(code + 4), **(GLsizeiptr**)(code + 8), **(const void ***)(code + 12));
+            code += 16;
+            break;
+        case CheckFramebufferStatus:
+            *(GLenum*)(code + 4) = glCheckFramebufferStatus(*(GLenum*)code);
+            code += 8;
+            break;
+        case CheckFramebufferStatusI:
+            *(GLenum*)(code + 4) = glCheckFramebufferStatus(**(GLenum**)code);
+            code += 8;
+            break;
+        case Clear:
+            glClear(*(GLbitfield*)code);
+            code += 4;
+            break;
+        case ClearI:
+            glClear(**(GLbitfield**)code);
+            code += 4;
+            break;
+        case ClearColor:
+            glClearColor(*(GLfloat*)code, *(GLfloat*)(code + 4), *(GLfloat*)(code + 8), *(GLfloat*)(code + 12));
+            code += 16;
+            break;
+        case ClearColorI:
+            glClearColor(**(GLfloat**)code, **(GLfloat**)(code + 4), **(GLfloat**)(code + 8), **(GLfloat**)(code + 12));
+            code += 16;
+            break;
+        case ClearDepthf:
+            glClearDepthf(*(GLclampf*)code);
+            code += 4;
+            break;
+        case ClearDepthfI:
+            glClearDepthf(**(GLclampf**)code);
+            code += 4;
+            break;
+        case ClearStencil:
+            glClearStencil(*(GLint*)code);
+            code += 4;
+            break;
+        case ClearStencilI:
+            glClearStencil(**(GLint**)code);
+            code += 4;
+            break;
+        case ColorMask:
+            glColorMask(*(GLboolean*)code, *(GLboolean*)(code + 4), *(GLboolean*)(code + 8), *(GLboolean*)(code + 12));
+            code += 16;
+            break;
+        case ColorMaskI:
+            glColorMask(**(GLboolean**)code, **(GLboolean**)(code + 4), **(GLboolean**)(code + 8), **(GLboolean**)(code + 12));
+            code += 16;
+            break;
+        case CompileShader:
+            glCompileShader(*(GLuint*)code);
+            code += 4;
+            break;
+        case CompileShaderI:
+            glCompileShader(**(GLuint**)code);
+            code += 4;
+            break;
+        case CompressedTexImage2D:
+            glCompressedTexImage2D(*(GLenum*)code, *(GLint*)(code + 4), *(GLenum*)(code + 8), *(GLsizei*)(code + 12), *(GLsizei*)(code + 16), *(GLint*)(code + 20), *(GLsizei*)(code + 24), *(const void **)(code + 28));
+            code += 32;
+            break;
+        case CompressedTexImage2DI:
+            glCompressedTexImage2D(**(GLenum**)code, **(GLint**)(code + 4), **(GLenum**)(code + 8), **(GLsizei**)(code + 12), **(GLsizei**)(code + 16), **(GLint**)(code + 20), **(GLsizei**)(code + 24), **(const void ***)(code + 28));
+            code += 32;
+            break;
+        case CompressedTexSubImage2D:
+            glCompressedTexSubImage2D(*(GLenum*)code, *(GLint*)(code + 4), *(GLint*)(code + 8), *(GLint*)(code + 12), *(GLsizei*)(code + 16), *(GLsizei*)(code + 20), *(GLenum*)(code + 24), *(GLsizei*)(code + 28), *(const void **)(code + 32));
+            code += 36;
+            break;
+        case CompressedTexSubImage2DI:
+            glCompressedTexSubImage2D(**(GLenum**)code, **(GLint**)(code + 4), **(GLint**)(code + 8), **(GLint**)(code + 12), **(GLsizei**)(code + 16), **(GLsizei**)(code + 20), **(GLenum**)(code + 24), **(GLsizei**)(code + 28), **(const void ***)(code + 32));
+            code += 36;
+            break;
+        case CopyTexImage2D:
+            glCopyTexImage2D(*(GLenum*)code, *(GLint*)(code + 4), *(GLenum*)(code + 8), *(GLint*)(code + 12), *(GLint*)(code + 16), *(GLsizei*)(code + 20), *(GLsizei*)(code + 24), *(GLint*)(code + 28));
+            code += 32;
+            break;
+        case CopyTexImage2DI:
+            glCopyTexImage2D(**(GLenum**)code, **(GLint**)(code + 4), **(GLenum**)(code + 8), **(GLint**)(code + 12), **(GLint**)(code + 16), **(GLsizei**)(code + 20), **(GLsizei**)(code + 24), **(GLint**)(code + 28));
+            code += 32;
+            break;
+        case CopyTexSubImage2D:
+            glCopyTexSubImage2D(*(GLenum*)code, *(GLint*)(code + 4), *(GLint*)(code + 8), *(GLint*)(code + 12), *(GLint*)(code + 16), *(GLint*)(code + 20), *(GLsizei*)(code + 24), *(GLsizei*)(code + 28));
+            code += 32;
+            break;
+        case CopyTexSubImage2DI:
+            glCopyTexSubImage2D(**(GLenum**)code, **(GLint**)(code + 4), **(GLint**)(code + 8), **(GLint**)(code + 12), **(GLint**)(code + 16), **(GLint**)(code + 20), **(GLsizei**)(code + 24), **(GLsizei**)(code + 28));
+            code += 32;
+            break;
+        case CreateProgram:
+            *(uint32_t*)(code + 0) = glCreateProgram();
+            code += 4;
+            break;
+        case CreateProgramI:
+            *(uint32_t*)(code + 0) = glCreateProgram();
+            code += 4;
+            break;
+        case CreateShader:
+            *(uint32_t*)(code + 4) = glCreateShader(*(GLenum*)code);
+            code += 8;
+            break;
+        case CreateShaderI:
+            *(uint32_t*)(code + 4) = glCreateShader(**(GLenum**)code);
+            code += 8;
+            break;
+        case CullFace:
+            glCullFace(*(GLenum*)code);
+            code += 4;
+            break;
+        case CullFaceI:
+            glCullFace(**(GLenum**)code);
+            code += 4;
+            break;
+        case DeleteBuffers:
+            glDeleteBuffers(*(GLsizei*)code, *(const GLuint **)(code + 4));
+            code += 8;
+            break;
+        case DeleteBuffersI:
+            glDeleteBuffers(**(GLsizei**)code, *(const GLuint **)(code + 4));
+            code += 8;
+            break;
+        case DeleteFramebuffers:
+            glDeleteFramebuffers(*(GLsizei*)code, *(const GLuint **)(code + 4));
+            code += 8;
+            break;
+        case DeleteFramebuffersI:
+            glDeleteFramebuffers(**(GLsizei**)code, *(const GLuint **)(code + 4));
+            code += 8;
+            break;
+        case DeleteProgram:
+            glDeleteProgram(*(GLuint*)code);
+            code += 4;
+            break;
+        case DeleteProgramI:
+            glDeleteProgram(**(GLuint**)code);
+            code += 4;
+            break;
+        case DeleteRenderbuffers:
+            glDeleteRenderbuffers(*(GLsizei*)code, *(const GLuint **)(code + 4));
+            code += 8;
+            break;
+        case DeleteRenderbuffersI:
+            glDeleteRenderbuffers(**(GLsizei**)code, *(const GLuint **)(code + 4));
+            code += 8;
+            break;
+        case DeleteShader:
+            glDeleteShader(*(GLuint*)code);
+            code += 4;
+            break;
+        case DeleteShaderI:
+            glDeleteShader(**(GLuint**)code);
+            code += 4;
+            break;
+        case DeleteTextures:
+            glDeleteTextures(*(GLsizei*)code, *(const GLuint **)(code + 4));
+            code += 8;
+            break;
+        case DeleteTexturesI:
+            glDeleteTextures(**(GLsizei**)code, *(const GLuint **)(code + 4));
+            code += 8;
+            break;
+        case DepthFunc:
+            glDepthFunc(*(GLenum*)code);
+            code += 4;
+            break;
+        case DepthFuncI:
+            glDepthFunc(**(GLenum**)code);
+            code += 4;
+            break;
+        case DepthMask:
+            glDepthMask(*(GLboolean*)code);
+            code += 4;
+            break;
+        case DepthMaskI:
+            glDepthMask(**(GLboolean**)code);
+            code += 4;
+            break;
+        case DepthRangef:
+            glDepthRangef(*(GLclampf*)code, *(GLclampf*)(code + 4));
+            code += 8;
+            break;
+        case DepthRangefI:
+            glDepthRangef(**(GLclampf**)code, **(GLclampf**)(code + 4));
+            code += 8;
+            break;
+        case DetachShader:
+            glDetachShader(*(GLuint*)code, *(GLuint*)(code + 4));
+            code += 8;
+            break;
+        case DetachShaderI:
+            glDetachShader(**(GLuint**)code, **(GLuint**)(code + 4));
+            code += 8;
+            break;
+        case Disable:
+            glDisable(*(GLenum*)code);
+            code += 4;
+            break;
+        case DisableI:
+            glDisable(**(GLenum**)code);
+            code += 4;
+            break;
+        case DisableVertexAttribArray:
+            glDisableVertexAttribArray(*(GLuint*)code);
+            code += 4;
+            break;
+        case DisableVertexAttribArrayI:
+            glDisableVertexAttribArray(**(GLuint**)code);
+            code += 4;
+            break;
+        case DrawArrays:
+            glDrawArrays(*(GLenum*)code, *(GLint*)(code + 4), *(GLsizei*)(code + 8));
             code += 12;
             break;
-        case GetVertexAttribIivI:
-            glGetVertexAttribIiv(**(GLuint**)code, **(GLenum**)(code + 4), *(GLint **)(code + 8));
+        case DrawArraysI:
+            glDrawArrays(**(GLenum**)code, **(GLint**)(code + 4), **(GLsizei**)(code + 8));
             code += 12;
             break;
-        case GetVertexAttribIuiv:
-            glGetVertexAttribIuiv(*(GLuint*)code, *(GLenum*)(code + 4), *(GLuint **)(code + 8));
-            code += 12;
+        case DrawElements:
+            glDrawElements(*(GLenum*)code, *(GLsizei*)(code + 4), *(GLenum*)(code + 8), *(const void **)(code + 12));
+            code += 16;
             break;
-        case GetVertexAttribIuivI:
-            glGetVertexAttribIuiv(**(GLuint**)code, **(GLenum**)(code + 4), *(GLuint **)(code + 8));
-            code += 12;
+        case DrawElementsI:
+            glDrawElements(**(GLenum**)code, **(GLsizei**)(code + 4), **(GLenum**)(code + 8), **(const void ***)(code + 12));
+            code += 16;
             break;
-        case InvalidateFramebuffer:
-            glInvalidateFramebuffer(*(GLenum*)code, *(GLsizei*)(code + 4), *(const GLenum **)(code + 8));
-            code += 12;
+        case Enable:
+            glEnable(*(GLenum*)code);
+            code += 4;
             break;
-        case InvalidateFramebufferI:
-            glInvalidateFramebuffer(**(GLenum**)code, **(GLsizei**)(code + 4), *(const GLenum **)(code + 8));
-            code += 12;
+        case EnableI:
+            glEnable(**(GLenum**)code);
+            code += 4;
             break;
-        case InvalidateSubFramebuffer:
-            glInvalidateSubFramebuffer(*(GLenum*)code, *(GLsizei*)(code + 4), *(const GLenum **)(code + 8), *(GLint*)(code + 12), *(GLint*)(code + 16), *(GLsizei*)(code + 20), *(GLsizei*)(code + 24));
-            code += 28;
+        case EnableVertexAttribArray:
+            glEnableVertexAttribArray(*(GLuint*)code);
+            code += 4;
             break;
-        case InvalidateSubFramebufferI:
-            glInvalidateSubFramebuffer(**(GLenum**)code, **(GLsizei**)(code + 4), *(const GLenum **)(code + 8), **(GLint**)(code + 12), **(GLint**)(code + 16), **(GLsizei**)(code + 20), **(GLsizei**)(code + 24));
-            code += 28;
+        case EnableVertexAttribArrayI:
+            glEnableVertexAttribArray(**(GLuint**)code);
+            code += 4;
             break;
-        case IsQuery:
-            *(int*)(code + 4) = glIsQuery(*(GLuint*)code);
-            code += 8;
-            break;
-        case IsQueryI:
-            *(int*)(code + 4) = glIsQuery(**(GLuint**)code);
-            code += 8;
-            break;
-        case IsSampler:
-            *(int*)(code + 4) = glIsSampler(*(GLuint*)code);
-            code += 8;
-            break;
-        case IsSamplerI:
-            *(int*)(code + 4) = glIsSampler(**(GLuint**)code);
-            code += 8;
-            break;
-        case IsSync:
-            *(int*)(code + 4) = glIsSync(*(GLsync*)code);
-            code += 8;
-            break;
-        case IsSyncI:
-            *(int*)(code + 4) = glIsSync(**(GLsync**)code);
-            code += 8;
-            break;
-        case IsTransformFeedback:
-            *(int*)(code + 4) = glIsTransformFeedback(*(GLuint*)code);
-            code += 8;
-            break;
-        case IsTransformFeedbackI:
-            *(int*)(code + 4) = glIsTransformFeedback(**(GLuint**)code);
-            code += 8;
-            break;
-        case IsVertexArray:
-            *(int*)(code + 4) = glIsVertexArray(*(GLuint*)code);
-            code += 8;
-            break;
-        case IsVertexArrayI:
-            *(int*)(code + 4) = glIsVertexArray(**(GLuint**)code);
-            code += 8;
-            break;
-        case PauseTransformFeedback:
-            glPauseTransformFeedback();
+        case Finish:
+            glFinish();
             code += 0;
             break;
-        case ProgramBinary:
-            glProgramBinary(*(GLuint*)code, *(GLenum*)(code + 4), *(const void **)(code + 8), *(GLint*)(code + 12));
-            code += 16;
-            break;
-        case ProgramBinaryI:
-            glProgramBinary(**(GLuint**)code, **(GLenum**)(code + 4), *(const void **)(code + 8), **(GLint**)(code + 12));
-            code += 16;
-            break;
-        case ProgramParameteri:
-            glProgramParameteri(*(GLuint*)code, *(GLenum*)(code + 4), *(GLint*)(code + 8));
-            code += 12;
-            break;
-        case ProgramParameteriI:
-            glProgramParameteri(**(GLuint**)code, **(GLenum**)(code + 4), **(GLint**)(code + 8));
-            code += 12;
-            break;
-        case ReadBuffer:
-            glReadBuffer(*(GLenum*)code);
-            code += 4;
-            break;
-        case ReadBufferI:
-            glReadBuffer(**(GLenum**)code);
-            code += 4;
-            break;
-        case RenderbufferStorageMultisample:
-            glRenderbufferStorageMultisample(*(GLenum*)code, *(GLsizei*)(code + 4), *(GLenum*)(code + 8), *(GLsizei*)(code + 12), *(GLsizei*)(code + 16));
-            code += 20;
-            break;
-        case RenderbufferStorageMultisampleI:
-            glRenderbufferStorageMultisample(**(GLenum**)code, **(GLsizei**)(code + 4), **(GLenum**)(code + 8), **(GLsizei**)(code + 12), **(GLsizei**)(code + 16));
-            code += 20;
-            break;
-        case ResumeTransformFeedback:
-            glResumeTransformFeedback();
+        case Flush:
+            glFlush();
             code += 0;
             break;
-        case GetInteger64v:
-            glGetInteger64v(*(GLenum*)code, *(GLint64 **)(code + 4));
-            code += 8;
+        case FramebufferRenderbuffer:
+            glFramebufferRenderbuffer(*(GLenum*)code, *(GLenum*)(code + 4), *(GLenum*)(code + 8), *(GLuint*)(code + 12));
+            code += 16;
             break;
-        case GetInteger64vI:
-            glGetInteger64v(**(GLenum**)code, *(GLint64 **)(code + 4));
-            code += 8;
+        case FramebufferRenderbufferI:
+            glFramebufferRenderbuffer(**(GLenum**)code, **(GLenum**)(code + 4), **(GLenum**)(code + 8), **(GLuint**)(code + 12));
+            code += 16;
             break;
-        case GetInteger64i_v:
-            glGetInteger64i_v(*(GLenum*)code, *(GLuint*)(code + 4), *(GLint64 **)(code + 8));
-            code += 12;
-            break;
-        case GetInteger64i_vI:
-            glGetInteger64i_v(**(GLenum**)code, **(GLuint**)(code + 4), *(GLint64 **)(code + 8));
-            code += 12;
-            break;
-        case GetInternalformativ:
-            glGetInternalformativ(*(GLenum*)code, *(GLenum*)(code + 4), *(GLenum*)(code + 8), *(GLsizei*)(code + 12), *(GLint **)(code + 16));
+        case FramebufferTexture2D:
+            glFramebufferTexture2D(*(GLenum*)code, *(GLenum*)(code + 4), *(GLenum*)(code + 8), *(GLuint*)(code + 12), *(GLint*)(code + 16));
             code += 20;
             break;
-        case GetInternalformativI:
-            glGetInternalformativ(**(GLenum**)code, **(GLenum**)(code + 4), **(GLenum**)(code + 8), **(GLsizei**)(code + 12), *(GLint **)(code + 16));
+        case FramebufferTexture2DI:
+            glFramebufferTexture2D(**(GLenum**)code, **(GLenum**)(code + 4), **(GLenum**)(code + 8), **(GLuint**)(code + 12), **(GLint**)(code + 16));
             code += 20;
             break;
-        case GetProgramBinary:
-            glGetProgramBinary(*(GLuint*)code, *(GLsizei*)(code + 4), *(GLsizei **)(code + 8), *(GLenum **)(code + 12), *(void **)(code + 16));
-            code += 20;
-            break;
-        case GetProgramBinaryI:
-            glGetProgramBinary(**(GLuint**)code, **(GLsizei**)(code + 4), *(GLsizei **)(code + 8), *(GLenum **)(code + 12), *(void **)(code + 16));
-            code += 20;
-            break;
-        case GetQueryiv:
-            glGetQueryiv(*(GLenum*)code, *(GLenum*)(code + 4), *(GLint **)(code + 8));
-            code += 12;
-            break;
-        case GetQueryivI:
-            glGetQueryiv(**(GLenum**)code, **(GLenum**)(code + 4), *(GLint **)(code + 8));
-            code += 12;
-            break;
-        case GetQueryObjectuiv:
-            glGetQueryObjectuiv(*(GLuint*)code, *(GLenum*)(code + 4), *(GLuint **)(code + 8));
-            code += 12;
-            break;
-        case GetQueryObjectuivI:
-            glGetQueryObjectuiv(**(GLuint**)code, **(GLenum**)(code + 4), *(GLuint **)(code + 8));
-            code += 12;
-            break;
-        case GetSamplerParameteriv:
-            glGetSamplerParameteriv(*(GLuint*)code, *(GLenum*)(code + 4), *(GLint **)(code + 8));
-            code += 12;
-            break;
-        case GetSamplerParameterivI:
-            glGetSamplerParameteriv(**(GLuint**)code, **(GLenum**)(code + 4), *(GLint **)(code + 8));
-            code += 12;
-            break;
-        case GetSamplerParameterfv:
-            glGetSamplerParameterfv(*(GLuint*)code, *(GLenum*)(code + 4), *(GLfloat **)(code + 8));
-            code += 12;
-            break;
-        case GetSamplerParameterfvI:
-            glGetSamplerParameterfv(**(GLuint**)code, **(GLenum**)(code + 4), *(GLfloat **)(code + 8));
-            code += 12;
-            break;
-        case GetStringi:
-            *(const GLubyte**)(code + 8) = glGetStringi(*(GLenum*)code, *(GLuint*)(code + 4));
-            code += 12;
-            break;
-        case GetStringiI:
-            *(const GLubyte**)(code + 8) = glGetStringi(**(GLenum**)code, **(GLuint**)(code + 4));
-            code += 12;
-            break;
-        case GetSynciv:
-            glGetSynciv(*(GLsync*)code, *(GLenum*)(code + 4), *(GLsizei*)(code + 8), *(GLsizei **)(code + 12), *(GLint **)(code + 16));
-            code += 20;
-            break;
-        case GetSyncivI:
-            glGetSynciv(**(GLsync**)code, **(GLenum**)(code + 4), **(GLsizei**)(code + 8), *(GLsizei **)(code + 12), *(GLint **)(code + 16));
-            code += 20;
-            break;
-        case DrawElementsInstanced:
-            glDrawElementsInstanced(*(GLenum*)code, *(GLsizei*)(code + 4), *(GLenum*)(code + 8), *(const void **)(code + 12), *(GLsizei*)(code + 16));
-            code += 20;
-            break;
-        case DrawElementsInstancedI:
-            glDrawElementsInstanced(**(GLenum**)code, **(GLsizei**)(code + 4), **(GLenum**)(code + 8), **(const void ***)(code + 12), **(GLsizei**)(code + 16));
-            code += 20;
-            break;
-        case DrawRangeElements:
-            glDrawRangeElements(*(GLenum*)code, *(GLuint*)(code + 4), *(GLuint*)(code + 8), *(GLsizei*)(code + 12), *(GLenum*)(code + 16), *(const void **)(code + 20));
-            code += 24;
-            break;
-        case DrawRangeElementsI:
-            glDrawRangeElements(**(GLenum**)code, **(GLuint**)(code + 4), **(GLuint**)(code + 8), **(GLsizei**)(code + 12), **(GLenum**)(code + 16), **(const void ***)(code + 20));
-            code += 24;
-            break;
-        case EndQuery:
-            glEndQuery(*(GLenum*)code);
+        case FrontFace:
+            glFrontFace(*(GLenum*)code);
             code += 4;
             break;
-        case EndQueryI:
-            glEndQuery(**(GLenum**)code);
+        case FrontFaceI:
+            glFrontFace(**(GLenum**)code);
             code += 4;
             break;
-        case EndTransformFeedback:
-            glEndTransformFeedback();
+        case GenBuffers:
+            glGenBuffers(*(GLsizei*)code, *(GLuint **)(code + 4));
+            code += 8;
+            break;
+        case GenBuffersI:
+            glGenBuffers(**(GLsizei**)code, *(GLuint **)(code + 4));
+            code += 8;
+            break;
+        case GenerateMipmap:
+            glGenerateMipmap(*(GLenum*)code);
+            code += 4;
+            break;
+        case GenerateMipmapI:
+            glGenerateMipmap(**(GLenum**)code);
+            code += 4;
+            break;
+        case GenFramebuffers:
+            glGenFramebuffers(*(GLsizei*)code, *(GLuint **)(code + 4));
+            code += 8;
+            break;
+        case GenFramebuffersI:
+            glGenFramebuffers(**(GLsizei**)code, *(GLuint **)(code + 4));
+            code += 8;
+            break;
+        case GenRenderbuffers:
+            glGenRenderbuffers(*(GLsizei*)code, *(GLuint **)(code + 4));
+            code += 8;
+            break;
+        case GenRenderbuffersI:
+            glGenRenderbuffers(**(GLsizei**)code, *(GLuint **)(code + 4));
+            code += 8;
+            break;
+        case GenTextures:
+            glGenTextures(*(GLsizei*)code, *(GLuint **)(code + 4));
+            code += 8;
+            break;
+        case GenTexturesI:
+            glGenTextures(**(GLsizei**)code, *(GLuint **)(code + 4));
+            code += 8;
+            break;
+        case GetActiveAttrib:
+            glGetActiveAttrib(*(GLuint*)code, *(GLuint*)(code + 4), *(GLsizei*)(code + 8), *(GLsizei **)(code + 12), *(GLint **)(code + 16), *(GLenum **)(code + 20), *(GLchar **)(code + 24));
+            code += 28;
+            break;
+        case GetActiveAttribI:
+            glGetActiveAttrib(**(GLuint**)code, **(GLuint**)(code + 4), **(GLsizei**)(code + 8), *(GLsizei **)(code + 12), *(GLint **)(code + 16), *(GLenum **)(code + 20), *(GLchar **)(code + 24));
+            code += 28;
+            break;
+        case GetActiveUniform:
+            glGetActiveUniform(*(GLuint*)code, *(GLuint*)(code + 4), *(GLsizei*)(code + 8), *(GLsizei **)(code + 12), *(GLint **)(code + 16), *(GLenum **)(code + 20), *(GLchar **)(code + 24));
+            code += 28;
+            break;
+        case GetActiveUniformI:
+            glGetActiveUniform(**(GLuint**)code, **(GLuint**)(code + 4), **(GLsizei**)(code + 8), *(GLsizei **)(code + 12), *(GLint **)(code + 16), *(GLenum **)(code + 20), *(GLchar **)(code + 24));
+            code += 28;
+            break;
+        case GetAttachedShaders:
+            glGetAttachedShaders(*(GLuint*)code, *(GLsizei*)(code + 4), *(GLsizei **)(code + 8), *(GLuint **)(code + 12));
+            code += 16;
+            break;
+        case GetAttachedShadersI:
+            glGetAttachedShaders(**(GLuint**)code, **(GLsizei**)(code + 4), *(GLsizei **)(code + 8), *(GLuint **)(code + 12));
+            code += 16;
+            break;
+        case GetAttribLocation:
+            *(int*)(code + 8) = glGetAttribLocation(*(GLuint*)code, *(const GLchar **)(code + 4));
+            code += 12;
+            break;
+        case GetAttribLocationI:
+            *(int*)(code + 8) = glGetAttribLocation(**(GLuint**)code, *(const GLchar **)(code + 4));
+            code += 12;
+            break;
+        case GetBooleanv:
+            glGetBooleanv(*(GLenum*)code, *(GLboolean **)(code + 4));
+            code += 8;
+            break;
+        case GetBooleanvI:
+            glGetBooleanv(**(GLenum**)code, *(GLboolean **)(code + 4));
+            code += 8;
+            break;
+        case GetBufferParameteriv:
+            glGetBufferParameteriv(*(GLenum*)code, *(GLenum*)(code + 4), *(GLint **)(code + 8));
+            code += 12;
+            break;
+        case GetBufferParameterivI:
+            glGetBufferParameteriv(**(GLenum**)code, **(GLenum**)(code + 4), *(GLint **)(code + 8));
+            code += 12;
+            break;
+        case GetError:
+            *(GLenum*)(code + 0) = glGetError();
+            code += 4;
+            break;
+        case GetErrorI:
+            *(GLenum*)(code + 0) = glGetError();
+            code += 4;
+            break;
+        case GetFloatv:
+            glGetFloatv(*(GLenum*)code, *(GLfloat **)(code + 4));
+            code += 8;
+            break;
+        case GetFloatvI:
+            glGetFloatv(**(GLenum**)code, *(GLfloat **)(code + 4));
+            code += 8;
+            break;
+        case GetFramebufferAttachmentParameteriv:
+            glGetFramebufferAttachmentParameteriv(*(GLenum*)code, *(GLenum*)(code + 4), *(GLenum*)(code + 8), *(GLint **)(code + 12));
+            code += 16;
+            break;
+        case GetFramebufferAttachmentParameterivI:
+            glGetFramebufferAttachmentParameteriv(**(GLenum**)code, **(GLenum**)(code + 4), **(GLenum**)(code + 8), *(GLint **)(code + 12));
+            code += 16;
+            break;
+        case GetIntegerv:
+            glGetIntegerv(*(GLenum*)code, *(GLint **)(code + 4));
+            code += 8;
+            break;
+        case GetIntegervI:
+            glGetIntegerv(**(GLenum**)code, *(GLint **)(code + 4));
+            code += 8;
+            break;
+        case GetProgramiv:
+            glGetProgramiv(*(GLuint*)code, *(GLenum*)(code + 4), *(GLint **)(code + 8));
+            code += 12;
+            break;
+        case GetProgramivI:
+            glGetProgramiv(**(GLuint**)code, **(GLenum**)(code + 4), *(GLint **)(code + 8));
+            code += 12;
+            break;
+        case GetProgramInfoLog:
+            glGetProgramInfoLog(*(GLuint*)code, *(GLsizei*)(code + 4), *(GLsizei **)(code + 8), *(GLchar **)(code + 12));
+            code += 16;
+            break;
+        case GetProgramInfoLogI:
+            glGetProgramInfoLog(**(GLuint**)code, **(GLsizei**)(code + 4), *(GLsizei **)(code + 8), *(GLchar **)(code + 12));
+            code += 16;
+            break;
+        case GetRenderbufferParameteriv:
+            glGetRenderbufferParameteriv(*(GLenum*)code, *(GLenum*)(code + 4), *(GLint **)(code + 8));
+            code += 12;
+            break;
+        case GetRenderbufferParameterivI:
+            glGetRenderbufferParameteriv(**(GLenum**)code, **(GLenum**)(code + 4), *(GLint **)(code + 8));
+            code += 12;
+            break;
+        case GetShaderiv:
+            glGetShaderiv(*(GLuint*)code, *(GLenum*)(code + 4), *(GLint **)(code + 8));
+            code += 12;
+            break;
+        case GetShaderivI:
+            glGetShaderiv(**(GLuint**)code, **(GLenum**)(code + 4), *(GLint **)(code + 8));
+            code += 12;
+            break;
+        case GetShaderInfoLog:
+            glGetShaderInfoLog(*(GLuint*)code, *(GLsizei*)(code + 4), *(GLsizei **)(code + 8), *(GLchar **)(code + 12));
+            code += 16;
+            break;
+        case GetShaderInfoLogI:
+            glGetShaderInfoLog(**(GLuint**)code, **(GLsizei**)(code + 4), *(GLsizei **)(code + 8), *(GLchar **)(code + 12));
+            code += 16;
+            break;
+        case GetShaderPrecisionFormat:
+            glGetShaderPrecisionFormat(*(GLenum*)code, *(GLenum*)(code + 4), *(GLint **)(code + 8), *(GLint **)(code + 12));
+            code += 16;
+            break;
+        case GetShaderPrecisionFormatI:
+            glGetShaderPrecisionFormat(**(GLenum**)code, **(GLenum**)(code + 4), *(GLint **)(code + 8), *(GLint **)(code + 12));
+            code += 16;
+            break;
+        case GetShaderSource:
+            glGetShaderSource(*(GLuint*)code, *(GLsizei*)(code + 4), *(GLsizei **)(code + 8), *(GLchar **)(code + 12));
+            code += 16;
+            break;
+        case GetShaderSourceI:
+            glGetShaderSource(**(GLuint**)code, **(GLsizei**)(code + 4), *(GLsizei **)(code + 8), *(GLchar **)(code + 12));
+            code += 16;
+            break;
+        case GetString:
+            *(const GLubyte**)(code + 4) = glGetString(*(GLenum*)code);
+            code += 8;
+            break;
+        case GetStringI:
+            *(const GLubyte**)(code + 4) = glGetString(**(GLenum**)code);
+            code += 8;
+            break;
+        case GetTexParameterfv:
+            glGetTexParameterfv(*(GLenum*)code, *(GLenum*)(code + 4), *(GLfloat **)(code + 8));
+            code += 12;
+            break;
+        case GetTexParameterfvI:
+            glGetTexParameterfv(**(GLenum**)code, **(GLenum**)(code + 4), *(GLfloat **)(code + 8));
+            code += 12;
+            break;
+        case GetTexParameteriv:
+            glGetTexParameteriv(*(GLenum*)code, *(GLenum*)(code + 4), *(GLint **)(code + 8));
+            code += 12;
+            break;
+        case GetTexParameterivI:
+            glGetTexParameteriv(**(GLenum**)code, **(GLenum**)(code + 4), *(GLint **)(code + 8));
+            code += 12;
+            break;
+        case GetUniformfv:
+            glGetUniformfv(*(GLuint*)code, *(GLint*)(code + 4), *(GLfloat **)(code + 8));
+            code += 12;
+            break;
+        case GetUniformfvI:
+            glGetUniformfv(**(GLuint**)code, **(GLint**)(code + 4), *(GLfloat **)(code + 8));
+            code += 12;
+            break;
+        case GetUniformiv:
+            glGetUniformiv(*(GLuint*)code, *(GLint*)(code + 4), *(GLint **)(code + 8));
+            code += 12;
+            break;
+        case GetUniformivI:
+            glGetUniformiv(**(GLuint**)code, **(GLint**)(code + 4), *(GLint **)(code + 8));
+            code += 12;
+            break;
+        case GetUniformLocation:
+            *(int*)(code + 8) = glGetUniformLocation(*(GLuint*)code, *(const GLchar **)(code + 4));
+            code += 12;
+            break;
+        case GetUniformLocationI:
+            *(int*)(code + 8) = glGetUniformLocation(**(GLuint**)code, *(const GLchar **)(code + 4));
+            code += 12;
+            break;
+        case GetVertexAttribfv:
+            glGetVertexAttribfv(*(GLuint*)code, *(GLenum*)(code + 4), *(GLfloat **)(code + 8));
+            code += 12;
+            break;
+        case GetVertexAttribfvI:
+            glGetVertexAttribfv(**(GLuint**)code, **(GLenum**)(code + 4), *(GLfloat **)(code + 8));
+            code += 12;
+            break;
+        case GetVertexAttribiv:
+            glGetVertexAttribiv(*(GLuint*)code, *(GLenum*)(code + 4), *(GLint **)(code + 8));
+            code += 12;
+            break;
+        case GetVertexAttribivI:
+            glGetVertexAttribiv(**(GLuint**)code, **(GLenum**)(code + 4), *(GLint **)(code + 8));
+            code += 12;
+            break;
+        case GetVertexAttribPointerv:
+            glGetVertexAttribPointerv(*(GLuint*)code, *(GLenum*)(code + 4), *(void ***)(code + 8));
+            code += 12;
+            break;
+        case GetVertexAttribPointervI:
+            glGetVertexAttribPointerv(**(GLuint**)code, **(GLenum**)(code + 4), *(void ***)(code + 8));
+            code += 12;
+            break;
+        case Hint:
+            glHint(*(GLenum*)code, *(GLenum*)(code + 4));
+            code += 8;
+            break;
+        case HintI:
+            glHint(**(GLenum**)code, **(GLenum**)(code + 4));
+            code += 8;
+            break;
+        case IsBuffer:
+            *(int*)(code + 4) = glIsBuffer(*(GLuint*)code);
+            code += 8;
+            break;
+        case IsBufferI:
+            *(int*)(code + 4) = glIsBuffer(**(GLuint**)code);
+            code += 8;
+            break;
+        case IsEnabled:
+            *(int*)(code + 4) = glIsEnabled(*(GLenum*)code);
+            code += 8;
+            break;
+        case IsEnabledI:
+            *(int*)(code + 4) = glIsEnabled(**(GLenum**)code);
+            code += 8;
+            break;
+        case IsFramebuffer:
+            *(int*)(code + 4) = glIsFramebuffer(*(GLuint*)code);
+            code += 8;
+            break;
+        case IsFramebufferI:
+            *(int*)(code + 4) = glIsFramebuffer(**(GLuint**)code);
+            code += 8;
+            break;
+        case IsProgram:
+            *(int*)(code + 4) = glIsProgram(*(GLuint*)code);
+            code += 8;
+            break;
+        case IsProgramI:
+            *(int*)(code + 4) = glIsProgram(**(GLuint**)code);
+            code += 8;
+            break;
+        case IsRenderbuffer:
+            *(int*)(code + 4) = glIsRenderbuffer(*(GLuint*)code);
+            code += 8;
+            break;
+        case IsRenderbufferI:
+            *(int*)(code + 4) = glIsRenderbuffer(**(GLuint**)code);
+            code += 8;
+            break;
+        case IsShader:
+            *(int*)(code + 4) = glIsShader(*(GLuint*)code);
+            code += 8;
+            break;
+        case IsShaderI:
+            *(int*)(code + 4) = glIsShader(**(GLuint**)code);
+            code += 8;
+            break;
+        case IsTexture:
+            *(int*)(code + 4) = glIsTexture(*(GLuint*)code);
+            code += 8;
+            break;
+        case IsTextureI:
+            *(int*)(code + 4) = glIsTexture(**(GLuint**)code);
+            code += 8;
+            break;
+        case LineWidth:
+            glLineWidth(*(GLfloat*)code);
+            code += 4;
+            break;
+        case LineWidthI:
+            glLineWidth(**(GLfloat**)code);
+            code += 4;
+            break;
+        case LinkProgram:
+            glLinkProgram(*(GLuint*)code);
+            code += 4;
+            break;
+        case LinkProgramI:
+            glLinkProgram(**(GLuint**)code);
+            code += 4;
+            break;
+        case PixelStorei:
+            glPixelStorei(*(GLenum*)code, *(GLint*)(code + 4));
+            code += 8;
+            break;
+        case PixelStoreiI:
+            glPixelStorei(**(GLenum**)code, **(GLint**)(code + 4));
+            code += 8;
+            break;
+        case PolygonOffset:
+            glPolygonOffset(*(GLfloat*)code, *(GLfloat*)(code + 4));
+            code += 8;
+            break;
+        case PolygonOffsetI:
+            glPolygonOffset(**(GLfloat**)code, **(GLfloat**)(code + 4));
+            code += 8;
+            break;
+        case ReadPixels:
+            glReadPixels(*(GLint*)code, *(GLint*)(code + 4), *(GLsizei*)(code + 8), *(GLsizei*)(code + 12), *(GLenum*)(code + 16), *(GLenum*)(code + 20), *(void **)(code + 24));
+            code += 28;
+            break;
+        case ReadPixelsI:
+            glReadPixels(**(GLint**)code, **(GLint**)(code + 4), **(GLsizei**)(code + 8), **(GLsizei**)(code + 12), **(GLenum**)(code + 16), **(GLenum**)(code + 20), *(void **)(code + 24));
+            code += 28;
+            break;
+        case ReleaseShaderCompiler:
+            glReleaseShaderCompiler();
             code += 0;
             break;
-        case FenceSync:
-            *(GLsync*)(code + 8) = glFenceSync(*(GLenum*)code, *(GLbitfield*)(code + 4));
-            code += 12;
-            break;
-        case FenceSyncI:
-            *(GLsync*)(code + 8) = glFenceSync(**(GLenum**)code, **(GLbitfield**)(code + 4));
-            code += 12;
-            break;
-        case FramebufferTextureLayer:
-            glFramebufferTextureLayer(*(GLenum*)code, *(GLenum*)(code + 4), *(GLuint*)(code + 8), *(GLint*)(code + 12), *(GLint*)(code + 16));
-            code += 20;
-            break;
-        case FramebufferTextureLayerI:
-            glFramebufferTextureLayer(**(GLenum**)code, **(GLenum**)(code + 4), **(GLuint**)(code + 8), **(GLint**)(code + 12), **(GLint**)(code + 16));
-            code += 20;
-            break;
-        case GenQueries:
-            glGenQueries(*(GLsizei*)code, *(GLuint **)(code + 4));
-            code += 8;
-            break;
-        case GenQueriesI:
-            glGenQueries(**(GLsizei**)code, *(GLuint **)(code + 4));
-            code += 8;
-            break;
-        case GenSamplers:
-            glGenSamplers(*(GLsizei*)code, *(GLuint **)(code + 4));
-            code += 8;
-            break;
-        case GenSamplersI:
-            glGenSamplers(**(GLsizei**)code, *(GLuint **)(code + 4));
-            code += 8;
-            break;
-        case GenTransformFeedbacks:
-            glGenTransformFeedbacks(*(GLsizei*)code, *(GLuint **)(code + 4));
-            code += 8;
-            break;
-        case GenTransformFeedbacksI:
-            glGenTransformFeedbacks(**(GLsizei**)code, *(GLuint **)(code + 4));
-            code += 8;
-            break;
-        case GenVertexArrays:
-            glGenVertexArrays(*(GLsizei*)code, *(GLuint **)(code + 4));
-            code += 8;
-            break;
-        case GenVertexArraysI:
-            glGenVertexArrays(**(GLsizei**)code, *(GLuint **)(code + 4));
-            code += 8;
-            break;
-        case GetActiveUniformBlockiv:
-            glGetActiveUniformBlockiv(*(GLuint*)code, *(GLuint*)(code + 4), *(GLenum*)(code + 8), *(GLint **)(code + 12));
+        case RenderbufferStorage:
+            glRenderbufferStorage(*(GLenum*)code, *(GLenum*)(code + 4), *(GLsizei*)(code + 8), *(GLsizei*)(code + 12));
             code += 16;
             break;
-        case GetActiveUniformBlockivI:
-            glGetActiveUniformBlockiv(**(GLuint**)code, **(GLuint**)(code + 4), **(GLenum**)(code + 8), *(GLint **)(code + 12));
+        case RenderbufferStorageI:
+            glRenderbufferStorage(**(GLenum**)code, **(GLenum**)(code + 4), **(GLsizei**)(code + 8), **(GLsizei**)(code + 12));
             code += 16;
             break;
-        case GetActiveUniformBlockName:
-            glGetActiveUniformBlockName(*(GLuint*)code, *(GLuint*)(code + 4), *(GLsizei*)(code + 8), *(GLsizei **)(code + 12), *(GLchar **)(code + 16));
-            code += 20;
-            break;
-        case GetActiveUniformBlockNameI:
-            glGetActiveUniformBlockName(**(GLuint**)code, **(GLuint**)(code + 4), **(GLsizei**)(code + 8), *(GLsizei **)(code + 12), *(GLchar **)(code + 16));
-            code += 20;
-            break;
-        case GetActiveUniformsiv:
-            glGetActiveUniformsiv(*(GLuint*)code, *(GLsizei*)(code + 4), *(const GLuint **)(code + 8), *(GLenum*)(code + 12), *(GLint **)(code + 16));
-            code += 20;
-            break;
-        case GetActiveUniformsivI:
-            glGetActiveUniformsiv(**(GLuint**)code, **(GLsizei**)(code + 4), *(const GLuint **)(code + 8), **(GLenum**)(code + 12), *(GLint **)(code + 16));
-            code += 20;
-            break;
-        case GetBufferParameteri64v:
-            glGetBufferParameteri64v(*(GLenum*)code, *(GLenum*)(code + 4), *(GLint64 **)(code + 8));
-            code += 12;
-            break;
-        case GetBufferParameteri64vI:
-            glGetBufferParameteri64v(**(GLenum**)code, **(GLenum**)(code + 4), *(GLint64 **)(code + 8));
-            code += 12;
-            break;
-        case GetFragDataLocation:
-            *(int*)(code + 8) = glGetFragDataLocation(*(GLuint*)code, *(const GLchar **)(code + 4));
-            code += 12;
-            break;
-        case GetFragDataLocationI:
-            *(int*)(code + 8) = glGetFragDataLocation(**(GLuint**)code, *(const GLchar **)(code + 4));
-            code += 12;
-            break;
-        case GetIntegeri_v:
-            glGetIntegeri_v(*(GLenum*)code, *(GLuint*)(code + 4), *(GLint **)(code + 8));
-            code += 12;
-            break;
-        case GetIntegeri_vI:
-            glGetIntegeri_v(**(GLenum**)code, **(GLuint**)(code + 4), *(GLint **)(code + 8));
-            code += 12;
-            break;
-        case BindBufferBase:
-            glBindBufferBase(*(GLenum*)code, *(GLuint*)(code + 4), *(GLuint*)(code + 8));
-            code += 12;
-            break;
-        case BindBufferBaseI:
-            glBindBufferBase(**(GLenum**)code, **(GLuint**)(code + 4), **(GLuint**)(code + 8));
-            code += 12;
-            break;
-        case BindBufferRange:
-            glBindBufferRange(*(GLenum*)code, *(GLuint*)(code + 4), *(GLuint*)(code + 8), *(GLintptr*)(code + 12), *(GLsizeiptr*)(code + 16));
-            code += 20;
-            break;
-        case BindBufferRangeI:
-            glBindBufferRange(**(GLenum**)code, **(GLuint**)(code + 4), **(GLuint**)(code + 8), **(GLintptr**)(code + 12), **(GLsizeiptr**)(code + 16));
-            code += 20;
-            break;
-        case BindSampler:
-            glBindSampler(*(GLuint*)code, *(GLuint*)(code + 4));
+        case SampleCoverage:
+            glSampleCoverage(*(GLfloat*)code, *(GLboolean*)(code + 4));
             code += 8;
             break;
-        case BindSamplerI:
-            glBindSampler(**(GLuint**)code, **(GLuint**)(code + 4));
+        case SampleCoverageI:
+            glSampleCoverage(**(GLfloat**)code, **(GLboolean**)(code + 4));
             code += 8;
             break;
-        case BindTransformFeedback:
-            glBindTransformFeedback(*(GLenum*)code, *(GLuint*)(code + 4));
-            code += 8;
+        case Scissor:
+            glScissor(*(GLint*)code, *(GLint*)(code + 4), *(GLsizei*)(code + 8), *(GLsizei*)(code + 12));
+            code += 16;
             break;
-        case BindTransformFeedbackI:
-            glBindTransformFeedback(**(GLenum**)code, **(GLuint**)(code + 4));
-            code += 8;
+        case ScissorI:
+            glScissor(**(GLint**)code, **(GLint**)(code + 4), **(GLsizei**)(code + 8), **(GLsizei**)(code + 12));
+            code += 16;
             break;
-        case BindVertexArray:
-            glBindVertexArray(*(GLuint*)code);
+        case ShaderBinary:
+            glShaderBinary(*(GLsizei*)code, *(const GLuint **)(code + 4), *(GLenum*)(code + 8), *(const void **)(code + 12), *(GLsizei*)(code + 16));
+            code += 20;
+            break;
+        case ShaderBinaryI:
+            glShaderBinary(**(GLsizei**)code, *(const GLuint **)(code + 4), **(GLenum**)(code + 8), *(const void **)(code + 12), **(GLsizei**)(code + 16));
+            code += 20;
+            break;
+        case ShaderSource:
+            glShaderSource(*(GLuint*)code, *(GLsizei*)(code + 4), *(const GLchar ***)(code + 8), *(const GLint **)(code + 12));
+            code += 16;
+            break;
+        case ShaderSourceI:
+            glShaderSource(**(GLuint**)code, **(GLsizei**)(code + 4), *(const GLchar ***)(code + 8), *(const GLint **)(code + 12));
+            code += 16;
+            break;
+        case StencilFunc:
+            glStencilFunc(*(GLenum*)code, *(GLint*)(code + 4), *(GLuint*)(code + 8));
+            code += 12;
+            break;
+        case StencilFuncI:
+            glStencilFunc(**(GLenum**)code, **(GLint**)(code + 4), **(GLuint**)(code + 8));
+            code += 12;
+            break;
+        case StencilFuncSeparate:
+            glStencilFuncSeparate(*(GLenum*)code, *(GLenum*)(code + 4), *(GLint*)(code + 8), *(GLuint*)(code + 12));
+            code += 16;
+            break;
+        case StencilFuncSeparateI:
+            glStencilFuncSeparate(**(GLenum**)code, **(GLenum**)(code + 4), **(GLint**)(code + 8), **(GLuint**)(code + 12));
+            code += 16;
+            break;
+        case StencilMask:
+            glStencilMask(*(GLuint*)code);
             code += 4;
             break;
-        case BindVertexArrayI:
-            glBindVertexArray(**(GLuint**)code);
+        case StencilMaskI:
+            glStencilMask(**(GLuint**)code);
             code += 4;
             break;
-        case BlitFramebuffer:
-            glBlitFramebuffer(*(GLint*)code, *(GLint*)(code + 4), *(GLint*)(code + 8), *(GLint*)(code + 12), *(GLint*)(code + 16), *(GLint*)(code + 20), *(GLint*)(code + 24), *(GLint*)(code + 28), *(GLbitfield*)(code + 32), *(GLenum*)(code + 36));
-            code += 40;
+        case StencilMaskSeparate:
+            glStencilMaskSeparate(*(GLenum*)code, *(GLuint*)(code + 4));
+            code += 8;
             break;
-        case BlitFramebufferI:
-            glBlitFramebuffer(**(GLint**)code, **(GLint**)(code + 4), **(GLint**)(code + 8), **(GLint**)(code + 12), **(GLint**)(code + 16), **(GLint**)(code + 20), **(GLint**)(code + 24), **(GLint**)(code + 28), **(GLbitfield**)(code + 32), **(GLenum**)(code + 36));
-            code += 40;
+        case StencilMaskSeparateI:
+            glStencilMaskSeparate(**(GLenum**)code, **(GLuint**)(code + 4));
+            code += 8;
             break;
-        case ClearBufferiv:
-            glClearBufferiv(*(GLenum*)code, *(GLint*)(code + 4), *(const GLint **)(code + 8));
+        case StencilOp:
+            glStencilOp(*(GLenum*)code, *(GLenum*)(code + 4), *(GLenum*)(code + 8));
             code += 12;
             break;
-        case ClearBufferivI:
-            glClearBufferiv(**(GLenum**)code, **(GLint**)(code + 4), *(const GLint **)(code + 8));
+        case StencilOpI:
+            glStencilOp(**(GLenum**)code, **(GLenum**)(code + 4), **(GLenum**)(code + 8));
             code += 12;
             break;
-        case ClearBufferuiv:
-            glClearBufferuiv(*(GLenum*)code, *(GLint*)(code + 4), *(const GLuint **)(code + 8));
-            code += 12;
-            break;
-        case ClearBufferuivI:
-            glClearBufferuiv(**(GLenum**)code, **(GLint**)(code + 4), *(const GLuint **)(code + 8));
-            code += 12;
-            break;
-        case ClearBufferfv:
-            glClearBufferfv(*(GLenum*)code, *(GLint*)(code + 4), *(const GLfloat **)(code + 8));
-            code += 12;
-            break;
-        case ClearBufferfvI:
-            glClearBufferfv(**(GLenum**)code, **(GLint**)(code + 4), *(const GLfloat **)(code + 8));
-            code += 12;
-            break;
-        case ClearBufferfi:
-            glClearBufferfi(*(GLenum*)code, *(GLint*)(code + 4), *(GLfloat*)(code + 8), *(GLint*)(code + 12));
+        case StencilOpSeparate:
+            glStencilOpSeparate(*(GLenum*)code, *(GLenum*)(code + 4), *(GLenum*)(code + 8), *(GLenum*)(code + 12));
             code += 16;
             break;
-        case ClearBufferfiI:
-            glClearBufferfi(**(GLenum**)code, **(GLint**)(code + 4), **(GLfloat**)(code + 8), **(GLint**)(code + 12));
+        case StencilOpSeparateI:
+            glStencilOpSeparate(**(GLenum**)code, **(GLenum**)(code + 4), **(GLenum**)(code + 8), **(GLenum**)(code + 12));
             code += 16;
             break;
-        case ClientWaitSync:
-            *(GLenum*)(code + 12) = glClientWaitSync(*(GLsync*)code, *(GLbitfield*)(code + 4), *(GLuint64*)(code + 8));
-            code += 16;
-            break;
-        case ClientWaitSyncI:
-            *(GLenum*)(code + 12) = glClientWaitSync(**(GLsync**)code, **(GLbitfield**)(code + 4), **(GLuint64**)(code + 8));
-            code += 16;
-            break;
-        case CompressedTexImage3D:
-            glCompressedTexImage3D(*(GLenum*)code, *(GLint*)(code + 4), *(GLenum*)(code + 8), *(GLsizei*)(code + 12), *(GLsizei*)(code + 16), *(GLsizei*)(code + 20), *(GLint*)(code + 24), *(GLsizei*)(code + 28), *(const void **)(code + 32));
+        case TexImage2D:
+            glTexImage2D(*(GLenum*)code, *(GLint*)(code + 4), *(GLint*)(code + 8), *(GLsizei*)(code + 12), *(GLsizei*)(code + 16), *(GLint*)(code + 20), *(GLenum*)(code + 24), *(GLenum*)(code + 28), *(const void **)(code + 32));
             code += 36;
             break;
-        case CompressedTexImage3DI:
-            glCompressedTexImage3D(**(GLenum**)code, **(GLint**)(code + 4), **(GLenum**)(code + 8), **(GLsizei**)(code + 12), **(GLsizei**)(code + 16), **(GLsizei**)(code + 20), **(GLint**)(code + 24), **(GLsizei**)(code + 28), **(const void ***)(code + 32));
+        case TexImage2DI:
+            glTexImage2D(**(GLenum**)code, **(GLint**)(code + 4), **(GLint**)(code + 8), **(GLsizei**)(code + 12), **(GLsizei**)(code + 16), **(GLint**)(code + 20), **(GLenum**)(code + 24), **(GLenum**)(code + 28), **(const void ***)(code + 32));
             code += 36;
             break;
-        case CompressedTexSubImage3D:
-            glCompressedTexSubImage3D(*(GLenum*)code, *(GLint*)(code + 4), *(GLint*)(code + 8), *(GLint*)(code + 12), *(GLint*)(code + 16), *(GLsizei*)(code + 20), *(GLsizei*)(code + 24), *(GLsizei*)(code + 28), *(GLenum*)(code + 32), *(GLsizei*)(code + 36), *(const void **)(code + 40));
-            code += 44;
+        case TexParameterf:
+            glTexParameterf(*(GLenum*)code, *(GLenum*)(code + 4), *(GLfloat*)(code + 8));
+            code += 12;
             break;
-        case CompressedTexSubImage3DI:
-            glCompressedTexSubImage3D(**(GLenum**)code, **(GLint**)(code + 4), **(GLint**)(code + 8), **(GLint**)(code + 12), **(GLint**)(code + 16), **(GLsizei**)(code + 20), **(GLsizei**)(code + 24), **(GLsizei**)(code + 28), **(GLenum**)(code + 32), **(GLsizei**)(code + 36), **(const void ***)(code + 40));
-            code += 44;
+        case TexParameterfI:
+            glTexParameterf(**(GLenum**)code, **(GLenum**)(code + 4), **(GLfloat**)(code + 8));
+            code += 12;
             break;
-        case CopyBufferSubData:
-            glCopyBufferSubData(*(GLenum*)code, *(GLenum*)(code + 4), *(GLintptr*)(code + 8), *(GLintptr*)(code + 12), *(GLsizeiptr*)(code + 16));
-            code += 20;
+        case TexParameterfv:
+            glTexParameterfv(*(GLenum*)code, *(GLenum*)(code + 4), *(const GLfloat **)(code + 8));
+            code += 12;
             break;
-        case CopyBufferSubDataI:
-            glCopyBufferSubData(**(GLenum**)code, **(GLenum**)(code + 4), **(GLintptr**)(code + 8), **(GLintptr**)(code + 12), **(GLsizeiptr**)(code + 16));
-            code += 20;
+        case TexParameterfvI:
+            glTexParameterfv(**(GLenum**)code, **(GLenum**)(code + 4), *(const GLfloat **)(code + 8));
+            code += 12;
             break;
-        case CopyTexSubImage3D:
-            glCopyTexSubImage3D(*(GLenum*)code, *(GLint*)(code + 4), *(GLint*)(code + 8), *(GLint*)(code + 12), *(GLint*)(code + 16), *(GLint*)(code + 20), *(GLint*)(code + 24), *(GLsizei*)(code + 28), *(GLsizei*)(code + 32));
+        case TexParameteri:
+            glTexParameteri(*(GLenum*)code, *(GLenum*)(code + 4), *(GLint*)(code + 8));
+            code += 12;
+            break;
+        case TexParameteriI:
+            glTexParameteri(**(GLenum**)code, **(GLenum**)(code + 4), **(GLint**)(code + 8));
+            code += 12;
+            break;
+        case TexParameteriv:
+            glTexParameteriv(*(GLenum*)code, *(GLenum*)(code + 4), *(const GLint **)(code + 8));
+            code += 12;
+            break;
+        case TexParameterivI:
+            glTexParameteriv(**(GLenum**)code, **(GLenum**)(code + 4), *(const GLint **)(code + 8));
+            code += 12;
+            break;
+        case TexSubImage2D:
+            glTexSubImage2D(*(GLenum*)code, *(GLint*)(code + 4), *(GLint*)(code + 8), *(GLint*)(code + 12), *(GLsizei*)(code + 16), *(GLsizei*)(code + 20), *(GLenum*)(code + 24), *(GLenum*)(code + 28), *(const void **)(code + 32));
             code += 36;
             break;
-        case CopyTexSubImage3DI:
-            glCopyTexSubImage3D(**(GLenum**)code, **(GLint**)(code + 4), **(GLint**)(code + 8), **(GLint**)(code + 12), **(GLint**)(code + 16), **(GLint**)(code + 20), **(GLint**)(code + 24), **(GLsizei**)(code + 28), **(GLsizei**)(code + 32));
+        case TexSubImage2DI:
+            glTexSubImage2D(**(GLenum**)code, **(GLint**)(code + 4), **(GLint**)(code + 8), **(GLint**)(code + 12), **(GLsizei**)(code + 16), **(GLsizei**)(code + 20), **(GLenum**)(code + 24), **(GLenum**)(code + 28), **(const void ***)(code + 32));
             code += 36;
             break;
-        case DeleteQueries:
-            glDeleteQueries(*(GLsizei*)code, *(const GLuint **)(code + 4));
+        case Uniform1f:
+            glUniform1f(*(GLint*)code, *(GLfloat*)(code + 4));
             code += 8;
             break;
-        case DeleteQueriesI:
-            glDeleteQueries(**(GLsizei**)code, *(const GLuint **)(code + 4));
+        case Uniform1fI:
+            glUniform1f(**(GLint**)code, **(GLfloat**)(code + 4));
             code += 8;
             break;
-        case DeleteSamplers:
-            glDeleteSamplers(*(GLsizei*)code, *(const GLuint **)(code + 4));
+        case Uniform1fv:
+            glUniform1fv(*(GLint*)code, *(GLsizei*)(code + 4), *(const GLfloat **)(code + 8));
+            code += 12;
+            break;
+        case Uniform1fvI:
+            glUniform1fv(**(GLint**)code, **(GLsizei**)(code + 4), *(const GLfloat **)(code + 8));
+            code += 12;
+            break;
+        case Uniform1i:
+            glUniform1i(*(GLint*)code, *(GLint*)(code + 4));
             code += 8;
             break;
-        case DeleteSamplersI:
-            glDeleteSamplers(**(GLsizei**)code, *(const GLuint **)(code + 4));
+        case Uniform1iI:
+            glUniform1i(**(GLint**)code, **(GLint**)(code + 4));
             code += 8;
             break;
-        case DeleteSync:
-            glDeleteSync(*(GLsync*)code);
-            code += 4;
+        case Uniform1iv:
+            glUniform1iv(*(GLint*)code, *(GLsizei*)(code + 4), *(const GLint **)(code + 8));
+            code += 12;
             break;
-        case DeleteSyncI:
-            glDeleteSync(**(GLsync**)code);
-            code += 4;
+        case Uniform1ivI:
+            glUniform1iv(**(GLint**)code, **(GLsizei**)(code + 4), *(const GLint **)(code + 8));
+            code += 12;
             break;
-        case DeleteTransformFeedbacks:
-            glDeleteTransformFeedbacks(*(GLsizei*)code, *(const GLuint **)(code + 4));
-            code += 8;
+        case Uniform2f:
+            glUniform2f(*(GLint*)code, *(GLfloat*)(code + 4), *(GLfloat*)(code + 8));
+            code += 12;
             break;
-        case DeleteTransformFeedbacksI:
-            glDeleteTransformFeedbacks(**(GLsizei**)code, *(const GLuint **)(code + 4));
-            code += 8;
+        case Uniform2fI:
+            glUniform2f(**(GLint**)code, **(GLfloat**)(code + 4), **(GLfloat**)(code + 8));
+            code += 12;
             break;
-        case DeleteVertexArrays:
-            glDeleteVertexArrays(*(GLsizei*)code, *(const GLuint **)(code + 4));
-            code += 8;
+        case Uniform2fv:
+            glUniform2fv(*(GLint*)code, *(GLsizei*)(code + 4), *(const GLfloat **)(code + 8));
+            code += 12;
             break;
-        case DeleteVertexArraysI:
-            glDeleteVertexArrays(**(GLsizei**)code, *(const GLuint **)(code + 4));
-            code += 8;
+        case Uniform2fvI:
+            glUniform2fv(**(GLint**)code, **(GLsizei**)(code + 4), *(const GLfloat **)(code + 8));
+            code += 12;
             break;
-        case DrawArraysInstanced:
-            glDrawArraysInstanced(*(GLenum*)code, *(GLint*)(code + 4), *(GLsizei*)(code + 8), *(GLsizei*)(code + 12));
+        case Uniform2i:
+            glUniform2i(*(GLint*)code, *(GLint*)(code + 4), *(GLint*)(code + 8));
+            code += 12;
+            break;
+        case Uniform2iI:
+            glUniform2i(**(GLint**)code, **(GLint**)(code + 4), **(GLint**)(code + 8));
+            code += 12;
+            break;
+        case Uniform2iv:
+            glUniform2iv(*(GLint*)code, *(GLsizei*)(code + 4), *(const GLint **)(code + 8));
+            code += 12;
+            break;
+        case Uniform2ivI:
+            glUniform2iv(**(GLint**)code, **(GLsizei**)(code + 4), *(const GLint **)(code + 8));
+            code += 12;
+            break;
+        case Uniform3f:
+            glUniform3f(*(GLint*)code, *(GLfloat*)(code + 4), *(GLfloat*)(code + 8), *(GLfloat*)(code + 12));
             code += 16;
             break;
-        case DrawArraysInstancedI:
-            glDrawArraysInstanced(**(GLenum**)code, **(GLint**)(code + 4), **(GLsizei**)(code + 8), **(GLsizei**)(code + 12));
+        case Uniform3fI:
+            glUniform3f(**(GLint**)code, **(GLfloat**)(code + 4), **(GLfloat**)(code + 8), **(GLfloat**)(code + 12));
             code += 16;
             break;
-        case DrawBuffers:
-            glDrawBuffers(*(GLsizei*)code, *(const GLenum **)(code + 4));
-            code += 8;
+        case Uniform3fv:
+            glUniform3fv(*(GLint*)code, *(GLsizei*)(code + 4), *(const GLfloat **)(code + 8));
+            code += 12;
             break;
-        case DrawBuffersI:
-            glDrawBuffers(**(GLsizei**)code, **(const GLenum ***)(code + 4));
-            code += 8;
+        case Uniform3fvI:
+            glUniform3fv(**(GLint**)code, **(GLsizei**)(code + 4), *(const GLfloat **)(code + 8));
+            code += 12;
             break;
-        case BeginQuery:
-            glBeginQuery(*(GLenum*)code, *(GLuint*)(code + 4));
-            code += 8;
+        case Uniform3i:
+            glUniform3i(*(GLint*)code, *(GLint*)(code + 4), *(GLint*)(code + 8), *(GLint*)(code + 12));
+            code += 16;
             break;
-        case BeginQueryI:
-            glBeginQuery(**(GLenum**)code, **(GLuint**)(code + 4));
-            code += 8;
+        case Uniform3iI:
+            glUniform3i(**(GLint**)code, **(GLint**)(code + 4), **(GLint**)(code + 8), **(GLint**)(code + 12));
+            code += 16;
             break;
-        case BeginTransformFeedback:
-            glBeginTransformFeedback(*(GLenum*)code);
+        case Uniform3iv:
+            glUniform3iv(*(GLint*)code, *(GLsizei*)(code + 4), *(const GLint **)(code + 8));
+            code += 12;
+            break;
+        case Uniform3ivI:
+            glUniform3iv(**(GLint**)code, **(GLsizei**)(code + 4), *(const GLint **)(code + 8));
+            code += 12;
+            break;
+        case Uniform4f:
+            glUniform4f(*(GLint*)code, *(GLfloat*)(code + 4), *(GLfloat*)(code + 8), *(GLfloat*)(code + 12), *(GLfloat*)(code + 16));
+            code += 20;
+            break;
+        case Uniform4fI:
+            glUniform4f(**(GLint**)code, **(GLfloat**)(code + 4), **(GLfloat**)(code + 8), **(GLfloat**)(code + 12), **(GLfloat**)(code + 16));
+            code += 20;
+            break;
+        case Uniform4fv:
+            glUniform4fv(*(GLint*)code, *(GLsizei*)(code + 4), *(const GLfloat **)(code + 8));
+            code += 12;
+            break;
+        case Uniform4fvI:
+            glUniform4fv(**(GLint**)code, **(GLsizei**)(code + 4), *(const GLfloat **)(code + 8));
+            code += 12;
+            break;
+        case Uniform4i:
+            glUniform4i(*(GLint*)code, *(GLint*)(code + 4), *(GLint*)(code + 8), *(GLint*)(code + 12), *(GLint*)(code + 16));
+            code += 20;
+            break;
+        case Uniform4iI:
+            glUniform4i(**(GLint**)code, **(GLint**)(code + 4), **(GLint**)(code + 8), **(GLint**)(code + 12), **(GLint**)(code + 16));
+            code += 20;
+            break;
+        case Uniform4iv:
+            glUniform4iv(*(GLint*)code, *(GLsizei*)(code + 4), *(const GLint **)(code + 8));
+            code += 12;
+            break;
+        case Uniform4ivI:
+            glUniform4iv(**(GLint**)code, **(GLsizei**)(code + 4), *(const GLint **)(code + 8));
+            code += 12;
+            break;
+        case UniformMatrix2fv:
+            glUniformMatrix2fv(*(GLint*)code, *(GLsizei*)(code + 4), *(GLboolean*)(code + 8), *(const GLfloat **)(code + 12));
+            code += 16;
+            break;
+        case UniformMatrix2fvI:
+            glUniformMatrix2fv(**(GLint**)code, **(GLsizei**)(code + 4), **(GLboolean**)(code + 8), *(const GLfloat **)(code + 12));
+            code += 16;
+            break;
+        case UniformMatrix3fv:
+            glUniformMatrix3fv(*(GLint*)code, *(GLsizei*)(code + 4), *(GLboolean*)(code + 8), *(const GLfloat **)(code + 12));
+            code += 16;
+            break;
+        case UniformMatrix3fvI:
+            glUniformMatrix3fv(**(GLint**)code, **(GLsizei**)(code + 4), **(GLboolean**)(code + 8), *(const GLfloat **)(code + 12));
+            code += 16;
+            break;
+        case UniformMatrix4fv:
+            glUniformMatrix4fv(*(GLint*)code, *(GLsizei*)(code + 4), *(GLboolean*)(code + 8), *(const GLfloat **)(code + 12));
+            code += 16;
+            break;
+        case UniformMatrix4fvI:
+            glUniformMatrix4fv(**(GLint**)code, **(GLsizei**)(code + 4), **(GLboolean**)(code + 8), *(const GLfloat **)(code + 12));
+            code += 16;
+            break;
+        case UseProgram:
+            glUseProgram(*(GLuint*)code);
             code += 4;
             break;
-        case BeginTransformFeedbackI:
-            glBeginTransformFeedback(**(GLenum**)code);
+        case UseProgramI:
+            glUseProgram(**(GLuint**)code);
             code += 4;
+            break;
+        case ValidateProgram:
+            glValidateProgram(*(GLuint*)code);
+            code += 4;
+            break;
+        case ValidateProgramI:
+            glValidateProgram(**(GLuint**)code);
+            code += 4;
+            break;
+        case VertexAttrib1f:
+            glVertexAttrib1f(*(GLuint*)code, *(GLfloat*)(code + 4));
+            code += 8;
+            break;
+        case VertexAttrib1fI:
+            glVertexAttrib1f(**(GLuint**)code, **(GLfloat**)(code + 4));
+            code += 8;
+            break;
+        case VertexAttrib1fv:
+            glVertexAttrib1fv(*(GLuint*)code, *(const GLfloat **)(code + 4));
+            code += 8;
+            break;
+        case VertexAttrib1fvI:
+            glVertexAttrib1fv(**(GLuint**)code, *(const GLfloat **)(code + 4));
+            code += 8;
+            break;
+        case VertexAttrib2f:
+            glVertexAttrib2f(*(GLuint*)code, *(GLfloat*)(code + 4), *(GLfloat*)(code + 8));
+            code += 12;
+            break;
+        case VertexAttrib2fI:
+            glVertexAttrib2f(**(GLuint**)code, **(GLfloat**)(code + 4), **(GLfloat**)(code + 8));
+            code += 12;
+            break;
+        case VertexAttrib2fv:
+            glVertexAttrib2fv(*(GLuint*)code, *(const GLfloat **)(code + 4));
+            code += 8;
+            break;
+        case VertexAttrib2fvI:
+            glVertexAttrib2fv(**(GLuint**)code, *(const GLfloat **)(code + 4));
+            code += 8;
+            break;
+        case VertexAttrib3f:
+            glVertexAttrib3f(*(GLuint*)code, *(GLfloat*)(code + 4), *(GLfloat*)(code + 8), *(GLfloat*)(code + 12));
+            code += 16;
+            break;
+        case VertexAttrib3fI:
+            glVertexAttrib3f(**(GLuint**)code, **(GLfloat**)(code + 4), **(GLfloat**)(code + 8), **(GLfloat**)(code + 12));
+            code += 16;
+            break;
+        case VertexAttrib3fv:
+            glVertexAttrib3fv(*(GLuint*)code, *(const GLfloat **)(code + 4));
+            code += 8;
+            break;
+        case VertexAttrib3fvI:
+            glVertexAttrib3fv(**(GLuint**)code, *(const GLfloat **)(code + 4));
+            code += 8;
+            break;
+        case VertexAttrib4f:
+            glVertexAttrib4f(*(GLuint*)code, *(GLfloat*)(code + 4), *(GLfloat*)(code + 8), *(GLfloat*)(code + 12), *(GLfloat*)(code + 16));
+            code += 20;
+            break;
+        case VertexAttrib4fI:
+            glVertexAttrib4f(**(GLuint**)code, **(GLfloat**)(code + 4), **(GLfloat**)(code + 8), **(GLfloat**)(code + 12), **(GLfloat**)(code + 16));
+            code += 20;
+            break;
+        case VertexAttrib4fv:
+            glVertexAttrib4fv(*(GLuint*)code, *(const GLfloat **)(code + 4));
+            code += 8;
+            break;
+        case VertexAttrib4fvI:
+            glVertexAttrib4fv(**(GLuint**)code, *(const GLfloat **)(code + 4));
+            code += 8;
+            break;
+        case VertexAttribPointer:
+            glVertexAttribPointer(*(GLuint*)code, *(GLint*)(code + 4), *(GLenum*)(code + 8), *(GLboolean*)(code + 12), *(GLsizei*)(code + 16), *(const void **)(code + 20));
+            code += 24;
+            break;
+        case VertexAttribPointerI:
+            glVertexAttribPointer(**(GLuint**)code, **(GLint**)(code + 4), **(GLenum**)(code + 8), **(GLboolean**)(code + 12), **(GLsizei**)(code + 16), *(const void **)(code + 20));
+            code += 24;
+            break;
+        case Viewport:
+            glViewport(*(GLint*)code, *(GLint*)(code + 4), *(GLsizei*)(code + 8), *(GLsizei*)(code + 12));
+            code += 16;
+            break;
+        case ViewportI:
+            glViewport(**(GLint**)code, **(GLint**)(code + 4), **(GLsizei**)(code + 8), **(GLsizei**)(code + 12));
+            code += 16;
             break;
         case GetBufferSubData:
             glGetBufferSubData(*(GLenum*)code, *(GLintptr*)(code + 4), *(GLsizeiptr*)(code + 8), *(void**)(code + 12));

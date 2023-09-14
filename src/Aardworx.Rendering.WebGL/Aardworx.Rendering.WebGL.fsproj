@@ -2,7 +2,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
     <PropertyGroup>
       <OutputType>Library</OutputType>
-      <TargetFramework>net6.0</TargetFramework>
+      <TargetFramework>net7.0</TargetFramework>
       <WasmBuildNative>true</WasmBuildNative>
       <IsTrimmable>false</IsTrimmable>
       <DisableImplicitFSharpCoreReference>true</DisableImplicitFSharpCoreReference>
@@ -25,6 +25,9 @@
         <NativeFileReference Include="Streams\Interpreter.c" ScanForPInvokes="true" />
         <None Include="Streams\Generator.fsx" />
         <None Include="Streams\Interpreter.c" />
+        <NativeFileReference Include="Streams\WrappedCommands.c" ScanForPInvokes="true" />
+        <None Include="Streams\WrappedCommands.c" />
+        <Compile Include="Streams\WrappedCommands.fs" />
         <Compile Include="Streams\CommandEncoderBase.fs" />
         <Compile Include="Streams\CommandEncoder.fs" />
         <Compile Include="Streams\NativeCommandEncoder.fs" />

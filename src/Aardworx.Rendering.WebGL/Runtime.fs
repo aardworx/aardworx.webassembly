@@ -98,9 +98,7 @@ type Runtime(device : Device, defaultCommandStreamMode : CommandStreamMode) as t
     member this.CompileRender(fboSignature : IFramebufferSignature, objects : aset<IRenderObject>) =
         let signature = fboSignature :?> FramebufferSignature
 
-        let mode =
-            if device.Debug then CommandStreamMode.Debug
-            else defaultCommandStreamMode
+        let mode = defaultCommandStreamMode
 
         new RenderTask(manager, signature, mode, objects) :> IRenderTask
 

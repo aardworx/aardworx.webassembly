@@ -1063,15 +1063,21 @@ let run() =
                         | ReadPointer | Pointer _ -> printfn "        let ``%s`` = this.Use ``%s``" n n
                         | Value -> ()
 
+                    let hasFloat = pars.Length > 6 || pars |> Array.exists (fun p -> p.ParameterType = typeof<float32> || p.ParameterType = typeof<float>)
+
+                    let funcName =
+                        if hasFloat then sprintf "WrappedCommands.%s" (Seq.head aliases)
+                        else sprintf "gl.%s.Invoke" (Seq.head aliases)
+
                     if def.ReturnType <> typeof<System.Void> then
                         let (_,_,k) = List.last parameters
                         match k with
                         | Value ->
-                            printfn "        commands.Add <| fun () -> gl.%s.Invoke(%s) |> NativePtr.write returnValue" (Seq.head aliases) parUse
+                            printfn "        commands.Add <| fun () -> %s(%s) |> NativePtr.write returnValue" funcName parUse
                         | _ ->
-                            printfn "        commands.Add <| fun () -> gl.%s.Invoke(%s) |> NativePtr.write (NativePtr.ofNativeInt returnValue.Pointer)" (Seq.head aliases) parUse
+                            printfn "        commands.Add <| fun () -> %s(%s) |> NativePtr.write (NativePtr.ofNativeInt returnValue.Pointer)" funcName parUse
                     else
-                        printfn "        commands.Add <| fun () -> gl.%s.Invoke(%s)" (Seq.head aliases) parUse
+                        printfn "        commands.Add <| fun () -> %s(%s)" funcName parUse
               
         // ==========================================================================================
         // ImmediateCommandEncoder
@@ -1231,15 +1237,22 @@ let run() =
                         match k with
                         | Value -> ()
                         | _ -> printfn "        this.Acquire ``%s``" n
+
+                    let hasFloat = pars.Length > 6 || pars |> Array.exists (fun p -> p.ParameterType = typeof<float32> || p.ParameterType = typeof<float>)
+
+                    let funcName =
+                        if hasFloat then sprintf "WrappedCommands.%s" (Seq.head aliases)
+                        else sprintf "gl.%s.Invoke" (Seq.head aliases)
+
                     if def.ReturnType <> typeof<System.Void> then
                         let (_,_,k) = List.last parameters
                         match k with
                         | Value ->
-                            printfn "        gl.%s.Invoke(%s) |> NativePtr.write returnValue" (Seq.head aliases) parUse
+                            printfn "        %s(%s) |> NativePtr.write returnValue" funcName parUse
                         | _ ->
-                            printfn "        gl.%s.Invoke(%s) |> NativePtr.write (NativePtr.ofNativeInt returnValue.Pointer)" (Seq.head aliases) parUse
+                            printfn "        %s(%s) |> NativePtr.write (NativePtr.ofNativeInt returnValue.Pointer)" funcName parUse
                     else
-                        printfn "        gl.%s.Invoke(%s)" (Seq.head aliases) parUse
+                        printfn "        %s(%s)" funcName parUse
 
               
               
@@ -1481,22 +1494,171 @@ let run() =
                         | AVal -> printfn "        let ``%s`` = this.Pin ``%s``" n n
                         | ReadPointer | Pointer _ -> printfn "        let ``%s`` = this.Use ``%s``" n n
                         | Value -> ()
+
+
+                    let hasFloat = pars.Length > 6 || pars  |> Array.exists (fun p -> p.ParameterType = typeof<float32> || p.ParameterType = typeof<float>)
+
+                    let funcName =
+                        if hasFloat then sprintf "WrappedCommands.%s" (Seq.head aliases)
+                        else sprintf "gl.%s.Invoke" (Seq.head aliases)
+
+
                     if def.ReturnType <> typeof<System.Void> then
                         let (_,_,k) = List.last parameters
                         match k with
                         | Value ->
-                            printfn "        let run() = gl.%s.Invoke(%s) |> NativePtr.write returnValue" (Seq.head aliases) (String.concat ", " parUse)
+                            printfn "        let run() = %s(%s) |> NativePtr.write returnValue" funcName (String.concat ", " parUse)
                         | _ ->
-                            printfn "        let run() = gl.%s.Invoke(%s) |> NativePtr.write (NativePtr.ofNativeInt returnValue.Pointer)" (Seq.head aliases) (String.concat ", " parUse)
+                            printfn "        let run() = %s(%s) |> NativePtr.write (NativePtr.ofNativeInt returnValue.Pointer)" funcName (String.concat ", " parUse)
                         
                     else
-                        printfn "        let run() = gl.%s.Invoke(%s)" (Seq.head aliases) (String.concat ", " parUse)
+                        printfn "        let run() = %s(%s)" funcName (String.concat ", " parUse)
                     printfn "        let name() = sprintf \"%s(%s)\" %s" name format (String.concat " " printUses)
                     printfn "        commands.Add((name, run))"
 
 
         File.WriteAllText(Path.Combine(__SOURCE_DIRECTORY__, "ManagedCommandEncoder.fs"), string b)
     
+        do
+            let b = System.Text.StringBuilder()
+            let printfn fmt = Printf.kprintf (fun str -> b.AppendLine str |> ignore) fmt
+
+            printfn "#include <emscripten.h>"
+            printfn "#include <emscripten/html5.h>"
+            printfn "#include <string.h>"
+            printfn "#include <stdlib.h>"
+            printfn "#include <stdint.h>"
+            printfn "#include <GLES3/gl3.h>"
+            printfn "#include \"../Native/WebGL.h\""
+            printfn ""
+
+            for (name, aliases, _, def) in commands do
+                let pars = def.GetParameters()
+
+                if pars.Length > 6 then
+                    let alias = Seq.head aliases
+                    printfn "typedef struct {"
+                    for p in pars do
+                        printfn "    %s %s;" (cName p.ParameterType) p.Name
+                    printfn "} %sArgs;" alias
+
+                    printfn ""
+                    let read = 
+                        pars |> Array.map (fun p -> 
+                            sprintf "args->%s" p.Name
+                        ) |> String.concat ", "
+
+                    printfn "EMSCRIPTEN_KEEPALIVE void _%s(%sArgs* args) {" alias alias
+                    printfn "    %s(%s);" alias read
+                    printfn "}"
+                    printfn ""
+
+                elif pars |> Array.exists (fun p -> p.ParameterType = typeof<float32>) then
+                    let pars = 
+                        def.GetParameters() |> Array.map (fun p -> 
+                            let t = 
+                                if p.ParameterType = typeof<float32> then "int"
+                                else cName p.ParameterType
+                            sprintf "%s %s" t p.Name
+                        ) |> String.concat ", "
+
+                    let args = 
+                        def.GetParameters() |> Array.map (fun p -> 
+                            if p.ParameterType = typeof<float32> then sprintf "*(float*)&%s" p.Name
+                            else p.Name
+                        ) |> String.concat ", "
+
+                    for a in Seq.truncate 1 aliases do
+
+                        printfn "EMSCRIPTEN_KEEPALIVE void _%s(%s) {" a pars
+                        printfn "    %s(%s);" a args
+                        printfn "}"
+                    printfn ""
+                
+            File.WriteAllText(Path.Combine(__SOURCE_DIRECTORY__, "WrappedCommands.c"), string b)
+
+        do
+            let b = System.Text.StringBuilder()
+            let printfn fmt = Printf.kprintf (fun str -> b.AppendLine str |> ignore) fmt
+
+            printfn "namespace Aardworx.Rendering.WebGL"
+            printfn "open Silk.NET.OpenGLES"
+            printfn "open System.Runtime.InteropServices"
+            printfn "open Microsoft.FSharp.NativeInterop"
+            printfn "#nowarn \"9\""
+            printfn ""
+            printfn "module internal WrappedCommands ="
+
+
+            printfn "    let inline private float32Bits (v : float32) ="
+            printfn "        use ptr = fixed [| v |]"
+            printfn "        ptr |> NativePtr.toNativeInt |> NativePtr.ofNativeInt<int> |> NativePtr.read"
+
+
+            for (name, aliases, _, def) in commands do
+                let pars = def.GetParameters()
+
+                if pars.Length > 6 then
+                    let alias = Seq.head aliases
+                    printfn "    type %sArgs =" alias
+                    printfn "        struct"
+                    for p in pars do
+                        printfn "            val mutable public ``%s`` : %s" p.Name (typeName p.ParameterType)
+                    printfn "        end"
+
+
+                    printfn "    [<DllImport(\"WrappedCommands\")>]"
+                    printfn "    extern void private _%s(%sArgs* args)" alias alias
+
+                    printfn ""
+                    let read = 
+                        pars |> Array.map (fun p -> 
+                            sprintf "args->%s" p.Name
+                        ) |> String.concat ", "
+
+                    let par = pars |> Array.map (fun p -> sprintf "``%s`` : %s" p.Name (typeName p.ParameterType)) |> String.concat ", "
+                    printfn "    let %s(%s) =" alias par
+                    printfn "        let mutable args = Unchecked.defaultof<%sArgs>" alias
+                    for p in pars do
+                        printfn "        args.``%s`` <- ``%s``" p.Name p.Name
+                    printfn "        use ptr = fixed [| args |]"
+                    printfn "        _%s(ptr)" alias
+                    printfn ""
+
+                elif pars |> Array.exists (fun p -> p.ParameterType = typeof<float32>) then
+                    
+                    let pars = 
+                        def.GetParameters() |> Array.map (fun p -> 
+                            let t = 
+                                if p.ParameterType = typeof<float32> then "int"
+                                else typeName p.ParameterType
+                            sprintf "%s %s" t p.Name
+                        ) |> String.concat ", "
+
+                    printfn "    [<DllImport(\"WrappedCommands\")>]"
+                    printfn "    extern void private _%s(%s)" (Seq.head aliases) pars
+
+                    let args = 
+                        def.GetParameters() |> Array.map (fun p -> 
+                            if p.ParameterType = typeof<float32> then sprintf "float32Bits ``%s``" p.Name
+                            else sprintf "``%s``" p.Name
+                        ) |> String.concat ", "
+
+                    let fsharpPars = 
+                        def.GetParameters() |> Array.map (fun p -> 
+                            let t = typeName p.ParameterType
+                            sprintf "``%s`` : %s" p.Name t
+                        ) |> String.concat ", "
+
+                    for a in Seq.truncate 1 aliases do
+
+                        printfn "    let %s(%s) =" a fsharpPars
+                        printfn "        _%s(%s);" a args
+                    printfn ""
+                
+            File.WriteAllText(Path.Combine(__SOURCE_DIRECTORY__, "WrappedCommands.fs"), string b)
+
+
         
         let interpreterCommands =
             commands

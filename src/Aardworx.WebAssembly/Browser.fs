@@ -5528,6 +5528,7 @@ module JS =
             invoke "aardvark.syncFileSystem" [|success|]
         )
 
+    [<Obsolete("bla")>]
     let initFileSystem() =
         async {
             do! mountFileSystem()
@@ -5546,40 +5547,40 @@ module JS =
         }
 
 
-
-
-[<AutoOpen>]
-module PixImageLoaders = 
-    type PixImage with
-
-        static member Load (data : byte[]) =
-            Async.FromContinuations(fun (succ, _err, _can) ->
-                let loadImage (data : nativeptr<byte>) (length : int) (callback : int -> int -> nativeint -> unit) : unit =
-                    invoke "aardvark.loadImage" [| int (NativePtr.toNativeInt data) :> obj; length :> obj; DotNetObjectReference.Create (JSActions.JSActionImage(callback)) :> obj |]
-
-                use ptr = fixed data
-                loadImage ptr data.Length (fun w h p ->
-                    let arr = Array.zeroCreate<byte> (w * h * 4)
-                    Marshal.Copy(p, arr, 0, arr.Length)
-
-                    let v = Volume<byte>(arr, VolumeInfo(0L, V3l(w, h, 4), V3l(4, w*4, 1)))
-                    let img = PixImage<byte>(Col.Format.RGBA, v)
-                    succ img
-                )
-            )
-            
-        static member Load (url : string) =
-            Async.FromContinuations(fun (succ, _err, _can) ->
-                let loadImage (url : string) (callback : int -> int -> nativeint -> unit) : unit =
-                    invoke "aardvark.loadImageURL" [|url :> obj; DotNetObjectReference.Create (JSActions.JSActionImage(callback)) :> obj |]
-
-                loadImage url (fun w h p ->
-                    let arr = Array.zeroCreate<byte> (w * h * 4)
-                    Marshal.Copy(p, arr, 0, arr.Length)
-
-                    let v = Volume<byte>(arr, VolumeInfo(0L, V3l(w, h, 4), V3l(4, w*4, 1)))
-                    let img = PixImage<byte>(Col.Format.RGBA, v)
-                    succ img
-                )
-            )
-
+//
+//
+// [<AutoOpen>]
+// module PixImageLoaders = 
+//     type PixImage with
+//
+//         static member Load (data : byte[]) =
+//             Async.FromContinuations(fun (succ, _err, _can) ->
+//                 let loadImage (data : nativeptr<byte>) (length : int) (callback : int -> int -> nativeint -> unit) : unit =
+//                     invoke "aardvark.loadImage" [| int (NativePtr.toNativeInt data) :> obj; length :> obj; DotNetObjectReference.Create (JSActions.JSActionImage(callback)) :> obj |]
+//
+//                 use ptr = fixed data
+//                 loadImage ptr data.Length (fun w h p ->
+//                     let arr = Array.zeroCreate<byte> (w * h * 4)
+//                     Marshal.Copy(p, arr, 0, arr.Length)
+//
+//                     let v = Volume<byte>(arr, VolumeInfo(0L, V3l(w, h, 4), V3l(4, w*4, 1)))
+//                     let img = PixImage<byte>(Col.Format.RGBA, v)
+//                     succ img
+//                 )
+//             )
+//             
+//         static member Load (url : string) =
+//             Async.FromContinuations(fun (succ, _err, _can) ->
+//                 let loadImage (url : string) (callback : int -> int -> nativeint -> unit) : unit =
+//                     invoke "aardvark.loadImageURL" [|url :> obj; DotNetObjectReference.Create (JSActions.JSActionImage(callback)) :> obj |]
+//
+//                 loadImage url (fun w h p ->
+//                     let arr = Array.zeroCreate<byte> (w * h * 4)
+//                     Marshal.Copy(p, arr, 0, arr.Length)
+//
+//                     let v = Volume<byte>(arr, VolumeInfo(0L, V3l(w, h, 4), V3l(4, w*4, 1)))
+//                     let img = PixImage<byte>(Col.Format.RGBA, v)
+//                     succ img
+//                 )
+//             )
+//

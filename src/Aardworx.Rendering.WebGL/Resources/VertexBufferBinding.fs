@@ -228,9 +228,10 @@ type VertexBufferBinding internal(device : Device, index : option<IndexBufferBin
     member x.Index = index
     member x.VertexBuffers = vertexBuffers
 
-    override x.Destroy(_gl : GL) =
+    override x.Destroy(gl : GL) =
         index |> Option.iter (fun i -> i.Buffer.Buffer.Dispose())
         vertexBuffers |> Map.iter (fun _ b -> b.Buffer.Buffer.Dispose())
+        gl.DeleteVertexArray handle
         let i = NativePtr.read info
         NativePtr.free i.Bindings
         NativePtr.free info

@@ -415,7 +415,7 @@ type WebGLRenderControl internal(runtime : Runtime, swapChain : WebGLSwapChain, 
             with get() = x.Cursor
             and set v = x.Cursor <- v
 
-type WebGLApplication(commandStreamMode : CommandStreamMode) =
+type WebGLApplication(commandStreamMode : CommandStreamMode, debug : bool) =
         
     static let blitCode =
         """
@@ -473,12 +473,14 @@ type WebGLApplication(commandStreamMode : CommandStreamMode) =
                     printfn "retry: %A" e
                     ()
             res.Value
-        let debug = commandStreamMode = CommandStreamMode.Debug
         let device = Device(ctx, debug)
         
         c, device
         
     let runtime = Runtime(device, commandStreamMode)
+    
+    new(mode : CommandStreamMode) =
+        new WebGLApplication(mode, (mode = CommandStreamMode.Debug))
     
     member x.Device = device
     member x.Runtime = runtime
