@@ -1,3 +1,6 @@
+### 1.1.0
+* upgraded to net7.0
+
 ### 1.0.0-prerelease0020
 * volume-alloc fixes
 
