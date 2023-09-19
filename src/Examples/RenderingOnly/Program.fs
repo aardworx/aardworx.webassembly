@@ -112,11 +112,34 @@ let createRenderControl (app : WebGLApplication) =
 // font-data gets embedded in our program.
 type Roboto = GoogleFontProvider< Family = "Roboto Mono", Bold = true >
   
+type IntWorker() =
+    inherit Aardvark.Dom.AbstractWorker<int, int>()
+    //static do BinaryWorkerSerializer.Register((fun (i : int) -> System.BitConverter.GetBytes i), fun arr -> System.BitConverter.ToInt32(arr, 0))
+        
+    
+    override x.Run(i) =
+        task {
+            while true do
+                let! msg = i.Receive()
+                printfn "WORKER: %A" msg
+                do! i.Send [msg*2]
+        }
+  
 // here we create a `RenderControl`, setup the camera and "compile" the scene for rendering.
 let run() =
     task {
         // Since our `WebGLApplication` expects the document to be loaded we need to wait until everything is ready.
         do! Window.Document.Ready
+        
+        let! workerTest = WorkerExtensions.run<IntWorker, _, _>()
+        
+        let reader =
+            task {
+                while true do
+                    let! msg = workerTest.Receive()
+                    printfn "MAIN: %A" msg
+            }  
+        do! workerTest.Send [1;2]
         
         let! bk = JSImage.load (RelativeUrl "./chapel_bk.png")
         let! ft = JSImage.load (RelativeUrl "./chapel_ft.png")
@@ -125,85 +148,7 @@ let run() =
         let! dn = JSImage.load (RelativeUrl "./chapel_dn.png")
         let! up = JSImage.load (RelativeUrl "./chapel_up.png")
         let texture = JSTextureCube([|ft; bk; up; dn; rt; lf|], true) :> ITexture
-        //
-        // let msg0 = cval "Hello"
-        // let msg1 = cval "World"
-        //
-        // let length = msg1 |> APtr.mapVal (fun s -> s.Length)
-        //
-        // let app = new WebGLApplication()
-        // let bla = new JSCommandEncoder(app.Device)
-        //
-        // app.Runtime.Device.Run(fun gl ->
-        //     gl.Enable(Silk.NET.OpenGLES.EnableCap.Blend)    
-        // )
-        //
-        // let a = [| 255uy; 128uy; 37uy; 123uy; 1uy; 2uy; 3uy; 4uy |]
-        // let b = Array.zeroCreate<byte> a.Length
-        // let cnt = [| 8n |]
-        // b.[0] <- 42uy
-        // // let pa = APtr.pinArray a
-        // // let pb = APtr.pinArray b
-        // // let pc = APtr.pinArray cnt
-        // //
-        // // pa.Acquire()
-        // // pb.Acquire()
-        // // pc.Acquire()
-        // //
-        // // pa.Update AdaptiveToken.Top
-        // // pb.Update AdaptiveToken.Top
-        // // pc.Update AdaptiveToken.Top
-        //
-        // let v = [|1|]
-        //
-        // do
-        //     use pa = fixed a
-        //     use pb = fixed b
-        //     let pc = APtr.pinArray cnt
-        //     
-        //     let pia = APtr.pinArray [| NativePtr.toNativeInt pa |]
-        //     let pib = APtr.pinArray [| NativePtr.toNativeInt pb |]
-        //     let buffArr = Array.zeroCreate<uint32> 1
-        //     let buff = APtr.pinArray buffArr
-        //     bla.Begin()
-        //     
-        //     bla.Switch(APtr.pinArray v,
-        //         [
-        //             1, fun cmd -> (cmd :?> JSCommandEncoder).JS [| "console.log('one');" |]
-        //             2, fun cmd -> (cmd :?> JSCommandEncoder).JS [| "console.log('two');" |]
-        //         ], fun cmd -> ())
-        //     
-        //     bla.JS [|
-        //         "console.log(GL.currentContext.GLctx);"
-        //     |]
-        //     
-        //     bla.ActiveTexture Silk.NET.OpenGLES.TextureUnit.Texture1
-        //     bla.GenBuffers(APtr.constant 1u, buff)
-        //     bla.Push(pb)
-        //     bla.CopyII(pia, pib, pc)
-        //     bla.Pop(pb)
-        //     
-        //     bla.Custom (fun _ ->
-        //         printfn "hi there"    
-        //     )
-        //     
-        //     bla.End()
-        //     
-        //     bla.Run(AdaptiveToken.Top)
-        //     
-        //     printfn "buff: %A" buffArr.[0]
-        //     printfn "input:  %A" a
-        //     printfn "result: %A" b
-        //     
-        //     
-        //     v.[0] <- 2
-        //     bla.Run(AdaptiveToken.Top)
-        //     
-        //
-        // exit 0
-        
-        
-        
+      
         // Create the `WebGLApplication` and a `RenderControl` using our utility from above.
         let app = new WebGLApplication(CommandStreamMode.Managed)
         let ctrl = createRenderControl app

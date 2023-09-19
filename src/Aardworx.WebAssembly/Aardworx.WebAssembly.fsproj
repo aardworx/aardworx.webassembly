@@ -8,6 +8,8 @@
       <IsTrimmable>false</IsTrimmable>
     </PropertyGroup>
     <ItemGroup>
+        <EmbeddedResource Include="resources\spawndev.blazorjs.webworkers.faux-env.js" />
+        <EmbeddedResource Include="resources\spawndev.blazorjs.webworkers.js" />
         <None Include="paket.references" />
         <None Include="paket.template" />
         <None Include="Utilities\CoreUtilities.c" />
@@ -17,6 +19,7 @@
         <None Include="Aardworx.WebAssembly.targets" />
         <Compile Include="Browser.fs" />
         <Compile Include="ApplicationInterop.fs" />
+        <Compile Include="WorkerInit.fs" />
         <Compile Include="Worker.fs" />
     </ItemGroup>
     <ItemGroup>

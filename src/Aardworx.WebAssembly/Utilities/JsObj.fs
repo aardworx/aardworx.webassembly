@@ -157,10 +157,8 @@ module private JSHelpers =
             let imgLoadCallback = Module.mono_bind_static_method("[Aardworx.WebAssembly] Aardworx.WebAssembly.JSImageInterop:Callback");
             aardvark.imgLoad = function(img, path) {
             
-                console.warn("load image: " + path);
                 let ret = function(w, h) {
                     imgLoadCallback(img, w, h);
-                    console.warn("loaded image: " + w + ", " + h);
                 };
             
                 if(img < 0 || !aardvark.imageHandles[img]) ret(-1, -1);
@@ -177,6 +175,10 @@ module private JSHelpers =
                 self.src = path;
             };
 
+            aardvark.toObjectUrlString = function(content, mime) {
+                let blob = new Blob([content], { type: mime });
+                return URL.createObjectURL(blob);
+            };
 
         }
         """
