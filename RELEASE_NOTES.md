@@ -1,3 +1,6 @@
+### 1.1.1
+* new worker implementation
+
 ### 1.1.0
 * upgraded to net7.0
 
