@@ -10,5 +10,3 @@ Aardvark.Application
 Aardvark.Dom.Remote
 Aardvark.Dom.Elm
 Silk.NET.OpenGLES
-Tewr.BlazorWorker.BackgroundService
-Tewr.BlazorWorker.Extensions.JSRuntime

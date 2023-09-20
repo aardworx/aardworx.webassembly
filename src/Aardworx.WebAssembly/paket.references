@@ -8,5 +8,3 @@ Aardvark.Dom.Core
 Aardvark.Base.FSharp
 Aardvark.Base.Tensors
 Aardvark.Application
-Tewr.BlazorWorker.BackgroundService
-Tewr.BlazorWorker.Extensions.JSRuntime

@@ -1,3 +1,6 @@
+### 1.1.2
+* removed Tewr.BlazorWorker dependency
+
 ### 1.1.1
 * new worker implementation
 

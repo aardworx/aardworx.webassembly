@@ -31,6 +31,3 @@ nuget Aardvark.Dom.Core ~> 1.0.0-prerelease0034
 nuget Aardvark.Dom.Elm ~> 1.0.0-prerelease0034
 nuget Aardvark.Dom.Remote ~> 1.0.0-prerelease0034
 nuget Aardvark.FontProvider ~> 0.0.6
-
-nuget Tewr.BlazorWorker.BackgroundService ~> 3.2.2
-nuget Tewr.BlazorWorker.Extensions.JSRuntime ~> 3.1.0-preview
