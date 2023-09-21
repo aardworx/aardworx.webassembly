@@ -84,6 +84,7 @@ type AbstractWorker() =
         instance.Received (WorkerMessage.String str)
         
     static member private ReceiveBinary(ptr : int, length : int) =
+        System.GC.Collect(3, GCCollectionMode.Forced, true, true)
         let arr = Array.zeroCreate<byte> length
         Marshal.Copy(nativeint ptr, arr, 0, length)
         instance.Received (WorkerMessage.Binary arr)
@@ -150,6 +151,7 @@ module Worker =
     let private receiveBinary (id : int) (ptr : int) (len : int) =
         match workerMessageQueues.TryGetValue id with
         | (true, q) ->
+            System.GC.Collect(3, GCCollectionMode.Forced, true, true)
             let arr = Array.zeroCreate<byte> len
             Marshal.Copy(nativeint ptr, arr, 0, len) 
             q.Put(WorkerMessage.Binary arr)  

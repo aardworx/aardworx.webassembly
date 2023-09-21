@@ -112,17 +112,18 @@ let createRenderControl (app : WebGLApplication) =
 // font-data gets embedded in our program.
 type Roboto = GoogleFontProvider< Family = "Roboto Mono", Bold = true >
   
+open System.Threading.Tasks
+  
 type IntWorker() =
-    inherit Aardvark.Dom.AbstractWorker<int, int>()
-    //static do BinaryWorkerSerializer.Register((fun (i : int) -> System.BitConverter.GetBytes i), fun arr -> System.BitConverter.ToInt32(arr, 0))
-        
-    
-    override x.Run(i) =
+    inherit Aardworx.WebAssembly.AbstractWorker()
+
+    override x.Run(ctx) =
         task {
+            let rand = RandomSystem()
             while true do
-                let! msg = i.Receive()
-                printfn "WORKER: %A" msg
-                do! i.Send [msg*2]
+                do! Task.Delay(500)
+                let arr = Array.zeroCreate<byte> (64 <<< 20)
+                ctx.Send(WorkerMessage.Binary arr)
         }
   
 // here we create a `RenderControl`, setup the camera and "compile" the scene for rendering.
@@ -131,15 +132,7 @@ let run() =
         // Since our `WebGLApplication` expects the document to be loaded we need to wait until everything is ready.
         do! Window.Document.Ready
         
-        let! workerTest = WorkerExtensions.run<IntWorker, _, _>()
         
-        let reader =
-            task {
-                while true do
-                    let! msg = workerTest.Receive()
-                    printfn "MAIN: %A" msg
-            }  
-        do! workerTest.Send [1;2]
         
         let! bk = JSImage.load (RelativeUrl "./chapel_bk.png")
         let! ft = JSImage.load (RelativeUrl "./chapel_ft.png")
@@ -254,12 +247,32 @@ let run() =
             }
         
         // in order to render the scene we need to compile it to a `RenderTask`
-        let task =
+        let rt =
             let objs = scene.GetRenderObjects (TraversalState.empty app.Runtime)
             app.Runtime.CompileRender(ctrl.FramebufferSignature, objs)
 
         // tell the `RenderControl` to run our task whenever necessary
-        ctrl.RenderTask <- task
+        ctrl.RenderTask <- rt
+         
+        ctrl.AfterFirstFrame.Add (fun _ ->
+            task {
+                let! workerTest = Worker.start<IntWorker>()
+                
+                let reader =
+                    task {
+                        let mutable total = 0
+                        while true do
+                            let! msg = workerTest.Receive()
+                            match msg with
+                            | WorkerMessage.Binary arr ->
+                                total <- total + arr.Length
+                                printfn "Received %A" (Mem total)
+                            | _ ->
+                                ()
+                    }
+                ()
+            } |> ignore
+        )
     }
 
 

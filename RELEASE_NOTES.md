@@ -1,3 +1,6 @@
+### 1.1.3
+* forced GC.Collect() before each worker message
+
 ### 1.1.2
 * removed Tewr.BlazorWorker dependency
 
