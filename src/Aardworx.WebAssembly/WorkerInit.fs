@@ -107,7 +107,8 @@ type AbstractWorker() =
         
  
 module Worker =
-
+    
+    let mutable forceGCOnReceive = true
     
     type private Marker = Marker
     
@@ -151,7 +152,8 @@ module Worker =
     let private receiveBinary (id : int) (ptr : int) (len : int) =
         match workerMessageQueues.TryGetValue id with
         | (true, q) ->
-            System.GC.Collect(3, GCCollectionMode.Forced, true, true)
+            if forceGCOnReceive then
+                System.GC.Collect(3, GCCollectionMode.Forced, true, true)
             let arr = Array.zeroCreate<byte> len
             Marshal.Copy(nativeint ptr, arr, 0, len) 
             q.Put(WorkerMessage.Binary arr)  
