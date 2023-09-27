@@ -177,6 +177,82 @@ type private WebGLSwapChainSimple internal(device : Device, main : HTMLCanvasEle
         )
 
     override x.Release() = ()
+            
+type private WebGLSwapChainMSAA internal(device : Device, main : HTMLCanvasElement, dst : HTMLCanvasElement, blit : JsObj, samples : int) =
+    inherit WebGLSwapChain(device, main, dst, blit)
+   
+    let mutable fbo : option<Renderbuffer * Renderbuffer * Framebuffer * Texture * Framebuffer> = None
+    
+    
+    
+    override x.RenderFrame(action : Framebuffer -> Silk.NET.OpenGLES.GL -> unit) =
+        let htmlSize =
+            let r = dst.GetBoundingClientRect()
+            r.Size
+            
+        let renderSize =
+            V2i(round htmlSize)
+
+        dst.Width <- renderSize.X
+        dst.Height <- renderSize.Y
+        main.Width <- renderSize.X
+        main.Height <- renderSize.Y
+        
+        let fbo, fboRes = 
+            match fbo with
+            | Some (_,_,fbo, _, fboRes) when fbo.Size = renderSize -> fbo, fboRes
+            | _ ->
+                match fbo with
+                | Some (c,d,f,c1,f1) ->
+                    c.Dispose()
+                    d.Dispose()
+                    f.Dispose()
+                    c1.Dispose()
+                    f1.Dispose()
+                | None ->
+                    ()
+                
+                let s = device.GetDefaultFramebufferSignature()
+                
+                let c = device.CreateRenderbuffer(TextureFormat.Rgba8, renderSize, samples)
+                let d = device.CreateRenderbuffer(TextureFormat.Depth24Stencil8, renderSize, samples)
+                let f = device.CreateFramebuffer(s, [DefaultSemantic.Colors, c :> IFramebufferOutput; DefaultSemantic.DepthStencil, d :> IFramebufferOutput])
+                  
+                 
+                let c1 = device.CreateTexture2D(TextureFormat.Rgba8, renderSize)
+                let f1 = device.CreateFramebuffer(s, [DefaultSemantic.Colors, c1.[0,0] :> IFramebufferOutput])
+                 
+                 
+                fbo <- Some (c, d, f, c1, f1)
+                f, f1
+        device.Run(fun gl ->
+            action fbo gl
+            
+            gl.BindFramebuffer(FramebufferTarget.ReadFramebuffer, fbo.Handle)
+            gl.BindFramebuffer(FramebufferTarget.DrawFramebuffer, fboRes.Handle)
+            gl.ReadBuffer ReadBufferMode.ColorAttachment0
+            gl.DrawBuffers(1u, [| DrawBufferMode.ColorAttachment0 |])
+            printfn "asdasd"
+            WrappedCommands.glBlitFramebuffer(
+                0, 0, renderSize.X, renderSize.Y,
+                0, 0, renderSize.X, renderSize.Y,
+                ClearBufferMask.ColorBufferBit,
+                BlitFramebufferFilter.Nearest
+            )
+            
+            gl.BindFramebuffer(FramebufferTarget.ReadFramebuffer, fboRes.Handle)
+            gl.BindFramebuffer(FramebufferTarget.DrawFramebuffer, 0u)
+            
+            gl.ReadBuffer ReadBufferMode.ColorAttachment0
+            gl.DrawBuffers(1u, [| DrawBufferMode.Back |]) 
+            WrappedCommands.glBlitFramebuffer(0, 0, renderSize.X, renderSize.Y, 0, 0, renderSize.X, renderSize.Y, ClearBufferMask.ColorBufferBit, BlitFramebufferFilter.Nearest)
+            gl.BindFramebuffer(FramebufferTarget.ReadFramebuffer, 0u)
+            gl.BindFramebuffer(FramebufferTarget.DrawFramebuffer, 0u)
+            
+            blit.Invoke("blit", [|main :> obj|])
+        )
+
+    override x.Release() = ()
     
 type private AdaptiveRenderCaller() =
     inherit AdaptiveObject()
@@ -188,22 +264,16 @@ type Antialiasing =
     | FXAA
            
 
-type WebGLRenderControl internal(runtime : Runtime, swapChain : WebGLSwapChain, element : HTMLCanvasElement, antialiasing : Antialiasing) =
+type WebGLRenderControl internal(runtime : Runtime, swapChain : WebGLSwapChain, element : HTMLCanvasElement) =
     let rt = runtime :> IRuntime
     let device = runtime.Device
     
-    let samples =
-        match antialiasing with
-        | Antialiasing.None -> 1
-        | Antialiasing.MSAA s -> s
-        | Antialiasing.FXAA -> 1
-
     let signature =
         new FramebufferSignature(
             runtime.Device, 
             Map.ofList [0, { Name = DefaultSemantic.Colors; Format = TextureFormat.Rgba8 }],
             Some TextureFormat.Depth24Stencil8,
-            1, samples
+            1, 1
         )
     
     let clearColor = cval (C4f(0.0f, 0.0f, 0.0f, 0.0f))
@@ -242,34 +312,13 @@ type WebGLRenderControl internal(runtime : Runtime, swapChain : WebGLSwapChain, 
                 if size <> sizes.Value then
                     transact (fun () -> sizes.Value <- size)
                 beforeRender.Trigger()
-                let framebuffer =
-                    if samples = 1 then
-                        fbo
-                    else
-                        match selfFbo with
-                        | Some (f,_,_) when f.Size = size -> f
-                        | _ ->
-                            match selfFbo with
-                            | Some (f, c, d) -> 
-                                f.Dispose()
-                                c.Dispose()
-                                d.Dispose()
-                            | None ->
-                                ()
-                            
-                            let c = device.CreateRenderbuffer(TextureFormat.Rgba8, size, samples)
-                            let d = device.CreateRenderbuffer(TextureFormat.Depth24Stencil8, size, samples)
-                            let f = device.CreateFramebuffer(signature, [DefaultSemantic.Colors, c :> IFramebufferOutput; DefaultSemantic.DepthStencil, d :> IFramebufferOutput])
-                            selfFbo <- Some (f, c, d)
-                            f
-            
+                let framebuffer = fbo
+                   
                 caller.EvaluateAlways AdaptiveToken.Top (fun token ->
                     clearTask.Run(token, RenderToken.Empty, framebuffer)
                     renderTask.Run(token, RenderToken.Empty, framebuffer)
                 )
                 
-                if samples > 1 then
-                    rt.Copy(framebuffer, fbo)
                 //gl.BindFramebuffer(FramebufferTarget.ReadFramebuffer, framebuffer.Handle)
                 //gl.BindFramebuffer(FramebufferTarget.DrawFramebuffer, 0u)
                 //gl.ReadBuffer(ReadBufferMode.ColorAttachment0)
@@ -377,7 +426,7 @@ type WebGLRenderControl internal(runtime : Runtime, swapChain : WebGLSwapChain, 
             renderTask <- t
             invalidate()
     
-    member x.Samples = samples
+    member x.Samples = 1
     member x.SubSampling 
         with get() = 1.0
         and set _ = ()
@@ -491,8 +540,9 @@ type WebGLApplication(commandStreamMode : CommandStreamMode, debug : bool) =
         let swap = 
             match antialiasing with
             | Antialiasing.FXAA -> new WebGLSwapChainFXAA(device, canvas, dst, blit) :> WebGLSwapChain
-            | Antialiasing.MSAA _ | Antialiasing.None -> new WebGLSwapChainSimple(device, canvas, dst, blit) :> WebGLSwapChain
-        new WebGLRenderControl(runtime, swap, dst, antialiasing)
+            | Antialiasing.MSAA s -> new WebGLSwapChainMSAA(device, canvas, dst, blit, s) :> WebGLSwapChain
+            | Antialiasing.None -> new WebGLSwapChainSimple(device, canvas, dst, blit) :> WebGLSwapChain
+        new WebGLRenderControl(runtime, swap, dst)
 
     member x.Dispose() =
         canvas.Remove()

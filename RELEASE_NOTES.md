@@ -1,3 +1,6 @@
+### 1.1.5
+* fixed glTexImage3d Call
+
 ### 1.1.4
 * flag for controlling GC.Collect() before each worker message
 

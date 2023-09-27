@@ -227,6 +227,10 @@ type DeviceFramebufferExtensions private() =
         )
         
     [<Extension>]
+    static member GetDefaultFramebufferSignature(this : Device) =
+        defaultSignature
+        
+    [<Extension>]
     static member DefaultFramebuffer(this : Device, size : V2i) =
         new Framebuffer(
             this, defaultSignature,

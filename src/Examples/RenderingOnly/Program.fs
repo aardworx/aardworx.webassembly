@@ -126,6 +126,87 @@ type IntWorker() =
                 ctx.Send(WorkerMessage.Binary arr)
         }
   
+module Sg =
+    
+    module Shader =
+        open FShade
+        
+        let color =
+            sampler2d {
+                texture uniform?Color
+                filter Filter.MinMagPoint
+                addressU WrapMode.Wrap
+                addressV WrapMode.Wrap
+            }
+        
+        let depth =
+            sampler2d {
+                texture uniform?Depth
+                filter Filter.MinMagPoint
+                addressU WrapMode.Wrap
+                addressV WrapMode.Wrap 
+            }
+        
+        type UniformScope with
+            member x.Factor : int = uniform?Factor
+        
+        
+        type Fragment =
+            {
+                [<Color>] c : V4d
+                [<Depth>] d : float
+            }
+        let blit (v : Effects.Vertex) =
+            fragment {
+                let mutable sum = V4d.Zero
+                
+                let px = uniform.Factor * V2i (v.tc * V2d uniform.ViewportSize)
+                
+                for x in 0 .. uniform.Factor - 1 do
+                    for y in 0 .. uniform.Factor - 1 do
+                        sum <- sum + color.[px + V2i(x,y)]
+                
+                let avg = sum / float (uniform.Factor * uniform.Factor)
+                
+                let d = depth.SampleLevel(v.tc, 0.0).X
+                if d >= 1.0 || avg.W <= 0.0 then discard()
+                
+                
+                return { c = avg; d = d }
+            }
+    
+    let superResolution (screenSize : aval<V2i>) (factor : int) (scene : ISceneNode) =
+        Sg.Delay(fun state ->
+            let r = state.Runtime
+            
+            let signature = 
+                r.CreateFramebufferSignature [
+                    DefaultSemantic.Colors, TextureFormat.Rgba8
+                    DefaultSemantic.DepthStencil, TextureFormat.Depth24Stencil8
+                ]
+            let rt = r.CompileRender(signature, scene.GetRenderObjects state)
+            
+            let renderSize = screenSize |> AVal.map (fun s -> s * factor)
+            
+            let color, depth = 
+                rt |> RenderTask.renderToColorAndDepthWithClear renderSize (clear { color (C4f(0.0f, 0.0f, 0.0f, 0.0f)); depth 1.0; stencil 0 })
+                
+            let p = RenderPass.after "blub" RenderPassOrder.Arbitrary state.Pass
+            
+            sg {
+                Sg.Shader {
+                    Shader.blit
+                }
+                Sg.Pass p
+                Sg.BlendMode BlendMode.Blend
+                Sg.Uniform("Color", color)
+                Sg.Uniform("Depth", depth)
+                Sg.Uniform("Factor", AVal.constant factor)
+                Sg.Uniform("ViewportSize", screenSize)
+                Primitives.FullscreenQuad
+            }
+        )
+  
 // here we create a `RenderControl`, setup the camera and "compile" the scene for rendering.
 let run() =
     task {
@@ -148,7 +229,7 @@ let run() =
 
         let time =
             let sw = System.Diagnostics.Stopwatch.StartNew()
-            ctrl.Time |> AVal.map (fun _ -> sw.Elapsed)
+            ctrl.Time |> AVal.map (fun _ -> sw.Elapsed.TotalSeconds.ToString("0"))
         
         
         
@@ -164,10 +245,10 @@ let run() =
             
         
 
-        let trafo =
-            time |> AVal.map (fun t ->
-                Trafo3d.RotationZ t.TotalSeconds
-            )
+        let trafo = AVal.constant Trafo3d.Identity
+            // time |> AVal.map (fun t ->
+            //     Trafo3d.RotationZ t.TotalSeconds
+            // )
         
         let gridSize = cval 2
         
@@ -227,13 +308,16 @@ let run() =
                 }
            
                 
-                // a text (using our font from above) 
+                // a text (using our font from above)
+                
+                //Sg.superResolution ctrl.Size 4 (
                 sg {
                     Sg.Scale 0.3
                     Sg.Trafo (Trafo3d.RotationX Constant.PiHalf)
                     Sg.Translate(0.0, 1.0, 0.5)
                     Sg.Text(time |> AVal.map string, align = TextAlignment.Center, font = Roboto.Font, color = AVal.constant C4b.White)
                 }
+                //)
                 
                 
                 sg {
