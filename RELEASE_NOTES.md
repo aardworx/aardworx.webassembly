@@ -1,3 +1,6 @@
+### 1.1.6
+* public WrappedCommands
+
 ### 1.1.5
 * fixed glTexImage3d Call
 

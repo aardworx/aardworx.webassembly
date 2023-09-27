@@ -4,7 +4,7 @@ open System.Runtime.InteropServices
 open Microsoft.FSharp.NativeInterop
 #nowarn "9"
 
-module internal WrappedCommands =
+module WrappedCommands =
     let inline private float32Bits (v : float32) =
         use ptr = fixed [| v |]
         ptr |> NativePtr.toNativeInt |> NativePtr.ofNativeInt<int> |> NativePtr.read
