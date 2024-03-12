@@ -145,7 +145,7 @@ type WebGLContext private(handle : WebGLRaw.WebGLContextHandle) =
 
     member x.GL = gl
 
-    member private x.Handle = handle
+    member x.Handle = handle
 
     override x.ToString() =
         sprintf "GL:%08X" handle
