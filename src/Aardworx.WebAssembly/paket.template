@@ -9,3 +9,6 @@ repositoryUrl https://github.com/aardworx/aardworx.webassembly
 description
     WebXR utilities for Aardvark
 include-pdbs true
+files
+    Aardworx.WebAssembly.targets ==> build/
+    Utilities/*.c ==> build/Utilities/
