@@ -1,0 +1,24 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+      <OutputType>Library</OutputType>
+      <TargetFramework>net7.0</TargetFramework>
+      <WasmBuildNative>true</WasmBuildNative>
+      <IsTrimmable>false</IsTrimmable>
+      <DisableImplicitFSharpCoreReference>true</DisableImplicitFSharpCoreReference>
+      <OutputPath>..\..\bin\$(Configuration)\</OutputPath>
+    </PropertyGroup>
+    <ItemGroup>
+        <None Include="paket.references" />
+        <None Include="paket.template" />
+        <EmbeddedResource Include="WebXR.js" />
+        <Compile Include="WebXR.fs" />
+        
+        <Compile Include="Utilities.fs" />
+    </ItemGroup>
+    <ItemGroup>
+      <ProjectReference Include="..\Aardworx.Rendering.WebGL\Aardworx.Rendering.WebGL.fsproj" />
+      <ProjectReference Include="..\Aardworx.WebAssembly\Aardworx.WebAssembly.fsproj" />
+    </ItemGroup>
+  <Import Project="..\..\.paket\Paket.Restore.targets" />
+</Project>

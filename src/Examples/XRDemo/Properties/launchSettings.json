@@ -1,0 +1,13 @@
+{
+  "profiles": {
+    "XRDemo": {
+      "commandName": "Project",
+      "launchBrowser": false,
+      "launchUrl": "https://localhost:6001",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      },
+      "applicationUrl": "https://0.0.0.0:6001;http://0.0.0.0:6000"
+    }
+  }
+}

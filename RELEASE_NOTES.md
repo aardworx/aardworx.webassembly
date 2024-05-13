@@ -1,3 +1,6 @@
+### 1.1.7
+* added simple WebXR bindings
+
 ### 1.1.6
 * public WrappedCommands
 

@@ -327,13 +327,14 @@ type DeviceFramebufferExtensions private() =
         let backend = this.BaseStream
 
         backend.BindFramebuffer(target, fbo.Handle)
-        backend.Viewport(0, 0, uint32 fbo.Size.X, uint32 fbo.Size.Y)
-
-        let buffers = 
-            if fbo.Handle = 0u then [| GLEnum.Back |]
-            else fbo.Signature.GetDrawBuffers()
-
-        backend.DrawBuffers(APtr.constant (uint32 buffers.Length), APtr.pinArrayPtr buffers |> APtr.map NativePtr.ofNativeInt<GLEnum>)
+        //
+        // backend.Viewport(0, 0, uint32 fbo.Size.X, uint32 fbo.Size.Y)
+        //
+        // let buffers = 
+        //     if fbo.Handle = 0u then [| GLEnum.Back |]
+        //     else fbo.Signature.GetDrawBuffers()
+        //
+        // backend.DrawBuffers(APtr.constant (uint32 buffers.Length), APtr.pinArrayPtr buffers |> APtr.map NativePtr.ofNativeInt<GLEnum>)
 
         this.State.FramebufferSignature <- fbo.Signature
         let handle = APtr.pinArray [| fbo.Handle |]
@@ -358,16 +359,17 @@ type DeviceFramebufferExtensions private() =
         let handle = fbo |> APtr.mapVal (fun f -> f.Handle)
         let psize : aptr<uint32> = fbo |> APtr.mapVal (fun f -> f.Size) |> APtr.cast
         backend.BindFramebuffer(APtr.constant target, handle)
-        backend.Viewport(APtr.constant 0, APtr.constant 0, psize, APtr.add 1 psize)
-
-        
-        let buffers = 
-            let all = signature.GetDrawBuffers()
-            fbo |> AVal.map (fun fbo ->
-                if fbo.Handle = 0u then [| GLEnum.Back |]
-                else all
-            )
-        backend.DrawBuffers(buffers |> APtr.mapVal (fun b -> uint32 b.Length), APtr.pinAdaptiveArrayPtr buffers |> APtr.map NativePtr.ofNativeInt<GLEnum>)
+        //
+        // backend.Viewport(APtr.constant 0, APtr.constant 0, psize, APtr.add 1 psize)
+        //
+        //
+        // let buffers = 
+        //     let all = signature.GetDrawBuffers()
+        //     fbo |> AVal.map (fun fbo ->
+        //         if fbo.Handle = 0u then [| GLEnum.Back |]
+        //         else all
+        //     )
+        // backend.DrawBuffers(buffers |> APtr.mapVal (fun b -> uint32 b.Length), APtr.pinAdaptiveArrayPtr buffers |> APtr.map NativePtr.ofNativeInt<GLEnum>)
 
 
         this.State.FramebufferSignature <- signature
@@ -391,21 +393,16 @@ type DeviceFramebufferExtensions private() =
 
         let back = [|GLEnum.Back|]
         let all = signature.GetDrawBuffers()
-        backend.Switch(
-            APtr.cast handle,
-            [
-                0, fun cmd -> 
-                    cmd.DrawBuffers(APtr.constant 1u, back |> APtr.pinArrayPtr |> APtr.map NativePtr.ofNativeInt<GLEnum>)
-            ],
-            fun cmd ->
-                cmd.DrawBuffers(APtr.constant (uint32 all.Length), all |> APtr.pinArrayPtr |> APtr.map NativePtr.ofNativeInt<GLEnum>)
-        )
-        //    fbo |> AVal.map (fun fbo ->
-        //        if fbo.Handle = 0u then [| GLEnum.Back |]
-        //        else signature.ColorAttachments |> Map.toArray |> Array.map (fun (i,_) -> unbox<GLEnum> (int GLEnum.ColorAttachment0 + i))
-        //    )
-        //backend.DrawBuffers(buffers |> APtr.mapVal (fun b -> uint32 b.Length), APtr.pinAdaptiveArrayPtr buffers |> APtr.map NativePtr.ofNativeInt<GLEnum>)
-
+        //
+        // backend.Switch(
+        //     APtr.cast handle,
+        //     [
+        //         0, fun cmd -> 
+        //             cmd.DrawBuffers(APtr.constant 1u, back |> APtr.pinArrayPtr |> APtr.map NativePtr.ofNativeInt<GLEnum>)
+        //     ],
+        //     fun cmd ->
+        //         cmd.DrawBuffers(APtr.constant (uint32 all.Length), all |> APtr.pinArrayPtr |> APtr.map NativePtr.ofNativeInt<GLEnum>)
+        // )
 
 
         this.State.FramebufferSignature <- signature

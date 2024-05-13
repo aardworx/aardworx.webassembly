@@ -1,0 +1,17 @@
+type project
+id Aardworx.WebAssembly.WebXR
+authors Aardworx
+owners Aardworx
+projectUrl http://github.com/aardworx/aardworx.webassembly
+licenseUrl http://www.apache.org/licenses/LICENSE-2.0.txt
+repositoryType git
+repositoryUrl https://github.com/aardworx/aardworx.webassembly
+description
+    WebAssembly libraries for Aardvark
+include-pdbs true
+files
+    Aardworx.Rendering.WebGL.targets ==> build/
+    Native/*.c ==> build/Native/
+    Native/*.h ==> build/Native/
+    Streams/*.c ==> build/Streams/
+    Streams/*.h ==> build/Streams/
