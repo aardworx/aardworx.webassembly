@@ -39,6 +39,8 @@ type Buffer(device : Device, handle : uint32, sizeInBytes : int64, usage : Buffe
         member x.Size = x.Size
 
     interface IBackendBuffer with
+        member x.Buffer = x
+        member x.Offset = 0
         member x.Handle = handle :> obj
         member x.SizeInBytes = nativeint sizeInBytes
         member x.Runtime = device.Runtime :> IBufferRuntime

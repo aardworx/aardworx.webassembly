@@ -67,7 +67,7 @@ type private WebGLSwapChainFXAA internal(device : Device, main : HTMLCanvasEleme
         )
 
     let renderFXAA =
-        let obj = RenderObject.Create()
+        let obj = RenderObject()
         
         obj.RenderPass <- RenderPass.main
         obj.Activate <- fun () -> { new System.IDisposable with member x.Dispose() = () }
@@ -79,7 +79,7 @@ type private WebGLSwapChainFXAA internal(device : Device, main : HTMLCanvasEleme
         obj.Indices <- None
         obj.IsActive <- AVal.constant true
         obj.StencilState <- StencilState.Default
-        obj.Surface <- Surface.FShadeSimple effect.Value
+        obj.Surface <- Surface.Effect effect.Value
         obj.Uniforms <-
             UniformProvider.ofList [
                 "DiffuseColorTexture", currentTexture :> IAdaptiveValue

@@ -102,14 +102,80 @@ type Runtime(device : Device, defaultCommandStreamMode : CommandStreamMode) as t
 
         new RenderTask(manager, signature, mode, objects) :> IRenderTask
 
+    member this.Copy(src: IFramebufferOutput, srcOffset: V3i, dst: IFramebufferOutput, dstOffset: V3i, size: V3i): unit = 
+        device.RunCommand(fun cmd ->
+            match src with
+            | :? TextureLevel as l ->
+                let srcImage = l.[0, srcOffset .. srcOffset + size - V3i.III]
+                match dst with
+                | :? TextureLevel as r ->
+                    let dstImage = r.[0, dstOffset .. dstOffset + size - V3i.III]
+                    cmd.Blit(srcImage, dstImage, false)
+                | :? ITextureLevel as r ->
+                    let rr = r.Texture :?> Texture
+                    let dstImage = rr.[r.Level, r.Slices.Min, dstOffset .. dstOffset + size - V3i.III]
+                    cmd.Blit(srcImage, dstImage, false)
+                | :? Renderbuffer as r ->
+                    cmd.Blit(srcImage, r.[dstOffset.XY .. dstOffset.XY + size.XY - V2i.II], false)
+                | _ ->
+                    failf "bad destination"
+                    
+            | :? ITextureLevel as l ->
+                let rr = l.Texture :?> Texture
+                let srcImage = rr.[l.Level, l.Slices.Min, srcOffset .. srcOffset + size - V3i.III]
+                match dst with
+                | :? TextureLevel as r ->
+                    let dstImage = r.[0, dstOffset .. dstOffset + size - V3i.III]
+                    cmd.Blit(srcImage, dstImage, false)
+                | :? ITextureLevel as r ->
+                    let rr = r.Texture :?> Texture
+                    let dstImage = rr.[r.Level, r.Slices.Min, dstOffset .. dstOffset + size - V3i.III]
+                    cmd.Blit(srcImage, dstImage, false)
+                | :? Renderbuffer as r ->
+                    cmd.Blit(srcImage, r.[dstOffset.XY .. dstOffset.XY + size.XY - V2i.II], false)
+                | _ ->
+                    failf "bad destination"
+            | :? Renderbuffer as r ->
+                let srcImage = r.[srcOffset.XY .. srcOffset.XY + size.XY - V2i.II]
+                match dst with
+                | :? TextureLevel as r ->
+                    let dstImage = r.[0, dstOffset .. dstOffset + size - V3i.III]
+                    cmd.Blit(srcImage, dstImage, false)
+                | :? ITextureLevel as r ->
+                    let rr = r.Texture :?> Texture
+                    let dstImage = rr.[r.Level, r.Slices.Min, dstOffset .. dstOffset + size - V3i.III]
+                    cmd.Blit(srcImage, dstImage, false)
+                | :? Renderbuffer as r ->
+                    cmd.Blit(srcImage, r.[dstOffset.XY .. dstOffset.XY + size.XY - V2i.II], false)
+                | _ ->
+                    failf "bad destination"
+            | _ ->
+                failf "bad input"
+        )
+    
+    
     interface IRuntime with
+        
+        member x.Blit(src : IFramebufferOutput, srcRange : Box3i, dst : IFramebufferOutput, dstRange : Box3i) =
+            let inline size (range : Box3i) = V3i.III + range.Max - range.Min
+        
+            let s = size srcRange
+            let d = size dstRange
+            if s = d then
+                x.Copy(src, srcRange.Min, dst, dstRange.Min, s)
+            else
+                failwith "not implemented"
+        
+        
+        member x.SupportsLayeredShaderInputs = false
+        member x.ShaderDepthRange = Range1d(-1.0, 1.0)
         member x.DebugConfig =
             if device.Debug then DebugLevel.Full
             else DebugLevel.None
             
-        member this.AssembleModule(effect, signature, _mode) =
-            let signature = signature :?> FramebufferSignature
-            signature.AssembleModule(effect)
+        // member this.AssembleModule(effect, signature, _mode) =
+        //     let signature = signature :?> FramebufferSignature
+        //     signature.AssembleModule(effect)
 
         //member x.DebugLevel = DebugLevel.None
         member x.MaxRayRecursionDepth = 0
@@ -150,22 +216,22 @@ type Runtime(device : Device, defaultCommandStreamMode : CommandStreamMode) as t
                 cmd.GenerateMipMaps(texture :?> Texture)
             )
             
-        member this.ResolveMultisamples(src, dst, imgTrafo) =
-            let dst = dst :?> Texture
-            if imgTrafo <> ImageTrafo.Identity then Log.warn "ResolveMultisamples ignores ImageTrafo: %A" imgTrafo
-            device.RunCommand (fun cmd ->
-                match src with
-                | :? TextureLevel as l ->
-                    cmd.Blit(l.[0], dst.[0,0], true)
-                | :? ITextureLevel as l ->
-                    let tex = l.Texture :?> Texture
-                    cmd.Blit(tex.[l.Level, l.Slices.Min], dst.[0,0], true)
-                | :? Renderbuffer as r ->
-                    cmd.Blit(r, dst.[0,0], true)
-                | _ ->
-
-                    failf "bad input"
-            )
+        // member this.ResolveMultisamples(src, dst, imgTrafo) =
+        //     let dst = dst :?> Texture
+        //     if imgTrafo <> ImageTrafo.Identity then Log.warn "ResolveMultisamples ignores ImageTrafo: %A" imgTrafo
+        //     device.RunCommand (fun cmd ->
+        //         match src with
+        //         | :? TextureLevel as l ->
+        //             cmd.Blit(l.[0], dst.[0,0], true)
+        //         | :? ITextureLevel as l ->
+        //             let tex = l.Texture :?> Texture
+        //             cmd.Blit(tex.[l.Level, l.Slices.Min], dst.[0,0], true)
+        //         | :? Renderbuffer as r ->
+        //             cmd.Blit(r, dst.[0,0], true)
+        //         | _ ->
+        //
+        //             failf "bad input"
+        //     )
 
         member this.CreateFramebufferSignature(attachments, depth, samples, _layers, _perLayerUniforms) =
             new FramebufferSignature(device, attachments, depth, 1, samples) :> IFramebufferSignature
@@ -271,7 +337,7 @@ type Runtime(device : Device, defaultCommandStreamMode : CommandStreamMode) as t
                         
                         gl.PopFramebuffer()
                     )
-                    img.Transformed(ImageTrafo.MirrorY)
+                    img.TransformedPixImage(ImageTrafo.MirrorY)
                     
                 finally
                     gc.Free()
@@ -288,13 +354,13 @@ type Runtime(device : Device, defaultCommandStreamMode : CommandStreamMode) as t
             
             //img :> PixImage
 
-        member this.Compile(_compute) =
+        member this.CompileCompute(_compute) =
             failf "ComputeShaders not supported"
 
         member this.MaxLocalSize = 
             failf "ComputeShaders not supported"
 
-        member this.NewInputBinding(_compute) = 
+        member this.CreateInputBinding(_compute, _uniforms) = 
             failf "ComputeShaders not supported"
 
         member this.CreateComputeShader(_compute) = 
@@ -386,11 +452,8 @@ type Runtime(device : Device, defaultCommandStreamMode : CommandStreamMode) as t
         member this.PrepareRenderObject(signature, object) = 
             manager.PrepareRenderObject(unbox signature, object) :> IPreparedRenderObject
 
-        member this.PrepareSurface(signature, surface) =
-            match surface with
-            | :? FShadeSurface as s -> manager.CreateProgram(unbox signature, s.Effect) :> IBackendSurface
-            | :? Program as p -> p.AddReference(); p :> IBackendSurface
-            | _ -> failwith "not implemented"
+        member this.PrepareEffect(signature, effect, mode) =
+            manager.CreateProgram(unbox signature, effect) :> IBackendSurface
 
             
         member this.Copy(srcBuffer: IBackendBuffer, srcOffset: nativeint, dstBuffer: IBackendBuffer, dstOffset: nativeint, size: nativeint): unit = 
@@ -400,101 +463,19 @@ type Runtime(device : Device, defaultCommandStreamMode : CommandStreamMode) as t
                 cmd.Copy(srcBuffer.Sub(int64 srcOffset, int64 size), dstBuffer.Sub(int64 dstOffset, int64 size))
             )
             
-        member this.Copy(srcBuffer: IBackendBuffer, srcOffset: nativeint, dstData: nativeint, size: nativeint): unit = 
+        member this.Download(srcBuffer: IBackendBuffer, srcOffset: nativeint, dstData: nativeint, size: nativeint): unit = 
             let srcBuffer = srcBuffer :?> Buffer
             device.RunCommand (fun cmd ->
                 cmd.Copy(srcBuffer.Sub(int64 srcOffset, int64 size), dstData)
             )
-        member this.Copy(srcData: nativeint, dst: IBackendBuffer, dstOffset: nativeint, size: nativeint): unit = 
+        member this.Upload(srcData: nativeint, dst: IBackendBuffer, dstOffset: nativeint, size: nativeint): unit = 
             let dstBuffer = dst :?> Buffer
             device.RunCommand (fun cmd ->
                 cmd.Copy(srcData, dstBuffer.Sub(int64 dstOffset, int64 size))
             )
 
-        member this.Copy(src: IFramebufferOutput, srcOffset: V3i, dst: IFramebufferOutput, dstOffset: V3i, size: V3i): unit = 
-            device.RunCommand(fun cmd ->
-                match src with
-                | :? TextureLevel as l ->
-                    let srcImage = l.[0, srcOffset .. srcOffset + size - V3i.III]
-                    match dst with
-                    | :? TextureLevel as r ->
-                        let dstImage = r.[0, dstOffset .. dstOffset + size - V3i.III]
-                        cmd.Blit(srcImage, dstImage, false)
-                    | :? ITextureLevel as r ->
-                        let rr = r.Texture :?> Texture
-                        let dstImage = rr.[r.Level, r.Slices.Min, dstOffset .. dstOffset + size - V3i.III]
-                        cmd.Blit(srcImage, dstImage, false)
-                    | :? Renderbuffer as r ->
-                        cmd.Blit(srcImage, r.[dstOffset.XY .. dstOffset.XY + size.XY - V2i.II], false)
-                    | _ ->
-                        failf "bad destination"
-                        
-                | :? ITextureLevel as l ->
-                    let rr = l.Texture :?> Texture
-                    let srcImage = rr.[l.Level, l.Slices.Min, srcOffset .. srcOffset + size - V3i.III]
-                    match dst with
-                    | :? TextureLevel as r ->
-                        let dstImage = r.[0, dstOffset .. dstOffset + size - V3i.III]
-                        cmd.Blit(srcImage, dstImage, false)
-                    | :? ITextureLevel as r ->
-                        let rr = r.Texture :?> Texture
-                        let dstImage = rr.[r.Level, r.Slices.Min, dstOffset .. dstOffset + size - V3i.III]
-                        cmd.Blit(srcImage, dstImage, false)
-                    | :? Renderbuffer as r ->
-                        cmd.Blit(srcImage, r.[dstOffset.XY .. dstOffset.XY + size.XY - V2i.II], false)
-                    | _ ->
-                        failf "bad destination"
-                | :? Renderbuffer as r ->
-                    let srcImage = r.[srcOffset.XY .. srcOffset.XY + size.XY - V2i.II]
-                    match dst with
-                    | :? TextureLevel as r ->
-                        let dstImage = r.[0, dstOffset .. dstOffset + size - V3i.III]
-                        cmd.Blit(srcImage, dstImage, false)
-                    | :? ITextureLevel as r ->
-                        let rr = r.Texture :?> Texture
-                        let dstImage = rr.[r.Level, r.Slices.Min, dstOffset .. dstOffset + size - V3i.III]
-                        cmd.Blit(srcImage, dstImage, false)
-                    | :? Renderbuffer as r ->
-                        cmd.Blit(srcImage, r.[dstOffset.XY .. dstOffset.XY + size.XY - V2i.II], false)
-                    | _ ->
-                        failf "bad destination"
-                | _ ->
-                    failf "bad input"
-            )
-            //device.Run (fun gl ->
-            //    match src with
-            //    | :? ITextureLevel as src ->
-            //        match dst with
-            //        | :? ITextureLevel as dst ->
-            //            let srcHandle = src.Texture :?> Texture
-            //            let dstHandle = src.Texture :?> Texture
-            //            let sf = gl.GenFramebuffer()
-            //            let df = gl.GenFramebuffer()
-            //            gl.BindFramebuffer(FramebufferTarget.ReadFramebuffer, sf)
-            //            gl.BindFramebuffer(FramebufferTarget.DrawFramebuffer, df)
-            //            gl.FramebufferTexture2D(FramebufferTarget.ReadFramebuffer, FramebufferAttachment.ColorAttachment0, TextureTarget.Texture2D, srcHandle.Handle, src.Level)
-            //            gl.FramebufferTexture2D(FramebufferTarget.DrawFramebuffer, FramebufferAttachment.ColorAttachment0, TextureTarget.Texture2D, dstHandle.Handle, dst.Level)
-                        
-            //            gl.ReadBuffer ReadBufferMode.ColorAttachment0
-            //            gl.DrawBuffers [|DrawBufferMode.ColorAttachment0|]
-
-            //            gl.BlitFramebuffer(
-            //                0, 0, src.Size.X, src.Size.Y,
-            //                0, 0, dst.Size.X, dst.Size.Y,
-            //                ClearBufferMask.ColorBufferBit,
-            //                BlitFramebufferFilter.Nearest
-            //            )
-
-            //            gl.BindFramebuffer(FramebufferTarget.ReadFramebuffer, 0u)
-            //            gl.BindFramebuffer(FramebufferTarget.DrawFramebuffer, 0u)
-
-            //            gl.DeleteFramebuffer sf
-            //            gl.DeleteFramebuffer df
-            //        | _ ->
-            //            raise (System.NotImplementedException())
-            //    | _ ->
-            //        raise (System.NotImplementedException())
-            //)
+        
+          
         member this.Upload(tex, tensor, fmt, offset, size) =
             let tfmt = tex.Texture.Format
             use pbo = device.GetPixelBuffer(tfmt, size)
@@ -509,7 +490,7 @@ type Runtime(device : Device, defaultCommandStreamMode : CommandStreamMode) as t
 
         member this.Copy(src: IBackendTexture, srcBaseSlice: int, srcBaseLevel: int, dst: IBackendTexture, dstBaseSlice: int, dstBaseLevel: int, slices: int, levels: int): unit = 
             raise (System.NotImplementedException())
-        member this.CopyAsync(srcBuffer, srcOffset, dstData, size) = raise (System.NotImplementedException())
+        member this.DownloadAsync(srcBuffer, srcOffset, dstData, size) = raise (System.NotImplementedException())
 
         member this.CreateOcclusionQuery(precise) = raise (System.NotImplementedException())
         member this.CreatePipelineQuery(statistics) = raise (System.NotImplementedException())
@@ -517,13 +498,14 @@ type Runtime(device : Device, defaultCommandStreamMode : CommandStreamMode) as t
         member this.CreateStreamingTexture(mipMaps) = raise (System.NotImplementedException())
         member this.CreateTextureView(texture, levels, slices, isArray) = raise (System.NotImplementedException())
         member this.CreateTimeQuery() = raise (System.NotImplementedException())
+        member this.CreateLodRenderer(config, data) = raise (System.NotImplementedException())
 
         member this.Download(tex, tensor, fmt, offset, size): unit = 
             raise (System.NotImplementedException())
         member this.DownloadDepth(texture, level, slice, offset, target) = raise (System.NotImplementedException())
         member this.DownloadStencil(texture, level, slice, offset, target) = raise (System.NotImplementedException())
-        member this.ResourceManager = raise (System.NotImplementedException())
-        member this.Run(arg1, arg2) = raise (System.NotImplementedException())
+        // member this.ResourceManager = raise (System.NotImplementedException())
+        // member this.Run(arg1, arg2) = raise (System.NotImplementedException())
 
 
     // new(ctx) = new Runtime(new Device(ctx))

@@ -26,7 +26,7 @@ module private Converters =
 
     module PrimitiveType =
         let ofIndexedGeometryMode =
-            LookupTable.lookupTable [
+            LookupTable.lookup [
                 IndexedGeometryMode.PointList, PrimitiveType.Points
                 IndexedGeometryMode.LineList, PrimitiveType.Lines
                 IndexedGeometryMode.LineStrip, PrimitiveType.LineStrip
@@ -39,7 +39,7 @@ module private Converters =
 
     module BlendingFactor =
         let ofBlendFactor =
-            LookupTable.lookupTable [
+            LookupTable.lookup [
                 BlendFactor.Zero, BlendingFactor.Zero
                 BlendFactor.One, BlendingFactor.One
                 BlendFactor.SourceColor, BlendingFactor.SrcColor
@@ -63,7 +63,7 @@ module private Converters =
 
     module BlendEquationMode =
         let ofBlendOperation =
-            LookupTable.lookupTable [
+            LookupTable.lookup [
                 BlendOperation.Add, BlendEquationModeEXT.FuncAdd
                 BlendOperation.Subtract, BlendEquationModeEXT.FuncSubtract
                 BlendOperation.ReverseSubtract, BlendEquationModeEXT.FuncReverseSubtract
@@ -73,7 +73,7 @@ module private Converters =
 
     module DepthFunction =
         let ofDepthTest =
-            LookupTable.lookupTable [
+            LookupTable.lookup [
                 DepthTest.Always, DepthFunction.Always
                 DepthTest.Equal, DepthFunction.Equal
                 DepthTest.Greater, DepthFunction.Greater
@@ -87,7 +87,7 @@ module private Converters =
 
     module StencilFunction =
         let ofComparisonFunction =
-            LookupTable.lookupTable [
+            LookupTable.lookup [
                 ComparisonFunction.Always, StencilFunction.Always
                 ComparisonFunction.Never, StencilFunction.Never
                 ComparisonFunction.Less, StencilFunction.Less
@@ -100,7 +100,7 @@ module private Converters =
 
     module StencilOp =
         let ofStencilOperation =
-            LookupTable.lookupTable [
+            LookupTable.lookup [
                 StencilOperation.Keep, StencilOp.Keep
                 StencilOperation.Zero, StencilOp.Zero
                 StencilOperation.Replace, StencilOp.Replace
@@ -113,7 +113,7 @@ module private Converters =
 
     module CullFaceMode =
         let ofCullMode =    
-            LookupTable.lookupTable [
+            LookupTable.lookup [
                 CullMode.None, unbox<CullFaceMode> 0
                 CullMode.Front, CullFaceMode.Back
                 CullMode.Back, CullFaceMode.Front
@@ -122,7 +122,7 @@ module private Converters =
 
     module PolygonMode =
         let ofFillMode =
-            LookupTable.lookupTable [
+            LookupTable.lookup [
                 FillMode.Fill, PolygonMode.Fill
                 FillMode.Line, PolygonMode.Line
                 FillMode.Point, PolygonMode.Point
@@ -569,8 +569,8 @@ type CommandStream private(state : CommandStreamState, ownState : bool, backend 
                     Choice2Of2 (
                         values |> AVal.map (fun v ->
                             let color = 
-                                match Map.tryFind sym v.Colors.Attachments with
-                                | None -> v.Colors.Default
+                                match Map.tryFind sym v.Colors with
+                                | None -> v.Color
                                 | c -> c
                             match color with
                             | Some c -> Some c.Integer
@@ -581,8 +581,8 @@ type CommandStream private(state : CommandStreamState, ownState : bool, backend 
                     Choice1Of2 (
                         values |> AVal.map (fun v ->
                             let color = 
-                                match Map.tryFind sym v.Colors.Attachments with
-                                | None -> v.Colors.Default
+                                match Map.tryFind sym v.Colors with
+                                | None -> v.Color
                                 | c -> c
                             match color with
                             | Some c -> Some c.Float
@@ -621,10 +621,10 @@ type CommandStream private(state : CommandStreamState, ownState : bool, backend 
 
 
         let depthValue =
-            values |> APtr.mapVal (fun d -> match d.Depth with Some v -> float32 v.Value | None -> 0.0f)
+            values |> APtr.mapVal (fun d -> match d.Depth with Some v -> float32 v | None -> 0.0f)
             
         let stencilValue =
-            values |> APtr.mapVal (fun v -> match v.Stencil with Some v -> int v.Value | None -> 0)
+            values |> APtr.mapVal (fun v -> match v.Stencil with Some v -> int v | None -> 0)
 
         backend.Switch(
             depthMask,
@@ -1312,7 +1312,7 @@ type CommandStream private(state : CommandStreamState, ownState : bool, backend 
         //    backend.Set(EnableCap.Multisample, state)
 
     member x.SetRasterizerState(state : RasterizerState) =
-        x.SetFrontFace state.FrontFace
+        x.SetFrontFace state.FrontFacing
         x.SetCullMode state.CullMode
         x.SetMultisample state.Multisample
         if not state.ConservativeRaster.IsConstant || AVal.force state.ConservativeRaster then

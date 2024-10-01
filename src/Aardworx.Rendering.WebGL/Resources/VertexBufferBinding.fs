@@ -46,7 +46,7 @@ module internal VertexArray =
         | BindingFrequency.Instances c -> uint32 c
 
     let private vertexAttribType =
-        LookupTable.lookupTable [
+        LookupTable.lookup [
             typeof<C3b>, VertexAttribType.UnsignedByte
             typeof<C4b>, VertexAttribType.UnsignedByte
             
@@ -73,7 +73,7 @@ module internal VertexArray =
         ]
         
     let private vertexAttribSize =
-        LookupTable.lookupTable [
+        LookupTable.lookup [
             typeof<C3b>, [|0, 3|]
             typeof<C4b>, [|0, 4|]
             

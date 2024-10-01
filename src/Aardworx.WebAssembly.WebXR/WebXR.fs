@@ -4,13 +4,13 @@ open System
 open Aardvark.Base
 open Aardworx.WebAssembly
 open Aardworx.Rendering.WebGL
+open Microsoft.FSharp.NativeInterop
 
 #nowarn "9"
 
 [<AutoOpen>]
 module private JsonHelpers =
     open System.Text.Json
-    open Microsoft.FSharp.NativeInterop
     
     let (|Null|String|Array|Object|Boolean|Number|) (json : JsonElement) =
         match json.ValueKind with
@@ -352,9 +352,9 @@ module WebXR =
     
     let view_getTransform (view : int) =
         init()
-        let mutable e = Unchecked.defaultof<Euclidean3d>
-        JsObj.Runtime.InvokeVoid("window.xr.view_getTransform", [| view :> obj; ptr &&e |])
-        e
+        use pp = fixed [| Unchecked.defaultof<Euclidean3d>  |]
+        JsObj.Runtime.InvokeVoid("window.xr.view_getTransform", [| view :> obj; ptr pp |])
+        NativePtr.read pp
     
     let view_requestViewportScale (view : int) (scale : float) =
         init()
@@ -378,9 +378,9 @@ module WebXR =
         
     let depthInfo_getNormDepthBufferFromNormView (depthInfo : int) =
         init()
-        let mutable e = Unchecked.defaultof<Euclidean3d>
-        JsObj.Runtime.InvokeVoid("window.xr.depthInfo_getNormDepthBufferFromNormView", [| depthInfo :> obj; ptr &&e |])
-        e
+        use pp = fixed [| Unchecked.defaultof<Euclidean3d> |]
+        JsObj.Runtime.InvokeVoid("window.xr.depthInfo_getNormDepthBufferFromNormView", [| depthInfo :> obj; ptr pp |])
+        NativePtr.read pp
         
     let depthInfo_getRawValueToMeters (depthInfo : int) =
         init()

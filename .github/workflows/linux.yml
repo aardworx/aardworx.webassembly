@@ -8,9 +8,9 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
       - name: Install Dotnet
-        uses: actions/setup-dotnet@v3
+        uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '7.0.400'
+          global-json-file: global.json
       - name: Wasm Tools
         run: dotnet workload install wasm-tools
       - name: Restore Tools

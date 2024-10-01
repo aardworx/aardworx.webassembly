@@ -22,7 +22,7 @@ type Sampler(device : Device, handle : uint32, destroy : unit -> unit) =
 type DeviceSamplerExtensions private() =
 
     static let wrapMode =
-        LookupTable.lookupTable [
+        LookupTable.lookup [
             WrapMode.Border,        int TextureWrapMode.ClampToBorder
             WrapMode.Mirror,        int TextureWrapMode.MirroredRepeat
             WrapMode.MirrorOnce,    int GLEnum.MirroredRepeat
@@ -31,7 +31,7 @@ type DeviceSamplerExtensions private() =
         ]
 
     static let minFilter =
-        LookupTable.lookupTable [
+        LookupTable.lookup [
             struct (ValueNone, FilterMode.Point),                      int TextureMinFilter.Nearest
             struct (ValueSome FilterMode.Point, FilterMode.Point),     int TextureMinFilter.NearestMipmapNearest
             struct (ValueSome FilterMode.Linear, FilterMode.Point),    int TextureMinFilter.NearestMipmapLinear
@@ -43,13 +43,13 @@ type DeviceSamplerExtensions private() =
         ]
         
     static let magFilter =
-        LookupTable.lookupTable [
+        LookupTable.lookup [
             FilterMode.Linear, int TextureMagFilter.Linear
             FilterMode.Point, int TextureMagFilter.Nearest
         ]
         
     static let compareFunc =
-        LookupTable.lookupTable [
+        LookupTable.lookup [
             ComparisonFunction.Always, int DepthFunction.Always
             ComparisonFunction.Equal, int DepthFunction.Equal
             ComparisonFunction.Greater, int DepthFunction.Greater

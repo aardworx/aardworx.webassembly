@@ -16,7 +16,7 @@ open Aardworx.Rendering.WebGL
 module internal RenderBufferFormatExtensions =
     module TextureFormat =
         let toShaderType =
-            LookupTable.lookupTable [
+            LookupTable.lookup [
                 TextureFormat.R3G3B2, typeof<V3d>
                 TextureFormat.Rgb4, typeof<V3d>
                 TextureFormat.Rgb5, typeof<V3d>
@@ -892,7 +892,7 @@ type ShaderExtensions private() =
         System.Text.RegularExpressions.Regex @"^\#version[ \t]+(.*)"
 
     static let shaderType =
-        LookupTable.lookupTable [
+        LookupTable.lookup [
             ShaderStage.Vertex, ShaderType.VertexShader
             ShaderStage.Compute, ShaderType.ComputeShader
             ShaderStage.Fragment, ShaderType.FragmentShader
@@ -919,6 +919,7 @@ type ShaderExtensions private() =
             depthWriteMode = false
             useInOut = true
             bindingMode = BindingMode.None
+            reverseTessellationWinding = false 
         }
 
     static let printLog (title : string) (code : string) (log : string) =

@@ -15,7 +15,7 @@ open Aardworx.Rendering.WebGL
 
 module internal ColFormat =
     let private zeroValues =
-        LookupTable.lookupTable [
+        LookupTable.lookup [
             typeof<uint8>, 0uy :> obj
             typeof<int8>, 0y :> obj
             typeof<uint16>, 0us :> obj
@@ -30,7 +30,7 @@ module internal ColFormat =
         ]
 
     let private oneValues =
-        LookupTable.lookupTable [
+        LookupTable.lookup [
             typeof<uint8>, Byte.MaxValue :> obj
             typeof<int8>, SByte.MaxValue :> obj
             typeof<uint16>, UInt16.MaxValue :> obj
@@ -44,7 +44,7 @@ module internal ColFormat =
         ]
         
     let private conversions =
-        LookupTable.lookupTable [
+        LookupTable.lookup [
             (typeof<uint8>, typeof<int8>),      (fun (v : uint8) -> int8 (int v - 128)) :> obj
             (typeof<uint8>, typeof<uint16>),    (fun (v : uint8) -> (float v / 255.0) * 65535.0 |> uint16 ) :> obj
             (typeof<uint8>, typeof<int16>),     (fun (v : uint8) -> int ((float v / 255.0) * 65535.0) - 32768 |> int16) :> obj
@@ -75,7 +75,7 @@ module internal ColFormat =
         ]
 
     let toPixelFormatAndType =
-        LookupTable.lookupTable [
+        LookupTable.lookup [
             TextureFormat.R8, (PixelFormat.Red, PixelType.UnsignedByte)
             TextureFormat.Rg8, (PixelFormat.RG, PixelType.UnsignedByte)
             TextureFormat.Rgb8, (PixelFormat.Rgb, PixelType.UnsignedByte)
@@ -127,7 +127,7 @@ module internal Visitor =
 
     type private Accepter<'r>() =
         static let table =
-            LookupTable.lookupTable [
+            LookupTable.lookup [
                 TextureFormat.R8, (fun (v : TextureFormatVisitor<'r>) -> v.Accept<byte>(Col.Format.Gray, 1))
                 TextureFormat.Rg8, (fun (v : TextureFormatVisitor<'r>) -> v.Accept<byte>(Col.Format.GrayAlpha, 2))
                 TextureFormat.Rgb8, (fun (v : TextureFormatVisitor<'r>) -> v.Accept<byte>(Col.Format.RGB, 3))
@@ -160,7 +160,7 @@ module internal Visitor =
     [<AbstractClass>]
     type PixVolumeVisitor<'r>() =
         static let table =
-            LookupTable.lookupTable [
+            LookupTable.lookup [
                 typeof<int8>, (fun (self : PixVolumeVisitor<'r>, img : PixVolume) -> self.Visit<int8>(unbox img, 0y, 127y))
                 typeof<uint8>, (fun (self : PixVolumeVisitor<'r>, img : PixVolume) -> self.Visit<uint8>(unbox img, 0uy, 255uy))
                 typeof<int16>, (fun (self : PixVolumeVisitor<'r>, img : PixVolume) -> self.Visit<int16>(unbox img, 0s, Int16.MaxValue))
@@ -182,7 +182,7 @@ module internal Visitor =
     [<AbstractClass>]
     type PixImageVisitor<'r>() =
         static let table =
-            LookupTable.lookupTable [
+            LookupTable.lookup [
                 typeof<int8>, (fun (self : PixImageVisitor<'r>, img : PixImage) -> self.Visit<int8>(unbox img, 0y, 127y))
                 typeof<uint8>, (fun (self : PixImageVisitor<'r>, img : PixImage) -> self.Visit<uint8>(unbox img, 0uy, 255uy))
                 typeof<int16>, (fun (self : PixImageVisitor<'r>, img : PixImage) -> self.Visit<int16>(unbox img, 0s, Int16.MaxValue))
