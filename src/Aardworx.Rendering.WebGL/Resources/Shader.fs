@@ -919,6 +919,7 @@ type ShaderExtensions private() =
             depthWriteMode = false
             useInOut = true
             bindingMode = BindingMode.None
+            reverseTessellationWinding = false 
         }
 
     static let printLog (title : string) (code : string) (log : string) =

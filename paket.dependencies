@@ -3,31 +3,31 @@ version: 6.2.1
 source https://api.nuget.org/v3/index.json
 
 copy_local: true
-framework: net7.0
+framework: net8.0
 storage: none
 
-nuget FSharp.Core >= 7.0.5 lowest_matching: true
-nuget Aardvark.Build ~> 1.0.13
-nuget Microsoft.AspNetCore.Components.WebAssembly ~> 7.0.7 
-nuget Microsoft.AspNetCore.Components.WebAssembly.DevServer ~> 7.0.7 
+nuget FSharp.Core >= 8.0.0 lowest_matching: true
+nuget Aardvark.Build ~> 1.0.25
+nuget Microsoft.AspNetCore.Components.WebAssembly ~> 8.0.8 
+nuget Microsoft.AspNetCore.Components.WebAssembly.DevServer ~> 8.0.8 
 nuget Silk.NET.OpenGLES ~> 2.15.0
 nuget Silk.NET.Maths = 2.15.0
 nuget Silk.NET.Core = 2.15.0
-nuget Microsoft.Extensions.Logging.Abstractions ~> 7.0
+nuget Microsoft.Extensions.Logging.Abstractions ~> 8.0
 
-nuget Aardvark.Rendering        ~> 5.3.6
-nuget Aardvark.SceneGraph       ~> 5.3.6
-nuget Aardvark.Rendering.Text   ~> 5.3.6
-nuget Aardvark.Application      ~> 5.3.6
+nuget Aardvark.Rendering        ~> 5.5.1
+nuget Aardvark.SceneGraph       ~> 5.5.1
+nuget Aardvark.Rendering.Text   ~> 5.5.1
+nuget Aardvark.Application      ~> 5.5.1
 
-nuget FShade ~> 5.3.6
-nuget FShade.Core ~> 5.3.6
-nuget FSharp.Data.Adaptive ~> 1.2.13
+nuget FShade ~> 5.6.0 
+nuget FShade.Core ~> 5.6.0 
+nuget FSharp.Data.Adaptive ~> 1.2.16
 
-nuget Aardvark.Base ~> 5.2.21
-nuget Aardvark.Base.FSharp ~> 5.2.21
+nuget Aardvark.Base ~> 5.3.4
+nuget Aardvark.Base.FSharp ~> 5.3.4
 
-nuget Aardvark.Dom.Core ~> 1.0.0-prerelease0034
-nuget Aardvark.Dom.Elm ~> 1.0.0-prerelease0034
-nuget Aardvark.Dom.Remote ~> 1.0.0-prerelease0034
-nuget Aardvark.FontProvider ~> 0.0.6
+nuget Aardvark.Dom.Core ~> 1.0.1
+nuget Aardvark.Dom.Elm ~> 1.0.1
+nuget Aardvark.Dom.Remote ~> 1.0.1
+nuget Aardvark.FontProvider ~> 0.1.0

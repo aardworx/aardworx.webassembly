@@ -569,8 +569,8 @@ type CommandStream private(state : CommandStreamState, ownState : bool, backend 
                     Choice2Of2 (
                         values |> AVal.map (fun v ->
                             let color = 
-                                match Map.tryFind sym v.Colors.Attachments with
-                                | None -> v.Colors.Default
+                                match Map.tryFind sym v.Colors with
+                                | None -> v.Color
                                 | c -> c
                             match color with
                             | Some c -> Some c.Integer
@@ -581,8 +581,8 @@ type CommandStream private(state : CommandStreamState, ownState : bool, backend 
                     Choice1Of2 (
                         values |> AVal.map (fun v ->
                             let color = 
-                                match Map.tryFind sym v.Colors.Attachments with
-                                | None -> v.Colors.Default
+                                match Map.tryFind sym v.Colors with
+                                | None -> v.Color
                                 | c -> c
                             match color with
                             | Some c -> Some c.Float
@@ -621,10 +621,10 @@ type CommandStream private(state : CommandStreamState, ownState : bool, backend 
 
 
         let depthValue =
-            values |> APtr.mapVal (fun d -> match d.Depth with Some v -> float32 v.Value | None -> 0.0f)
+            values |> APtr.mapVal (fun d -> match d.Depth with Some v -> float32 v | None -> 0.0f)
             
         let stencilValue =
-            values |> APtr.mapVal (fun v -> match v.Stencil with Some v -> int v.Value | None -> 0)
+            values |> APtr.mapVal (fun v -> match v.Stencil with Some v -> int v | None -> 0)
 
         backend.Switch(
             depthMask,
@@ -1312,7 +1312,7 @@ type CommandStream private(state : CommandStreamState, ownState : bool, backend 
         //    backend.Set(EnableCap.Multisample, state)
 
     member x.SetRasterizerState(state : RasterizerState) =
-        x.SetFrontFace state.FrontFace
+        x.SetFrontFace state.FrontFacing
         x.SetCullMode state.CullMode
         x.SetMultisample state.Multisample
         if not state.ConservativeRaster.IsConstant || AVal.force state.ConservativeRaster then

@@ -644,7 +644,7 @@ type TextureSliceCommandStreamExtensions private() =
                 tex
                             
             | :? PixTextureCube as t ->
-                let fx = t.PixImageCube.[CubeSide.PositiveX]
+                let fx = t.PixCube.[CubeSide.PositiveX]
                 let l0 = fx.[0]
                 if l0.Size.X <> l0.Size.Y then failf "CubeMap is not square: %A" l0.Size
 
@@ -662,7 +662,7 @@ type TextureSliceCommandStreamExtensions private() =
                         let s = fx.[level].Size.X
                         let pbo = this.GetPixelBuffer(tex.Format, V3i(s, s, 6))
 
-                        let data = faces |> Array.map (fun f -> t.PixImageCube.[f].[level])
+                        let data = faces |> Array.map (fun f -> t.PixCube.[f].[level])
                         pbo.Write data
 
                         pbo
@@ -738,10 +738,8 @@ type TextureSliceCommandStreamExtensions private() =
             | :? FileTexture as t ->
                 let img =
                     if System.IO.File.Exists t.FileName then
-                        try PixImageSharp.Create t.FileName
-                        with _ ->   
-                            try PixImage.Create t.FileName
-                            with _ -> failf "could not load image from %s" t.FileName
+                        try PixImage.Load t.FileName
+                        with _ -> failf "could not load image from %s" t.FileName
                     else
                         failf "texture file %s does not exist" t.FileName
                             

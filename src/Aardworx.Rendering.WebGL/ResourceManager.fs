@@ -333,7 +333,7 @@ type RenderObjectResourceManagerExtensions private() =
         let sub = o.Activate()
         let program, instancedGS, outputVertices, mode, offsets, stride =
             match o.Surface with
-            | Surface.FShadeSimple effect ->
+            | Surface.Effect effect ->
                 this.CreateProgram(fbo, effect), false, 0, o.Mode, [||], 0
                 // match effect.GeometryShader with
                 // | Some gs ->

@@ -152,7 +152,7 @@ type RenderObjectProgram(manager : ResourceManager, signature : FramebufferSigna
 type RenderTask(manager : ResourceManager, signature : FramebufferSignature, mode : CommandStreamMode, objs : aset<IRenderObject>) =
     inherit AdaptiveObject()
 
-    let id = newId()
+    let id = RenderTaskId.New()
     let mutable reader = objs.GetReader()
     let cache = Dict<IRenderObject, PreparedMultiRenderObject>()
     // let prog = new RenderObjectProgram(manager, signature, mode)
