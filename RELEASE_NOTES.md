@@ -1,3 +1,6 @@
+### 1.1.8
+* net8.0 updates
+
 ### 1.1.7
 * added simple WebXR bindings
 
