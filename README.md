@@ -16,7 +16,7 @@ This library is work-in-progress and several rendering functionalities have not 
 ## Building
 
 ### Requirements
-* dotnet sdk `6.0.401`
+* dotnet sdk `8.0.401`
 * `wasm-tools` workload (can be installed via `dotnet workload install wasm-tools`)
 
 ### Steps
