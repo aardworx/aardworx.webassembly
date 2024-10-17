@@ -393,16 +393,16 @@ type DeviceFramebufferExtensions private() =
 
         let back = [|GLEnum.Back|]
         let all = signature.GetDrawBuffers()
-        //
-        // backend.Switch(
-        //     APtr.cast handle,
-        //     [
-        //         0, fun cmd -> 
-        //             cmd.DrawBuffers(APtr.constant 1u, back |> APtr.pinArrayPtr |> APtr.map NativePtr.ofNativeInt<GLEnum>)
-        //     ],
-        //     fun cmd ->
-        //         cmd.DrawBuffers(APtr.constant (uint32 all.Length), all |> APtr.pinArrayPtr |> APtr.map NativePtr.ofNativeInt<GLEnum>)
-        // )
+        
+        backend.Switch(
+            APtr.cast handle,
+            [
+                0, fun cmd -> 
+                    cmd.DrawBuffers(APtr.constant 1u, back |> APtr.pinArrayPtr |> APtr.map NativePtr.ofNativeInt<GLEnum>)
+            ],
+            fun cmd ->
+                cmd.DrawBuffers(APtr.constant (uint32 all.Length), all |> APtr.pinArrayPtr |> APtr.map NativePtr.ofNativeInt<GLEnum>)
+        )
 
 
         this.State.FramebufferSignature <- signature
@@ -545,20 +545,19 @@ type DeviceFramebufferExtensions private() =
         )
         match this.State.PopFramebufferSignature() with
         | Some s ->
-            ()
-            //let back = [| GLEnum.Back |]
-            //let all = s.GetDrawBuffers()
+            let back = [| GLEnum.Back |]
+            let all = s.GetDrawBuffers()
 
-            //this.BaseStream.Switch(
-            //    APtr.ofNativePtr (NativePtr.cast (NativePtr.add pp 1)),
-            //    [
-            //        0, fun cmd -> 
-            //            cmd.DrawBuffers(APtr.constant (uint32 back.Length), APtr.pinArrayPtr back |> APtr.map NativePtr.ofNativeInt<GLEnum>)
+            this.BaseStream.Switch(
+                APtr.ofNativePtr (NativePtr.cast (NativePtr.add pp 1)),
+                [
+                    0, fun cmd -> 
+                        cmd.DrawBuffers(APtr.constant (uint32 back.Length), APtr.pinArrayPtr back |> APtr.map NativePtr.ofNativeInt<GLEnum>)
                         
-            //    ],
-            //    fun cmd -> 
-            //        cmd.DrawBuffers(APtr.constant (uint32 all.Length), APtr.pinArrayPtr all |> APtr.map NativePtr.ofNativeInt<GLEnum>)
-            //)
+                ],
+                fun cmd -> 
+                    cmd.DrawBuffers(APtr.constant (uint32 all.Length), APtr.pinArrayPtr all |> APtr.map NativePtr.ofNativeInt<GLEnum>)
+            )
 
         | None ->
             ()

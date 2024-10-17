@@ -10,7 +10,7 @@ module Keys =
     open Aardvark.Application
 
     let tryOfKeyCode =
-        LookupTable.lookupTable' [
+        LookupTable.tryLookup [
             8,      Keys.Back
             9,      Keys.Tab
             13,     Keys.Enter
@@ -127,7 +127,7 @@ module MouseButtons =
     open Aardvark.Application
 
     let tryOfButton =
-        LookupTable.lookupTable' [
+        LookupTable.tryLookup [
             0, MouseButtons.Left
             1, MouseButtons.Middle
             2, MouseButtons.Right

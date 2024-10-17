@@ -69,9 +69,9 @@ type AbstractWorker() =
             match message with 
             | WorkerMessage.Binary data ->
                 use ptr = fixed data 
-                JsObj.Runtime.InvokeVoid("sendBinary", int (NativePtr.toNativeInt ptr), data.Length)
+                JSRuntime.Instance.InvokeVoid("sendBinary", int (NativePtr.toNativeInt ptr), data.Length)
             | WorkerMessage.String str ->
-                JsObj.Runtime.InvokeVoid("sendString", str)
+                JSRuntime.Instance.InvokeVoid("sendString", str)
             
         
         x.Run {
@@ -90,7 +90,7 @@ type AbstractWorker() =
         instance.Received (WorkerMessage.Binary arr)
         
     static member private RunServer(typeName : string) =
-        JsObj.Runtime.InvokeVoid("eval", code)
+        JSRuntime.Instance.InvokeVoid("eval", code)
         let t = Type.GetType typeName
         if isNull t then
             failwithf "Type '%s' not found" typeName
@@ -122,7 +122,7 @@ module Worker =
             str <- str.Replace(o, n)
          
              
-        JsObj.Runtime.Invoke<string>("aardvark.toObjectUrlString", str :> obj, "text/javascript" :> obj)
+        JSRuntime.Instance.Invoke<string>("aardvark.toObjectUrlString", str :> obj, "text/javascript" :> obj)
         
           
     let private verbose = "false" 
@@ -130,7 +130,7 @@ module Worker =
     let private fakeEnvUrl = lazy ( getEmbeddedObjectUrl [] "spawndev.blazorjs.webworkers.faux-env.js" )
     let private workerUrl =
         lazy (
-            let baseUrl = JsObj.Runtime.Invoke<string>("aardvark.getBaseUrl")
+            let baseUrl = JSRuntime.Instance.Invoke<string>("aardvark.getBaseUrl")
             let location = baseUrl + "_framework/hans.js"
             getEmbeddedObjectUrl [
                 "__FAUX_SCRIPT_URL__", fakeEnvUrl.Value
@@ -181,7 +181,7 @@ module Worker =
                     "window.workers.booted = Module.mono_bind_static_method('[Aardworx.WebAssembly] Aardworx.WebAssembly.Worker:workerBooted');"
                     "} catch(e) { console.error(e); }"
                 ]
-            JsObj.Runtime.InvokeVoid("eval", code)
+            JSRuntime.Instance.InvokeVoid("eval", code)
         )
        
     let private workerBooted(id : int) =
@@ -195,12 +195,12 @@ module Worker =
                     match msg with
                     | WorkerMessage.Binary arr ->
                         use ptr = fixed arr
-                        JsObj.Runtime.InvokeVoid("window.workers.sendBinary", id, int (NativePtr.toNativeInt ptr), arr.Length)
+                        JSRuntime.Instance.InvokeVoid("window.workers.sendBinary", id, int (NativePtr.toNativeInt ptr), arr.Length)
                     | WorkerMessage.String str ->
-                        JsObj.Runtime.InvokeVoid("window.workers.sendString", id, str)
+                        JSRuntime.Instance.InvokeVoid("window.workers.sendString", id, str)
                 Receive = queue.Take
                 Terminate = fun () ->
-                    JsObj.Runtime.InvokeVoid("window.workers.terminate", id)
+                    JSRuntime.Instance.InvokeVoid("window.workers.terminate", id)
                     match workerMessageQueues.TryRemove id with
                     | (true, q) -> q.Completed()
                     | _ -> ()
@@ -244,6 +244,6 @@ module Worker =
                 $"    }}"
                 $"}};"
             ]
-        JsObj.Runtime.InvokeVoid("eval", code)
+        JSRuntime.Instance.InvokeVoid("eval", code)
         tcs.Task
        

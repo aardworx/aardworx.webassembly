@@ -16,7 +16,7 @@ let run() =
         do! Window.Document.Ready
         
         // Create the `WebGLApplication` and a `RenderControl` using our utility from above.
-        let gl = new WebGLApplication()
+        let gl = new WebGLApplication(CommandStreamMode.Managed, false)
         
         Boot.run gl App.app
 

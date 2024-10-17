@@ -11,8 +11,11 @@
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="CameraModel.fs" />
+    <Compile Include="CameraModel.g.fs" />
     <Compile Include="Model.fs" />
     <Compile Include="Model.g.fs" />
+    <Compile Include="OrbitController.fs" />
     <Compile Include="App.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>

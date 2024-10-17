@@ -1163,11 +1163,11 @@ type EventTarget(r : IJSInProcessObjectReference) =
     /// The EventTarget method SubscribeEventListener() sets up a function that will be called whenever the specified event is delivered to the target. Common targets are Element, Document, and Window, but the target may be any object that supports events (such as XMLHttpRequest).
     member x.SubscribeEventListener(name : string, useCapture : bool, listener : Event -> unit) =
         let ref = DotNetObjectReference.Create (JSActions.JSActionO(Event >> listener))
-        let r = runtime.Value.Invoke<IJSInProcessObjectReference>("aardvark.addEventListener", r, name, ref, useCapture)
+        let r = JSRuntime.Instance.Invoke<int>("aardvark.addEventListener", r, name, ref, useCapture)
         { new IDisposable with
             member x.Dispose() =
-                r.InvokeVoid("dispose")
-                r.Dispose()
+                try JSRuntime.Instance.InvokeVoid("aardvark.destroyEventListener", r)
+                with e -> printfn "could not dispose event listener: %A" e
                 ref.Dispose()
         }
 
@@ -5405,7 +5405,7 @@ type Window(r : IJSInProcessObjectReference) =
             )
         ref <- DotNetObjectReference.Create run
         gc <- GCHandle.Alloc(ref)
-        runtime.Value.InvokeVoid("aardvark.requestAnimationFrame", ref)
+        JSRuntime.Instance.InvokeVoid("aardvark.requestAnimationFrame", ref)
         
     member x.SetTimeout(time : int, callback : unit -> unit) =
         let mutable ref = Unchecked.defaultof<DotNetObjectReference<_>>
@@ -5420,12 +5420,12 @@ type Window(r : IJSInProcessObjectReference) =
         
         ref <- DotNetObjectReference.Create (JSActions.JSAction run)
         gc <- GCHandle.Alloc(ref)
-        id <- runtime.Value.Invoke<int>("aardvark.setTimeout", time, ref)
+        id <- JSRuntime.Instance.Invoke<int>("aardvark.setTimeout", time, ref)
         timeoutRefs.[id] <- (ref, gc)
         id
         
     member x.ClearTimeout(timeout : int) =
-        runtime.Value.InvokeVoid("window.clearTimeout", timeout)
+        JSRuntime.Instance.InvokeVoid("window.clearTimeout", timeout)
         match timeoutRefs.TryRemove timeout with
         | (true, (ref, gc)) -> 
             ref.Dispose()

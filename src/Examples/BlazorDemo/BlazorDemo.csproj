@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+<!--  <ItemGroup>-->
+<!--    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="8.0.8" />-->
+<!--    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="8.0.8" PrivateAssets="all" />-->
+<!--  </ItemGroup>-->
+  <ItemGroup>
+    <ProjectReference Include="..\..\Aardworx.Rendering.WebGL\Aardworx.Rendering.WebGL.fsproj" />
+    <ProjectReference Include="..\..\Aardworx.WebAssembly.BlazorComponent\Aardworx.WebAssembly.BlazorComponent.fsproj" />
+    <ProjectReference Include="..\..\Aardworx.WebAssembly.Dom\Aardworx.WebAssembly.Dom.fsproj" />
+    <ProjectReference Include="..\..\Aardworx.WebAssembly\Aardworx.WebAssembly.fsproj" />
+    <ProjectReference Include="..\BlazorDemo.Scene\BlazorDemo.Scene.fsproj" />
+  </ItemGroup>
+  <Import Project="..\..\Aardworx.WebAssembly\Aardworx.WebAssembly.targets" />
+  <Import Project="..\..\Aardworx.Rendering.WebGL\Aardworx.Rendering.WebGL.targets" />
+  <Import Project="..\..\..\.paket\Paket.Restore.targets" />
+</Project>

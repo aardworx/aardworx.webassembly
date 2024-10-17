@@ -20,19 +20,27 @@ type Message =
     | Decrement
     | Hover of option<V3d>
     | Click of V3d
-    | Delete of V3d
+    | Update of Index * V3d
+    | StartDrag of Index
+    | StopDrag 
+    | Delete of Index
     | Clear
+    | CameraMessage of OrbitMessage
 
 module App =
     let initial = 
         { 
             Value = 3
             Hover = None
-            Points = HashSet.empty
+            Points = IndexList.empty
+            DraggingPoint = None 
+            Camera = OrbitState.create V3d.Zero 1.0 0.3 3.0 Button.Left Button.Middle
         }
 
-    let update (_env : Env<Message>) (model : Model) (msg : Message) =
+    let update (env : Env<Message>) (model : Model) (msg : Message) =
         match msg with
+        | CameraMessage msg ->
+            { model with Camera = OrbitController.update (Env.map CameraMessage env) model.Camera msg }
         | Increment ->
             { model with Value = model.Value + 1 }
         | Decrement ->
@@ -40,22 +48,44 @@ module App =
         | Hover p ->
             { model with Hover = p }
         | Click p ->
-            { model with Points = HashSet.add p model.Points }
+            { model with Points = IndexList.add p model.Points }
+        | Update(idx, p) ->
+            match model.DraggingPoint with
+            | Some (i, _) when i = idx -> { model with DraggingPoint = Some(idx, p) }
+            | _ -> model
+            //{ model with Points = IndexList.set idx p model.Points }
+        | StartDrag idx ->
+            { model with DraggingPoint = Some (idx, model.Points.[idx]); Points = IndexList.remove idx model.Points }
+        | StopDrag ->
+            match model.DraggingPoint with
+            | Some (idx, pt) ->
+                { model with DraggingPoint = None; Points = IndexList.set idx pt model.Points }
+            | None ->
+                model
         | Delete p ->
-            { model with Points = HashSet.remove p model.Points }
+            { model with Points = IndexList.remove p model.Points }
         | Clear ->
-            { model with Points = HashSet.empty }
+            { model with Points = IndexList.empty }
             
     let view (env : Env<Message>) (model : AdaptiveModel) =
-    
         let a = FShade.Effect.ofFunction DefaultSurfaces.trafo
         printfn "%A" a
+        
+        let test = cval 1
+        
+        
         body {
-
             OnBoot [
                 "const l = document.getElementById('loader');"
                 "if(l) l.remove();"
             ]
+            
+            h1 {
+                test |> AVal.map string
+                Dom.OnClick (fun (e) ->
+                    transact(fun () -> test.Value <- test.Value + 1)   
+                )
+            }
             
             renderControl {
                 let! size = RenderControl.ViewportSize
@@ -65,27 +95,41 @@ module App =
                     Background "linear-gradient(to top, #051937, #314264, #5d6f95, #8ba1c9, #bbd5ff)"
                 ]
 
-                RenderControl.Samples 1
+                //RenderControl.Samples 1
+                
+                OrbitController.getAttributes (Env.map CameraMessage env)
+                
+                RenderControl.OnRendered (fun _ -> 
+                    env.Emit [CameraMessage OrbitMessage.Rendered]
+                )
                 
                 let proj =
                     size |> AVal.map (fun s ->
                         Frustum.perspective 90.0 0.1 100.0 (float s.X / float s.Y)
                     )
 
-                Sg.View(CameraView.lookAt (V3d(3,4,3)) V3d.Zero V3d.OOI |> CameraView.viewTrafo)
-                Sg.Proj(AVal.map Frustum.projTrafo proj)
+                Sg.View(model.Camera.view |> AVal.map CameraView.viewTrafo)
+                Sg.Proj(proj |> AVal.map Frustum.projTrafo)
                 
                 Sg.OnPointerLeave(fun _ -> 
                     env.Emit [Hover None]
                 )
                 
+                Sg.OnDoubleTap(fun e ->
+                    env.Emit [CameraMessage (OrbitMessage.SetTargetCenter(true, AnimationKind.Tanh, e.WorldPosition))]
+                    false
+                )
+                
                 Sg.OnTap(fun e -> 
-                    env.Emit [Click e.Position]
+                    if e.Button = Button.Right then
+                        env.Emit [Click e.Position]
+                        false
+                    else
+                        true
                 )
 
                 Sg.OnPointerMove(fun p ->
                     env.Emit [Hover (Some p.Position)]
-                    false
                 )
 
                 // fori shading we simply use Aardvark.Rendering's default shaders doing transformations and 
@@ -119,17 +163,62 @@ module App =
                 }
 
                 sg {
-                    model.Points |> ASet.map (fun pos ->
+                    
+                    sg {
+                        Sg.ForcePixelPicking
+                        Sg.NoEvents
+                        let pos = model.DraggingPoint |> AVal.map (function Some (_,p) -> Some p | _ -> None)
+                   
+                        Sg.Active(pos |> AVal.map Option.isSome)
+                        let renderPos = pos |> AVal.map (Option.defaultValue V3d.Zero)
+                        
+                        Primitives.Sphere(renderPos, 0.1, C4b.Yellow)
+                    }
+                    
+                    
+                    
+                    model.Points |> AList.mapi (fun idx pos ->
                         sg {
+                            //Sg.Active (model.DraggingPoint |> AVal.map (function Some i -> i <> idx | None -> true))
+                            let mutable down = false
                             Sg.Cursor "no-drop"
-                            Sg.OnPointerMove(fun _ ->
-                                env.Emit [Hover None]
-                                false
+                            Sg.OnTap (true, fun e ->
+                                if e.Button = Button.Right then
+                                    env.Emit [ Delete idx ]
+                                    false
+                                else
+                                    true
                             )
-                            Sg.OnTap (fun e ->
-                                env.Emit [ Delete pos ]
-                                false
+                            Sg.OnPointerDown((fun e ->
+                                if e.Button = Button.Left then
+                                    down <- true
+                                    e.Context.SetPointerCapture(e.Target, e.PointerId)
+                                    env.Emit [StartDrag idx]
+                                    false
+                                else
+                                    true
+                            ))
+                            
+                            Sg.OnPointerMove(fun e ->
+                                if down then
+                                    env.Emit [ Message.Update(idx, e.WorldPosition) ]
+                                    false
+                                else
+                                    true
                             )
+                            
+                            Sg.OnPointerUp(fun e ->
+                                if e.Button = Button.Left && down then
+                                    down <- false
+                                    env.Emit [ Message.Update(idx, e.WorldPosition); StopDrag ]
+                                    e.Context.ReleasePointerCapture(e.Target, e.PointerId)
+                                    false
+                                else
+                                    true
+                                    
+                            )
+                            
+                            
                             Primitives.Sphere(pos, 0.1, C4b.Green)
                         }
                     )

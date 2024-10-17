@@ -347,8 +347,8 @@ module Boot =
             use r = new System.IO.StreamReader(s)
             r.ReadToEnd()
             
-        JsObj.Runtime.InvokeVoid("window.eval", aardvarkDomJs)
-        JsObj.Runtime.InvokeVoid("window.eval", connectCode)
+        JSRuntime.Instance.InvokeVoid("window.eval", aardvarkDomJs)
+        JSRuntime.Instance.InvokeVoid("window.eval", connectCode)
 
     let run (glapp : WebGLApplication) (app : App<'model, 'adaptiveModel, 'message>) =
         runView glapp (fun ctx ->

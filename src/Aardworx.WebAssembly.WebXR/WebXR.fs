@@ -140,57 +140,57 @@ module WebXR =
         
     let isSupported (mode : string) =
         init()
-        JsObj.Runtime.InvokeAsync<bool>("window.xr.isSupported", [| mode :> obj |])
+        JSRuntime.Instance.InvokeAsync<bool>("window.xr.isSupported", [| mode :> obj |])
     
     let requestSession (mode : string) (options : obj) =
         init()
-        JsObj.Runtime.InvokeAsync<int>("window.xr.requestSession", [| mode :> obj; options |])
+        JSRuntime.Instance.InvokeAsync<int>("window.xr.requestSession", [| mode :> obj; options |])
     
     let session_getDepthDataFormat (session : int) =
         init()
-        JsObj.Runtime.Invoke<string>("window.xr.session_getDepthDataFormat", [| session :> obj |])
+        JSRuntime.Instance.Invoke<string>("window.xr.session_getDepthDataFormat", [| session :> obj |])
     
     let session_getDepthUsage (session : int) =
         init()
-        JsObj.Runtime.Invoke<string>("window.xr.session_getDepthUsage", [| session :> obj |])
+        JSRuntime.Instance.Invoke<string>("window.xr.session_getDepthUsage", [| session :> obj |])
     
     let session_getDomOverlayState (session : int) =
         init()
-        JsObj.Runtime.Invoke<string>("window.xr.session_getDomOverlayState", [| session :> obj |])
+        JSRuntime.Instance.Invoke<string>("window.xr.session_getDomOverlayState", [| session :> obj |])
     
     let session_getEnvironmentBlendMode (session : int) =
         init()
-        JsObj.Runtime.Invoke<string>("window.xr.session_getEnvironmentBlendMode", [| session :> obj |])
+        JSRuntime.Instance.Invoke<string>("window.xr.session_getEnvironmentBlendMode", [| session :> obj |])
     
     let session_getInputSources (session : int) (handles : int[]) =
         init()
         use pHandles = fixed handles
-        let cnt = JsObj.Runtime.Invoke<int>("window.xr.session_getInputSources", [| session :> obj; ptr pHandles; handles.Length |])
+        let cnt = JSRuntime.Instance.Invoke<int>("window.xr.session_getInputSources", [| session :> obj; ptr pHandles; handles.Length |])
         cnt
         
     let session_getInteractionMode (session : int) =
         init()
-        JsObj.Runtime.Invoke<string>("window.xr.session_getInteractionMode", [| session :> obj |])
+        JSRuntime.Instance.Invoke<string>("window.xr.session_getInteractionMode", [| session :> obj |])
     
     let session_getPreferredReflectionFormat (session : int) =
         init()
-        JsObj.Runtime.Invoke<string>("window.xr.session_getPreferredReflectionFormat", [| session :> obj |])
+        JSRuntime.Instance.Invoke<string>("window.xr.session_getPreferredReflectionFormat", [| session :> obj |])
     
     let session_getRenderState (session : int) =
         init()
-        JsObj.Runtime.Invoke<string>("window.xr.session_getRenderState", [| session :> obj |])
+        JSRuntime.Instance.Invoke<string>("window.xr.session_getRenderState", [| session :> obj |])
     
     let session_updateRenderState (session : int) (renderState : string) =
         init()
-        JsObj.Runtime.InvokeVoid("window.xr.session_updateRenderState", [| session :> obj; renderState :> obj |])
+        JSRuntime.Instance.InvokeVoid("window.xr.session_updateRenderState", [| session :> obj; renderState :> obj |])
     
     let session_getVisibilityState (session : int) =
         init()
-        JsObj.Runtime.Invoke<string>("window.xr.session_getVisibilityState", [| session :> obj |])
+        JSRuntime.Instance.Invoke<string>("window.xr.session_getVisibilityState", [| session :> obj |])
     
     let session_requestReferenceSpace (session : int) (space : string) =
         init()
-        JsObj.Runtime.InvokeAsync<int>("window.xr.session_requestReferenceSpace", [|session :> obj; space :> obj|])
+        JSRuntime.Instance.InvokeAsync<int>("window.xr.session_requestReferenceSpace", [|session :> obj; space :> obj|])
     
     let private session_callbacks = Dict<int * string, ref<list<unit -> unit>>>()
     
@@ -214,7 +214,7 @@ module WebXR =
             | _ ->
                 let r = ref [callback]
                 session_callbacks.[key] <- r
-                JsObj.Runtime.InvokeVoid("window.xr.session_addEventListener", [| session :> obj; typ :> obj |])
+                JSRuntime.Instance.InvokeVoid("window.xr.session_addEventListener", [| session :> obj; typ :> obj |])
                 r
                 
         { new IDisposable with
@@ -239,212 +239,212 @@ module WebXR =
         init()
         let l = session_animationFrameCallbacks.GetOrCreate(session, fun _ -> ref [])
         l.Value <- callback :: l.Value
-        JsObj.Runtime.InvokeVoid("window.xr.session_requestAnimationFrame", [| session :> obj |])
+        JSRuntime.Instance.InvokeVoid("window.xr.session_requestAnimationFrame", [| session :> obj |])
     
     let session_createXRWebGLLayer (session : int) (context : WebGLContext) (options : string) =
         init()
-        JsObj.Runtime.Invoke<int>("window.xr.session_createXRWebGLLayer", [|session :> obj; context.Handle :> obj; options :> obj|])
+        JSRuntime.Instance.Invoke<int>("window.xr.session_createXRWebGLLayer", [|session :> obj; context.Handle :> obj; options :> obj|])
     
     let session_createXRWebGLBinding (session : int) (context : WebGLContext) =
         init()
-        JsObj.Runtime.Invoke<int>("window.xr.session_createXRWebGLBinding", [|session :> obj; context.Handle :> obj|])
+        JSRuntime.Instance.Invoke<int>("window.xr.session_createXRWebGLBinding", [|session :> obj; context.Handle :> obj|])
         
         
     
     let layer_getFramebuffer (layer : int) =
         init()
-        JsObj.Runtime.Invoke<uint32>("window.xr.layer_getFramebuffer", [| layer :> obj |])
+        JSRuntime.Instance.Invoke<uint32>("window.xr.layer_getFramebuffer", [| layer :> obj |])
     
     let layer_getFramebufferWidth (layer : int) =
         init()
-        JsObj.Runtime.Invoke<double>("window.xr.layer_getFramebufferWidth", [| layer :> obj |])
+        JSRuntime.Instance.Invoke<double>("window.xr.layer_getFramebufferWidth", [| layer :> obj |])
     
     let layer_getFramebufferHeight (layer : int) =
         init()
-        JsObj.Runtime.Invoke<double>("window.xr.layer_getFramebufferHeight", [| layer :> obj |])
+        JSRuntime.Instance.Invoke<double>("window.xr.layer_getFramebufferHeight", [| layer :> obj |])
     
     let layer_getIgnoreDepthValues (layer : int) =
         init()
-        JsObj.Runtime.Invoke<bool>("window.xr.layer_getIgnoreDepthValues", [| layer :> obj |])
+        JSRuntime.Instance.Invoke<bool>("window.xr.layer_getIgnoreDepthValues", [| layer :> obj |])
     
     let layer_getFixedFoveation (layer : int) =
         init()
-        JsObj.Runtime.Invoke<double>("window.xr.layer_getFixedFoveation", [| layer :> obj |])
+        JSRuntime.Instance.Invoke<double>("window.xr.layer_getFixedFoveation", [| layer :> obj |])
     
     let layer_getAntialias (layer : int) =
         init()
-        JsObj.Runtime.Invoke<bool>("window.xr.layer_getAntialias", [| layer :> obj |])
+        JSRuntime.Instance.Invoke<bool>("window.xr.layer_getAntialias", [| layer :> obj |])
     
     let layer_getViewport (layer : int) (view : int) =
         init()
         let arr = Array.zeroCreate<V2d> 2
         use pArr = fixed arr
-        JsObj.Runtime.InvokeVoid("window.xr.layer_getViewport", [| layer :> obj; view :> obj; ptr pArr |])
+        JSRuntime.Instance.InvokeVoid("window.xr.layer_getViewport", [| layer :> obj; view :> obj; ptr pArr |])
         arr.[0], arr.[1]
 
     let frame_getViewerPose (frame : int) (refSpace : int) =
         init()
-        JsObj.Runtime.Invoke<int>("window.xr.frame_getViewerPose", [| frame :> obj; refSpace :> obj |])
+        JSRuntime.Instance.Invoke<int>("window.xr.frame_getViewerPose", [| frame :> obj; refSpace :> obj |])
     
     let frame_getTrackedAnchors (frame : int) =
         init()
-        let json = JsObj.Runtime.Invoke<string>("window.xr.frame_getTrackedAnchors", [| frame :> obj |]) |> System.Text.Json.JsonDocument.Parse
+        let json = JSRuntime.Instance.Invoke<string>("window.xr.frame_getTrackedAnchors", [| frame :> obj |]) |> System.Text.Json.JsonDocument.Parse
         match json.RootElement with
         | Array values -> values |> Array.choose (function Number (Int v) -> Some v | _ -> None)
         | _ -> [||]
     
     let frame_createAnchor (frame : int) (pose : Euclidean3d) (space : int) =
         init()
-        JsObj.Runtime.InvokeAsync<int>("window.xr.frame_createAnchor", [| frame :> obj; pickleEuclidean pose :> obj; space :> obj |])
+        JSRuntime.Instance.InvokeAsync<int>("window.xr.frame_createAnchor", [| frame :> obj; pickleEuclidean pose :> obj; space :> obj |])
     
     let frame_fillJointRadii (frame : int) (jointSpaces : int[]) (radii : float32[]) =
         init()
         use pJointSpaces = fixed jointSpaces
         use pRadii = fixed radii
-        JsObj.Runtime.Invoke<bool>("window.xr.frame_getJointRadii", [| frame :> obj; ptr pJointSpaces :> obj; jointSpaces.Length :> obj; ptr pRadii :> obj |])
+        JSRuntime.Instance.Invoke<bool>("window.xr.frame_getJointRadii", [| frame :> obj; ptr pJointSpaces :> obj; jointSpaces.Length :> obj; ptr pRadii :> obj |])
         
     let frame_fillPoses (frame : int) (jointSpaces : int[]) (baseSpace : int) (poses : M44f[]) =
         init()
         use pJointSpaces = fixed jointSpaces
         use pPoses = fixed poses
-        JsObj.Runtime.Invoke<bool>("window.xr.frame_fillPoses", [| frame :> obj; ptr pJointSpaces :> obj; jointSpaces.Length :> obj; baseSpace :> obj; ptr pPoses |]) 
+        JSRuntime.Instance.Invoke<bool>("window.xr.frame_fillPoses", [| frame :> obj; ptr pJointSpaces :> obj; jointSpaces.Length :> obj; baseSpace :> obj; ptr pPoses |]) 
 
     let frame_getDepthInformation (frame : int) (view : int) =
         init()
-        JsObj.Runtime.Invoke<int>("window.xr.frame_getDepthInformation", [| frame :> obj; view :> obj |])
+        JSRuntime.Instance.Invoke<int>("window.xr.frame_getDepthInformation", [| frame :> obj; view :> obj |])
     
     let frame_getHitTestResults (frame : int) (hitTestSource : int) =
         init()
-        let json = JsObj.Runtime.Invoke<string>("window.xr.frame_getHitTestResults", [| frame :> obj; hitTestSource :> obj |]) |> System.Text.Json.JsonDocument.Parse
+        let json = JSRuntime.Instance.Invoke<string>("window.xr.frame_getHitTestResults", [| frame :> obj; hitTestSource :> obj |]) |> System.Text.Json.JsonDocument.Parse
         match json.RootElement with
         | Array values -> values |> Array.choose (function Number (Int v) -> Some v | _ -> None)
         | _ -> [||]
     
     let frame_getJointPose (frame : int) (jointSpace : int) (baseSpace : int) =
         init()
-        JsObj.Runtime.Invoke<string>("window.xr.frame_getJointPose", [| frame :> obj; jointSpace :> obj; baseSpace :> obj |])
+        JSRuntime.Instance.Invoke<string>("window.xr.frame_getJointPose", [| frame :> obj; jointSpace :> obj; baseSpace :> obj |])
 
     let frame_getPose (frame : int) (jointSpace : int) (baseSpace : int) =
         init()
-        JsObj.Runtime.Invoke<string>("window.xr.frame_getPose", [| frame :> obj; jointSpace :> obj; baseSpace :> obj |])
+        JSRuntime.Instance.Invoke<string>("window.xr.frame_getPose", [| frame :> obj; jointSpace :> obj; baseSpace :> obj |])
 
     let frame_getMeshSetCount (frame : int) =
         init()
-        JsObj.Runtime.Invoke<int>("window.xr.frame_getMeshSetCount", [| frame :> obj |])
+        JSRuntime.Instance.Invoke<int>("window.xr.frame_getMeshSetCount", [| frame :> obj |])
     
     let view_getEye (view : int) =
         init()
-        JsObj.Runtime.Invoke<string>("window.xr.view_getEye", [| view :> obj |])
+        JSRuntime.Instance.Invoke<string>("window.xr.view_getEye", [| view :> obj |])
     
     let view_getIsFirstPersonObserver (view : int) =
         init()
-        JsObj.Runtime.Invoke<bool>("window.xr.view_getIsFirstPersonObserver", [| view :> obj |])
+        JSRuntime.Instance.Invoke<bool>("window.xr.view_getIsFirstPersonObserver", [| view :> obj |])
     
     let view_getProjectionMatrix (view : int) (pMat : nativeptr<M44f>) =
         init()
         try
-            JsObj.Runtime.InvokeVoid("window.xr.view_getProjectionMatrix", [| view :> obj; ptr pMat :> obj |])
+            JSRuntime.Instance.InvokeVoid("window.xr.view_getProjectionMatrix", [| view :> obj; ptr pMat :> obj |])
         with e ->
             printfn "%A" e
     let view_getRecommendedViewportScale (view : int) =
         init()
-        JsObj.Runtime.Invoke<float>("window.xr.view_getRecommendedViewportScale", [| view :> obj |])
+        JSRuntime.Instance.Invoke<float>("window.xr.view_getRecommendedViewportScale", [| view :> obj |])
     
     let view_getTransform (view : int) =
         init()
         use pp = fixed [| Unchecked.defaultof<Euclidean3d>  |]
-        JsObj.Runtime.InvokeVoid("window.xr.view_getTransform", [| view :> obj; ptr pp |])
+        JSRuntime.Instance.InvokeVoid("window.xr.view_getTransform", [| view :> obj; ptr pp |])
         NativePtr.read pp
     
     let view_requestViewportScale (view : int) (scale : float) =
         init()
-        JsObj.Runtime.InvokeVoid("window.xr.view_requestViewportScale", [| view :> obj; scale :> obj |])
+        JSRuntime.Instance.InvokeVoid("window.xr.view_requestViewportScale", [| view :> obj; scale :> obj |])
         
     let depthInfo_isCpu (depthInfo : int) =
         init()
-        JsObj.Runtime.Invoke<bool>("window.xr.depthInfo_isCpu", [| depthInfo :> obj |])
+        JSRuntime.Instance.Invoke<bool>("window.xr.depthInfo_isCpu", [| depthInfo :> obj |])
         
     let depthInfo_isGpu (depthInfo : int) =
         init()
-        JsObj.Runtime.Invoke<bool>("window.xr.depthInfo_isGpu", [| depthInfo :> obj |])
+        JSRuntime.Instance.Invoke<bool>("window.xr.depthInfo_isGpu", [| depthInfo :> obj |])
         
     let depthInfo_getHeight (depthInfo : int) =
         init()
-        JsObj.Runtime.Invoke<double>("window.xr.depthInfo_getHeight", [| depthInfo :> obj |])
+        JSRuntime.Instance.Invoke<double>("window.xr.depthInfo_getHeight", [| depthInfo :> obj |])
         
     let depthInfo_getWidth (depthInfo : int) =
         init()
-        JsObj.Runtime.Invoke<double>("window.xr.depthInfo_getWidth", [| depthInfo :> obj |])
+        JSRuntime.Instance.Invoke<double>("window.xr.depthInfo_getWidth", [| depthInfo :> obj |])
         
     let depthInfo_getNormDepthBufferFromNormView (depthInfo : int) =
         init()
         use pp = fixed [| Unchecked.defaultof<Euclidean3d> |]
-        JsObj.Runtime.InvokeVoid("window.xr.depthInfo_getNormDepthBufferFromNormView", [| depthInfo :> obj; ptr pp |])
+        JSRuntime.Instance.InvokeVoid("window.xr.depthInfo_getNormDepthBufferFromNormView", [| depthInfo :> obj; ptr pp |])
         NativePtr.read pp
         
     let depthInfo_getRawValueToMeters (depthInfo : int) =
         init()
-        JsObj.Runtime.Invoke<double>("window.xr.depthInfo_getRawValueToMeters", [| depthInfo :> obj |])
+        JSRuntime.Instance.Invoke<double>("window.xr.depthInfo_getRawValueToMeters", [| depthInfo :> obj |])
         
     let depthInfo_getData<'a when 'a : unmanaged> (depthInfo : int) (pBuffer : nativeptr<'a>) =
         init()
-        JsObj.Runtime.Invoke<bool>("window.xr.depthInfo_getData", [| depthInfo :> obj; ptr pBuffer :> obj |])
+        JSRuntime.Instance.Invoke<bool>("window.xr.depthInfo_getData", [| depthInfo :> obj; ptr pBuffer :> obj |])
         
     let depthInfo_getDepthInMeters (depthInfo : int) (x : float) (y : float) =
         init()
-        JsObj.Runtime.Invoke<float>("window.xr.depthInfo_getDepthInMeters", [| depthInfo :> obj; x :> obj; y :> obj |])
+        JSRuntime.Instance.Invoke<float>("window.xr.depthInfo_getDepthInMeters", [| depthInfo :> obj; x :> obj; y :> obj |])
         
     let depthInfo_getTexture (depthInfo : int) =
         init()
-        JsObj.Runtime.Invoke<uint32>("window.xr.depthInfo_getTexture", [| depthInfo :> obj |])
+        JSRuntime.Instance.Invoke<uint32>("window.xr.depthInfo_getTexture", [| depthInfo :> obj |])
         
     let binding_getSubImage (depthInfo : int) (layerId : int) (frameId : int) (eye : string) =
         init()
-        JsObj.Runtime.Invoke<uint32>("window.xr.binding_getSubImage", [| depthInfo :> obj; layerId; frameId; eye |])
+        JSRuntime.Instance.Invoke<uint32>("window.xr.binding_getSubImage", [| depthInfo :> obj; layerId; frameId; eye |])
         
         
     let binding_getNativeProjectionScaleFactor (binding : int) =
         init()
-        JsObj.Runtime.Invoke<double>("window.xr.binding_getNativeProjectionScaleFactor", [| binding :> obj |])
+        JSRuntime.Instance.Invoke<double>("window.xr.binding_getNativeProjectionScaleFactor", [| binding :> obj |])
          
     let binding_getDepthInformation (binding : int) (view : int) =
         init()
-        JsObj.Runtime.Invoke<int>("window.xr.binding_getDepthInformation", [| binding :> obj; view :> obj |])
+        JSRuntime.Instance.Invoke<int>("window.xr.binding_getDepthInformation", [| binding :> obj; view :> obj |])
         
     let inputSource_getGamepad (inputSource : int) =
         init()
-        JsObj.Runtime.Invoke<int>("window.xr.inputSource_getGamepad", [| inputSource :> obj |])
+        JSRuntime.Instance.Invoke<int>("window.xr.inputSource_getGamepad", [| inputSource :> obj |])
         
     let gamepad_getButtons (gamepad : int) (states : 'a[]) =
         init()
         use pStates = fixed states
-        JsObj.Runtime.Invoke<int>("window.xr.gamepad_getButtons", [| gamepad :> obj; ptr pStates :> obj; states.Length |])
+        JSRuntime.Instance.Invoke<int>("window.xr.gamepad_getButtons", [| gamepad :> obj; ptr pStates :> obj; states.Length |])
         
     let gamepad_getId (gamepad : int) =
         init()
-        JsObj.Runtime.Invoke<string>("window.xr.gamepad_getId", [| gamepad :> obj |])
+        JSRuntime.Instance.Invoke<string>("window.xr.gamepad_getId", [| gamepad :> obj |])
         
     let gamepad_getIndex (gamepad : int) =
         init()
-        JsObj.Runtime.Invoke<int>("window.xr.gamepad_getIndex", [| gamepad :> obj |])
+        JSRuntime.Instance.Invoke<int>("window.xr.gamepad_getIndex", [| gamepad :> obj |])
         
     let gamepad_getHand (gamepad : int) =
         init()
-        JsObj.Runtime.Invoke<string>("window.xr.gamepad_getHand", [| gamepad :> obj |])
+        JSRuntime.Instance.Invoke<string>("window.xr.gamepad_getHand", [| gamepad :> obj |])
         
     let gamepad_getMapping (gamepad : int) =
         init()
-        JsObj.Runtime.Invoke<string>("window.xr.gamepad_getMapping", [| gamepad :> obj |])
+        JSRuntime.Instance.Invoke<string>("window.xr.gamepad_getMapping", [| gamepad :> obj |])
         
     let viewerPose_getViews (pose : int) (views : int[]) =
         init()
         use pViews = fixed views
-        let cnt = JsObj.Runtime.Invoke<int>("window.xr.viewerPose_getViews", [| pose :> obj; ptr pViews; views.Length |])
+        let cnt = JSRuntime.Instance.Invoke<int>("window.xr.viewerPose_getViews", [| pose :> obj; ptr pViews; views.Length |])
         cnt
         
     let makeXRCompatible (context : WebGLContext) =
         init()
-        JsObj.Runtime.InvokeAsync<bool>("window.xr.makeXRCompatible", [| context.Handle :> obj |])
+        JSRuntime.Instance.InvokeAsync<bool>("window.xr.makeXRCompatible", [| context.Handle :> obj |])
     
             
     // let private callbacks = Dict<int, ref<list<string -> unit>>>()
@@ -466,13 +466,13 @@ module WebXR =
     //     init()
     //     let l = callbacks2.GetOrCreate(session, fun _ -> ref [])
     //     l.Value <- callback :: l.Value
-    //     JsObj.Runtime.InvokeVoid("window.xr.requestAnimationFrame", [| session :> obj; layer :> obj; refSpace :> obj; context.Handle :> obj |])
+    //     JSRuntime.Instance.InvokeVoid("window.xr.requestAnimationFrame", [| session :> obj; layer :> obj; refSpace :> obj; context.Handle :> obj |])
     //     
     //
     //
     // let requestReferenceSpace (session : int) (space : string) =
     //     init()
-    //     JsObj.Runtime.InvokeAsync<int>("window.xr.requestReferenceSpace", [| session :> obj; space :> obj |])
+    //     JSRuntime.Instance.InvokeAsync<int>("window.xr.requestReferenceSpace", [| session :> obj; space :> obj |])
     //
 
     // let createXRWebGLLayer (session : int) (context : WebGLContext) (options : XRWebGLLayerOptions) =
@@ -489,27 +489,27 @@ module WebXR =
     //         ]
     //     
     //     
-    //     JsObj.Runtime.Invoke<int>("window.xr.createXRWebGLLayer", [| session :> obj; context.Handle :> obj; options.Reference :> obj |])
+    //     JSRuntime.Instance.Invoke<int>("window.xr.createXRWebGLLayer", [| session :> obj; context.Handle :> obj; options.Reference :> obj |])
     //
     // let getLayerFramebuffer (layer : int) =
-    //     JsObj.Runtime.Invoke<uint32>("window.xr.getLayerFramebuffer", [| layer :> obj |])
+    //     JSRuntime.Instance.Invoke<uint32>("window.xr.getLayerFramebuffer", [| layer :> obj |])
     //
     // let getLayerFramebufferSize (layer : int) =
-    //     let w = JsObj.Runtime.Invoke<double>("window.xr.getLayerFramebufferWidth", [| layer :> obj |]) |> int
-    //     let h = JsObj.Runtime.Invoke<double>("window.xr.getLayerFramebufferHeight", [| layer :> obj |]) |> int
+    //     let w = JSRuntime.Instance.Invoke<double>("window.xr.getLayerFramebufferWidth", [| layer :> obj |]) |> int
+    //     let h = JSRuntime.Instance.Invoke<double>("window.xr.getLayerFramebufferHeight", [| layer :> obj |]) |> int
     //     V2i(w, h)
     //     
     // let getLayerIgnoreDepthValues (layer : int) =
-    //     JsObj.Runtime.Invoke<bool>("window.xr.getLayerIgnoreDepthValues", [| layer :> obj |])
+    //     JSRuntime.Instance.Invoke<bool>("window.xr.getLayerIgnoreDepthValues", [| layer :> obj |])
     //     
     // let getLayerFixedFoveation (layer : int) =
-    //     JsObj.Runtime.Invoke<double>("window.xr.getLayerFixedFoveation", [| layer :> obj |])
+    //     JSRuntime.Instance.Invoke<double>("window.xr.getLayerFixedFoveation", [| layer :> obj |])
     //     
     // let getLayerAntialias (layer : int) =
-    //     JsObj.Runtime.Invoke<bool>("window.xr.getLayerAntialias", [| layer :> obj |])
+    //     JSRuntime.Instance.Invoke<bool>("window.xr.getLayerAntialias", [| layer :> obj |])
     //     
     // let getLayerViewport (layer : int) (view : int) =
-    //     let json = JsObj.Runtime.Invoke<string>("window.xr.getLayerViewport", [| layer :> obj; view :> obj |])
+    //     let json = JSRuntime.Instance.Invoke<string>("window.xr.getLayerViewport", [| layer :> obj; view :> obj |])
     //     let doc = System.Text.Json.JsonDocument.Parse json
     //     
     //     let x = doc.RootElement.GetProperty("x").GetDouble()
@@ -544,11 +544,11 @@ module WebXR =
     //             | None -> ()
     //         ]
     //     
-    //     JsObj.Runtime.InvokeVoid("window.xr.updateRenderState", [| session :> obj; options.Reference :> obj |])
+    //     JSRuntime.Instance.InvokeVoid("window.xr.updateRenderState", [| session :> obj; options.Reference :> obj |])
     //
     // let updateRenderStateNoState (session : int) =
     //     init()
-    //     JsObj.Runtime.InvokeVoid("window.xr.updateRenderStateNoState", [| session :> obj |])
+    //     JSRuntime.Instance.InvokeVoid("window.xr.updateRenderStateNoState", [| session :> obj |])
     //
 
 // usagePreference: ["gpu-optimized", "cpu-optimized"],

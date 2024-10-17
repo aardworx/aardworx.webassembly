@@ -154,15 +154,47 @@ type Runtime(device : Device, defaultCommandStreamMode : CommandStreamMode) as t
         )
     
     
+    
+    member this.ResolveMultisamples(src : IFramebufferOutput, dst : TextureImage, imgTrafo) =
+        if imgTrafo <> ImageTrafo.Identity then Log.warn "ResolveMultisamples ignores ImageTrafo: %A" imgTrafo
+        device.RunCommand (fun cmd ->
+            match src with
+            | :? TextureLevel as l ->
+                cmd.Blit(l.[0], dst, true)
+            | :? ITextureLevel as l ->
+                let tex = l.Texture :?> Texture
+                cmd.Blit(tex.[l.Level, l.Slices.Min], dst, true)
+            | :? Renderbuffer as r ->
+                cmd.Blit(r, dst, true)
+            | _ ->
+    
+                failf "bad input"
+        )
+
     interface IRuntime with
         
         member x.Blit(src : IFramebufferOutput, srcRange : Box3i, dst : IFramebufferOutput, dstRange : Box3i) =
-            let inline size (range : Box3i) = V3i.III + range.Max - range.Min
+            let inline size (range : Box3i) = range.Max - range.Min
         
             let s = size srcRange
             let d = size dstRange
             if s = d then
-                x.Copy(src, srcRange.Min, dst, dstRange.Min, s)
+                if src.Samples = dst.Samples then
+                    x.Copy(src, srcRange.Min, dst, dstRange.Min, s)
+                else
+                    printfn "RESOLVE"
+                    if srcRange.Min = V3i.Zero && dstRange.Min = V3i.Zero && s.XY = src.Size then
+                        let dst = 
+                            match dst with
+                            | :? TextureLevel as l -> l.[0]
+                            | :? ITextureLevel as l ->
+                                let tex = l.Texture :?> Texture
+                                tex.[l.Level, l.Slices.Min]
+                            | _ -> failwith "dst not a texture"
+                            
+                        x.ResolveMultisamples(src, dst, ImageTrafo.MirrorY)
+                    else
+                        failwith "bad resolve"
             else
                 failwith "not implemented"
         
@@ -216,22 +248,6 @@ type Runtime(device : Device, defaultCommandStreamMode : CommandStreamMode) as t
                 cmd.GenerateMipMaps(texture :?> Texture)
             )
             
-        // member this.ResolveMultisamples(src, dst, imgTrafo) =
-        //     let dst = dst :?> Texture
-        //     if imgTrafo <> ImageTrafo.Identity then Log.warn "ResolveMultisamples ignores ImageTrafo: %A" imgTrafo
-        //     device.RunCommand (fun cmd ->
-        //         match src with
-        //         | :? TextureLevel as l ->
-        //             cmd.Blit(l.[0], dst.[0,0], true)
-        //         | :? ITextureLevel as l ->
-        //             let tex = l.Texture :?> Texture
-        //             cmd.Blit(tex.[l.Level, l.Slices.Min], dst.[0,0], true)
-        //         | :? Renderbuffer as r ->
-        //             cmd.Blit(r, dst.[0,0], true)
-        //         | _ ->
-        //
-        //             failf "bad input"
-        //     )
 
         member this.CreateFramebufferSignature(attachments, depth, samples, _layers, _perLayerUniforms) =
             new FramebufferSignature(device, attachments, depth, 1, samples) :> IFramebufferSignature
@@ -319,25 +335,43 @@ type Runtime(device : Device, defaultCommandStreamMode : CommandStreamMode) as t
                 let img = PixImage.Create(typ, int64 size.X, int64 size.Y)
                 let gc = GCHandle.Alloc(img.Array, GCHandleType.Pinned)
                 
+                
+                
+                
                 //let buffer = device.CreateBuffer(16L, BufferUsage.Dynamic)
                 let pb = APtr.temporary 1
+                //let ret = APtr.temporary 1
+                
+                //use clearPtr = fixed [| 128; 64; 32; 16 |]
+                
                 try
                     device.RunCommand (fun gl ->
-                        gl.PushFramebuffer src
-                        gl.ReadBuffer index
+                        gl.BaseStream.BindFramebuffer(FramebufferTarget.Framebuffer, src.Handle)
+                        gl.BaseStream.ReadBuffer (unbox<ReadBufferMode> (int ReadBufferMode.ColorAttachment0 + index))
+                        
+                        //gl.BaseStream.Viewport(0, 0, uint32 src.Size.X, uint32 src.Size.Y)
+                        //gl.BaseStream.ClearBufferiv(BufferKind.Color, 0, clearPtr)
+                        //gl.BaseStream.Clear(ClearBufferMask.ColorBufferBit)
+                        
+                        
+                        //gl.BaseStream.ReadPixels(offset.X, src.Size.Y - size.Y - offset.Y, uint32 size.X, uint32 size.Y, pfmt, ptyp, gc.AddrOfPinnedObject())
                         
                         gl.BaseStream.GenBuffers(APtr.constant 1u, pb)
                         gl.BaseStream.BindBuffer(APtr.constant BufferTargetARB.PixelPackBuffer, pb)
-                        gl.BaseStream.BufferData(BufferTargetARB.PixelPackBuffer, 16un, 0n, BufferUsageARB.DynamicRead)
+                        gl.BaseStream.BufferData(BufferTargetARB.PixelPackBuffer, 16un, 0n, BufferUsageARB.StreamRead)
                         //gl.BaseStream.BindBuffer(BufferTargetARB.PixelPackBuffer, buffer.Handle)
                         gl.BaseStream.ReadPixels(offset.X, src.Size.Y - size.Y - offset.Y, uint32 size.X, uint32 size.Y, pfmt, ptyp, 0n)
+                        // gl.BaseStream.FenceSync(APtr.constant SyncCondition.SyncGpuCommandsComplete, APtr.constant SyncBehaviorFlags.None, ret)
+                        // gl.BaseStream.WaitSync(ret, APtr.constant SyncBehaviorFlags.None, APtr.constant 10000000UL)
                         gl.BaseStream.GetBufferSubData(BufferTargetARB.PixelPackBuffer, 0n, 16un, gc.AddrOfPinnedObject())
                         gl.BaseStream.BindBuffer(BufferTargetARB.PixelPackBuffer, 0u)
                         gl.BaseStream.DeleteBuffers(APtr.constant 1u, pb)
                         
-                        gl.PopFramebuffer()
+                        gl.BaseStream.BindFramebuffer(FramebufferTarget.Framebuffer, 0u)
+                        //gl.PopFramebuffer()
                     )
-                    img.TransformedPixImage(ImageTrafo.MirrorY)
+                    let res = img.TransformedPixImage(ImageTrafo.MirrorY)
+                    res
                     
                 finally
                     gc.Free()

@@ -102,7 +102,7 @@ type BlazorSocket private(name : string) =
         
     static let all = Dict<string, BlazorSocket>()
     
-    static let init = lazy (JsObj.Runtime.InvokeVoid("window.eval", code))
+    static let init = lazy (JSRuntime.Instance.InvokeVoid("window.eval", code))
 
     static let onConnect = Event<BlazorSocket>()
 
@@ -128,14 +128,14 @@ type BlazorSocket private(name : string) =
     member x.Send(message : ChannelMessage) =
         match message with
         | ChannelMessage.Text message ->
-            JsObj.Runtime.InvokeVoid("window.BlazorSocketReceive", name, message)
+            JSRuntime.Instance.InvokeVoid("window.BlazorSocketReceive", name, message)
             
         | ChannelMessage.Binary data ->
             use ptr = fixed data
-            JsObj.Runtime.InvokeVoid("window.BlazorSocketReceive", int (NativePtr.toNativeInt ptr), data.Length)
+            JSRuntime.Instance.InvokeVoid("window.BlazorSocketReceive", int (NativePtr.toNativeInt ptr), data.Length)
             
         | ChannelMessage.Close ->
-            JsObj.Runtime.InvokeVoid("window.BlazorSocketReceive", name)
+            JSRuntime.Instance.InvokeVoid("window.BlazorSocketReceive", name)
         
         
     static member OnConnect = 

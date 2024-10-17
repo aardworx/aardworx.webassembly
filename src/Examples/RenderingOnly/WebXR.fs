@@ -301,18 +301,18 @@ module WebXR =
     let isSupported (mode : Mode) =
         init()
         let mode = modeString mode
-        JsObj.Runtime.InvokeAsync<bool>("window.xr.isSupported", [| mode :> obj |])
+        JSRuntime.Instance.InvokeAsync<bool>("window.xr.isSupported", [| mode :> obj |])
     
     let requestSession (mode : Mode) (options : obj) =
         init()
         let mode = modeString mode
-        JsObj.Runtime.InvokeAsync<int>("window.xr.requestSession", [| mode :> obj; options |])
+        JSRuntime.Instance.InvokeAsync<int>("window.xr.requestSession", [| mode :> obj; options |])
     
     let getDepthDataFormat (session : int) =
-        JsObj.Runtime.Invoke<string>("window.xr.getDepthDataFormat", [| session :> obj |])
+        JSRuntime.Instance.Invoke<string>("window.xr.getDepthDataFormat", [| session :> obj |])
     
     let getDepthUsage (session : int) =
-        JsObj.Runtime.Invoke<string>("window.xr.getDepthUsage", [| session :> obj |])
+        JSRuntime.Instance.Invoke<string>("window.xr.getDepthUsage", [| session :> obj |])
     
     let private callbacks = Dict<int, ref<list<string -> unit>>>()
     let frameCallback (session : int) (content : string) =
@@ -334,23 +334,23 @@ module WebXR =
         init()
         let l = callbacks.GetOrCreate(session, fun _ -> ref [])
         l.Value <- callback :: l.Value
-        JsObj.Runtime.InvokeVoid("window.xr.requestAnimationFrame", [| session :> obj; layer :> obj; refSpace :> obj; context.Handle :> obj |])
+        JSRuntime.Instance.InvokeVoid("window.xr.requestAnimationFrame", [| session :> obj; layer :> obj; refSpace :> obj; context.Handle :> obj |])
         
     let requestAnimationFrame2 (session : int) (layer : int) (refSpace : int) (context : WebGLContext) (callback : double -> int -> unit) =
         init()
         let l = callbacks2.GetOrCreate(session, fun _ -> ref [])
         l.Value <- callback :: l.Value
-        JsObj.Runtime.InvokeVoid("window.xr.requestAnimationFrame", [| session :> obj; layer :> obj; refSpace :> obj; context.Handle :> obj |])
+        JSRuntime.Instance.InvokeVoid("window.xr.requestAnimationFrame", [| session :> obj; layer :> obj; refSpace :> obj; context.Handle :> obj |])
         
     
     
     let requestReferenceSpace (session : int) (space : string) =
         init()
-        JsObj.Runtime.InvokeAsync<int>("window.xr.requestReferenceSpace", [| session :> obj; space :> obj |])
+        JSRuntime.Instance.InvokeAsync<int>("window.xr.requestReferenceSpace", [| session :> obj; space :> obj |])
     
     let makeXRCompatible (context : WebGLContext) =
         init()
-        JsObj.Runtime.InvokeAsync<bool>("window.xr.makeXRCompatible", [| context.Handle :> obj |])
+        JSRuntime.Instance.InvokeAsync<bool>("window.xr.makeXRCompatible", [| context.Handle :> obj |])
   
     let createXRWebGLLayer (session : int) (context : WebGLContext) (options : XRWebGLLayerOptions) =
         init()
@@ -366,27 +366,27 @@ module WebXR =
             ]
         
         
-        JsObj.Runtime.Invoke<int>("window.xr.createXRWebGLLayer", [| session :> obj; context.Handle :> obj; options.Reference :> obj |])
+        JSRuntime.Instance.Invoke<int>("window.xr.createXRWebGLLayer", [| session :> obj; context.Handle :> obj; options.Reference :> obj |])
   
     let getLayerFramebuffer (layer : int) =
-        JsObj.Runtime.Invoke<uint32>("window.xr.getLayerFramebuffer", [| layer :> obj |])
+        JSRuntime.Instance.Invoke<uint32>("window.xr.getLayerFramebuffer", [| layer :> obj |])
   
     let getLayerFramebufferSize (layer : int) =
-        let w = JsObj.Runtime.Invoke<double>("window.xr.getLayerFramebufferWidth", [| layer :> obj |]) |> int
-        let h = JsObj.Runtime.Invoke<double>("window.xr.getLayerFramebufferHeight", [| layer :> obj |]) |> int
+        let w = JSRuntime.Instance.Invoke<double>("window.xr.getLayerFramebufferWidth", [| layer :> obj |]) |> int
+        let h = JSRuntime.Instance.Invoke<double>("window.xr.getLayerFramebufferHeight", [| layer :> obj |]) |> int
         V2i(w, h)
         
     let getLayerIgnoreDepthValues (layer : int) =
-        JsObj.Runtime.Invoke<bool>("window.xr.getLayerIgnoreDepthValues", [| layer :> obj |])
+        JSRuntime.Instance.Invoke<bool>("window.xr.getLayerIgnoreDepthValues", [| layer :> obj |])
         
     let getLayerFixedFoveation (layer : int) =
-        JsObj.Runtime.Invoke<double>("window.xr.getLayerFixedFoveation", [| layer :> obj |])
+        JSRuntime.Instance.Invoke<double>("window.xr.getLayerFixedFoveation", [| layer :> obj |])
         
     let getLayerAntialias (layer : int) =
-        JsObj.Runtime.Invoke<bool>("window.xr.getLayerAntialias", [| layer :> obj |])
+        JSRuntime.Instance.Invoke<bool>("window.xr.getLayerAntialias", [| layer :> obj |])
         
     let getLayerViewport (layer : int) (view : int) =
-        let json = JsObj.Runtime.Invoke<string>("window.xr.getLayerViewport", [| layer :> obj; view :> obj |])
+        let json = JSRuntime.Instance.Invoke<string>("window.xr.getLayerViewport", [| layer :> obj; view :> obj |])
         let doc = System.Text.Json.JsonDocument.Parse json
         
         let x = doc.RootElement.GetProperty("x").GetDouble()
@@ -421,11 +421,11 @@ module WebXR =
                 | None -> ()
             ]
         
-        JsObj.Runtime.InvokeVoid("window.xr.updateRenderState", [| session :> obj; options.Reference :> obj |])
+        JSRuntime.Instance.InvokeVoid("window.xr.updateRenderState", [| session :> obj; options.Reference :> obj |])
   
     let updateRenderStateNoState (session : int) =
         init()
-        JsObj.Runtime.InvokeVoid("window.xr.updateRenderStateNoState", [| session :> obj |])
+        JSRuntime.Instance.InvokeVoid("window.xr.updateRenderStateNoState", [| session :> obj |])
 
 
 // usagePreference: ["gpu-optimized", "cpu-optimized"],

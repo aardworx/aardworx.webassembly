@@ -8,11 +8,15 @@ open Aardvark.Base
 
 
 #nowarn "9"
-[<AutoOpen>]
-module private JSHelpers =
+#nowarn "40"
+
+
+type JSRuntime private() =
     
+    static let mutable rt : option<WebAssemblyJSRuntime> = None
+
     [<Literal>]
-    let private aardvarkScript = 
+    static let aardvarkScript = 
         """
         if (typeof aardvark == "undefined") {
             const isWorker = typeof window == "undefined";
@@ -53,6 +57,10 @@ module private JSHelpers =
                 return aardvark.wrap(wobj);
             };
 
+
+            aardvark.eventListeners = [];
+            aardvark.eventListenerId = 0;
+
             aardvark.addEventListener = function (target, name, callback, phase) {
                 const handler =
                     {
@@ -64,8 +72,17 @@ module private JSHelpers =
                     };
                 target.addEventListener(name, handler, phase);
                 let selfRef = null;
-                selfRef = DotNet.createJSObjectReference({ dispose: function() { if(selfRef) { DotNet.disposeJSObjectReference(selfRef); } target.removeEventListener(name, handler, phase); } });
-                return selfRef;
+                var id = aardvark.eventListenerId;
+                aardvark.eventListenerId++;
+                
+                aardvark.eventListeners[id] = { dispose: function() { if(selfRef) { DotNet.disposeJSObjectReference(selfRef); } target.removeEventListener(name, handler, phase); } };
+                return id;
+            };
+            
+            aardvark.destroyEventListener = function(thing) {
+                const l = aardvark.eventListeners[thing];
+                if(l && l.dispose) { l.dispose(); }
+                delete aardvark.eventListeners[thing];
             };
 
             aardvark.requestAnimationFrame = function (callback) {
@@ -183,15 +200,8 @@ module private JSHelpers =
         }
         """
         
-    let runtime =
-        lazy (
-            let args = [| "Web"; "WebGL2" |]
-            let builder = WebAssemblyHostBuilder.CreateDefault(args)
-
-            let host = builder.Build()
-            let res = host.Services.GetService(typeof<IJSRuntime>) :?> WebAssemblyJSRuntime
-
-            let compile =
+    static let bootRuntime (res : WebAssemblyJSRuntime) =
+        let compile =
                 String.concat "\n" [
                     "const isWorker = typeof window == \"undefined\";"
                     "const g = isWorker ? self : window;"
@@ -211,17 +221,48 @@ module private JSHelpers =
                     "    }"
                     "};"
                 ]
-            
-            res.InvokeVoid("eval", compile);
-
-            let code =
-                sprintf "try { %s } catch(e) { console.error(e); }" aardvarkScript
-
-            let ref = res.Invoke<IJSInProcessObjectReference>("compile", code)
-            ref.InvokeVoid("run")
-            res
-        )
         
+        res.InvokeVoid("eval", compile);
+
+        let code =
+            sprintf "try { %s } catch(e) { console.error(e); }" aardvarkScript
+
+        let ref = res.Invoke<IJSInProcessObjectReference>("compile", code)
+        ref.InvokeVoid("run")
+        
+    static let createRuntime() =
+        let args = [| "Web"; "WebGL2" |]
+        let builder = WebAssemblyHostBuilder.CreateDefault(args)
+
+        let host = builder.Build()
+        let res = host.Services.GetService(typeof<IJSRuntime>) :?> WebAssemblyJSRuntime
+        bootRuntime res
+        res
+    
+    
+    static member Instance
+        with get() : WebAssemblyJSRuntime =
+            match rt with
+            | Some rt -> rt
+            | None ->
+                let v = createRuntime()
+                rt <- Some v
+                v
+        and set (v : WebAssemblyJSRuntime) =
+            match rt with
+            | None ->
+                bootRuntime v
+                rt <- Some v
+            | Some _ ->
+                ()
+    
+    
+    
+
+[<AutoOpen>]
+module private JSHelpers =
+    
+   
 
     let js (o : obj) =
         match o with
@@ -230,14 +271,14 @@ module private JSHelpers =
 
 
     let newObj (fields : #seq<string * obj>) =
-        let runtime = runtime.Value
+        let runtime = JSRuntime.Instance
         let o = runtime.Invoke<IJSInProcessObjectReference>("aardvark.newObject") |> JsObj
         for k, v in fields do 
             o.SetProperty<obj>(k, v)
         o
 
     let createObj (ctor : string) (args : array<obj>) : JsObj =
-        let runtime = runtime.Value
+        let runtime = JSRuntime.Instance
         let arr = Array.zeroCreate (args.Length + 1)
         arr.[0] <- ctor :> obj
         let mutable i = 1
@@ -281,18 +322,18 @@ module private JSHelpers =
                 unbox <| fun (o : IJSInProcessObjectReference) (name : string) (args : array<obj>) -> o.Invoke<'a>(name, Array.map js args)
     
         static member Invoke(o : IJSInProcessObjectReference, name : string, args : obj[]) =
-            let runtime = runtime.Value
+            let runtime = JSRuntime.Instance
             invoke o name args
 
     type Invoker<'ret>() =
         static let invoke : string -> obj[] -> 'ret =
             let t = typeof<'ret>
             if t = typeof<unit> then
-                unbox <| fun (name : string) (args : array<obj>) ->  runtime.Value.InvokeVoid(name, Array.map js args)
+                unbox <| fun (name : string) (args : array<obj>) ->  JSRuntime.Instance.InvokeVoid(name, Array.map js args)
             elif t = typeof<JsObj> then
                 unbox <| fun (name : string) (args : array<obj>) -> 
                     try
-                        let r = runtime.Value.Invoke<IJSInProcessObjectReference>(name, Array.map js args)
+                        let r = JSRuntime.Instance.Invoke<IJSInProcessObjectReference>(name, Array.map js args)
                         if isNull r then null
                         else JsObj(unbox r)
                     with _ ->
@@ -307,22 +348,22 @@ module private JSHelpers =
                 if isNull ctor then failwithf "cannot construct %s(IJSInProcessObjectReference)" t.Name
                 fun (name : string) (args : array<obj>) -> 
                     try
-                        let r = runtime.Value.Invoke<IJSInProcessObjectReference>(name, Array.map js args)
+                        let r = JSRuntime.Instance.Invoke<IJSInProcessObjectReference>(name, Array.map js args)
                         if isNull r then Unchecked.defaultof<'ret>
                         else ctor.Invoke([|r|]) |> unbox<'ret>
                     with _ ->
                         Unchecked.defaultof<'ret>
             elif t = typeof<obj> then
                 unbox <| fun (name : string) (args : array<obj>) -> 
-                    match runtime.Value.Invoke<obj>(name, Array.map js args) with
+                    match JSRuntime.Instance.Invoke<obj>(name, Array.map js args) with
                     | :? IJSInProcessObjectReference as o -> JsObj(o) :> obj
                     | o -> o
             else
                 unbox <| fun (name : string) (args : array<obj>) -> 
-                    runtime.Value.Invoke<'ret>(name, Array.map js args)
+                    JSRuntime.Instance.Invoke<'ret>(name, Array.map js args)
 
         static member Invoke(method : string, args : obj[]) =
-            let runtime = runtime.Value
+            let runtime = JSRuntime.Instance
             invoke method args
 
 
@@ -376,15 +417,14 @@ module JSActions =
 [<AllowNullLiteral>]
 type JsObj(r : IJSInProcessObjectReference) =
 
-    static member Runtime = runtime.Value
-
     
     static member InstallScript(code : string) =
-        runtime.Value.InvokeVoid("evaluate", code)
+        printfn "INSTALLING SCRIPT"
+        JSRuntime.Instance.InvokeVoid("evaluate", code)
     
     static member Evaluate<'r>(code : string) =
         try
-            runtime.Value.Invoke<'r>("evaluate", code)
+            JSRuntime.Instance.Invoke<'r>("evaluate", code)
         with e ->
             printfn "eval failed on: %s" code
             reraise()
@@ -408,7 +448,7 @@ type JSImage(handle : int, size : V2i) =
     member x.Size = size
         
     member x.Dispose() =
-        runtime.Value.InvokeVoid("aardvark.deleteImage", handle)
+        JSRuntime.Instance.InvokeVoid("aardvark.deleteImage", handle)
         
     interface System.IDisposable with
         member x.Dispose() = x.Dispose()
@@ -441,15 +481,15 @@ module JSImage =
     [<AutoOpen>]
     module private Interop = 
         let genImage () : int =
-            runtime.Value.Invoke<int>("aardvark.genImage")
+            JSRuntime.Instance.Invoke<int>("aardvark.genImage")
             
         let deleteImage (handle : int) =
-            runtime.Value.InvokeVoid("aardvark.deleteImage", handle)
+            JSRuntime.Instance.InvokeVoid("aardvark.deleteImage", handle)
         
         let imgLoad (handle : int) (url : string) =
             Async.FromContinuations (fun (success, error, _cancel) ->
                 JSImageInterop.Register(handle, url, success, error)
-                runtime.Value.InvokeVoid("aardvark.imgLoad", handle, url)
+                JSRuntime.Instance.InvokeVoid("aardvark.imgLoad", handle, url)
             )
         
     let load (url : string) =
@@ -466,7 +506,7 @@ module JSImage =
                 let! res = imgLoad handle url
                 return Some (new JSImage(handle, res))
             with _ ->
-                runtime.Value.InvokeVoid("aardvark.deleteImage", handle)
+                JSRuntime.Instance.InvokeVoid("aardvark.deleteImage", handle)
                 return None
         }
         
