@@ -55,7 +55,7 @@ module App =
             | _ -> model
             //{ model with Points = IndexList.set idx p model.Points }
         | StartDrag idx ->
-            { model with DraggingPoint = Some (idx, model.Points.[idx]); Points = IndexList.remove idx model.Points }
+            { model with DraggingPoint = Some (idx, model.Points.[idx]) }
         | StopDrag ->
             match model.DraggingPoint with
             | Some (idx, pt) ->
@@ -71,23 +71,19 @@ module App =
         let a = FShade.Effect.ofFunction DefaultSurfaces.trafo
         printfn "%A" a
         
-        let test = cval 1
-        
-        
         body {
             OnBoot [
                 "const l = document.getElementById('loader');"
                 "if(l) l.remove();"
             ]
-            
-            h1 {
-                test |> AVal.map string
-                Dom.OnClick (fun (e) ->
-                    transact(fun () -> test.Value <- test.Value + 1)   
-                )
-            }
-            
+           
             renderControl {
+                
+                model.DraggingPoint |> AVal.map (fun v ->
+                    if Option.isSome v then Some (Style [Css.Cursor "crosshair"])
+                    else None
+                )
+                
                 let! size = RenderControl.ViewportSize
                 Style [
                     Width "100%"
@@ -165,13 +161,10 @@ module App =
                 sg {
                     
                     sg {
-                        Sg.ForcePixelPicking
                         Sg.NoEvents
                         let pos = model.DraggingPoint |> AVal.map (function Some (_,p) -> Some p | _ -> None)
-                   
                         Sg.Active(pos |> AVal.map Option.isSome)
                         let renderPos = pos |> AVal.map (Option.defaultValue V3d.Zero)
-                        
                         Primitives.Sphere(renderPos, 0.1, C4b.Yellow)
                     }
                     
@@ -179,9 +172,12 @@ module App =
                     
                     model.Points |> AList.mapi (fun idx pos ->
                         sg {
-                            //Sg.Active (model.DraggingPoint |> AVal.map (function Some i -> i <> idx | None -> true))
+                            Sg.Active (model.DraggingPoint |> AVal.map (function Some (i,_) -> i <> idx | None -> true))
                             let mutable down = false
-                            Sg.Cursor "no-drop"
+                            Sg.Cursor (model.DraggingPoint |> AVal.map (function
+                                | Some _ -> None
+                                | None -> Some "pointer"
+                            ))
                             Sg.OnTap (true, fun e ->
                                 if e.Button = Button.Right then
                                     env.Emit [ Delete idx ]
@@ -272,8 +268,11 @@ module App =
                     )
                 }
          
-                div {
-                    "click to place spheres in the scene"
+                ul {
+                    li { "right-click to place spheres in the scene" }
+                    li { "left-click and drag to move spheres" }
+                    li { "right-click on spheres to delete them" }
+                    li { "double-click to focus camera" }
                 }
 
             }
