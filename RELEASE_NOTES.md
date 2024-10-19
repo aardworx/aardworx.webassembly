@@ -1,3 +1,7 @@
+### 1.1.9
+* updated DOM packages
+* rendering updates
+
 ### 1.1.8
 * net8.0 updates
 
