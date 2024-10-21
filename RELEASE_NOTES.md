@@ -1,3 +1,6 @@
+### 1.1.10
+* various bugfixes
+
 ### 1.1.9
 * updated DOM packages
 * rendering updates

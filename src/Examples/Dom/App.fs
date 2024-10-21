@@ -78,7 +78,7 @@ module App =
             ]
            
             renderControl {
-                RenderControl.FXAA
+                RenderControl.Samples 1
                 
                 model.DraggingPoint |> AVal.map (fun v ->
                     if Option.isSome v then Some (Style [Css.Cursor "crosshair"])
@@ -125,6 +125,10 @@ module App =
                         true
                 )
 
+                Sg.OnLongPress(fun e -> 
+                    env.Emit [Click e.Position]
+                    false
+                )
                 Sg.OnPointerMove(fun p ->
                     env.Emit [Hover (Some p.Position)]
                 )
@@ -187,6 +191,7 @@ module App =
                                 else
                                     true
                             )
+                            
                             Sg.OnPointerDown((fun e ->
                                 if e.Button = Button.Left then
                                     down <- true
