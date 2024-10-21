@@ -1,3 +1,6 @@
+// ===============================================================================
+//                    AUTO GENERATED FILE (see Generator.fsx)
+// ===============================================================================
 namespace Aardworx.Rendering.WebGL.Streams
 
 open Silk.NET.OpenGLES

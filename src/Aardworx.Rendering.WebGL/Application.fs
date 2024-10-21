@@ -232,7 +232,6 @@ type private WebGLSwapChainMSAA internal(device : Device, main : HTMLCanvasEleme
             gl.BindFramebuffer(FramebufferTarget.DrawFramebuffer, fboRes.Handle)
             gl.ReadBuffer ReadBufferMode.ColorAttachment0
             gl.DrawBuffers(1u, [| DrawBufferMode.ColorAttachment0 |])
-            printfn "asdasd"
             WrappedCommands.glBlitFramebuffer(
                 0, 0, renderSize.X, renderSize.Y,
                 0, 0, renderSize.X, renderSize.Y,
@@ -470,31 +469,71 @@ type WebGLApplication(commandStreamMode : CommandStreamMode, debug : bool) =
         """
             (function() {
                 window.compileBlit = function(canvas) {
-                    let gl = canvas.getContext("webgl2", { antialias: false, premultipliedAlpha: true, alpha: true });
-                    let tex = gl.createTexture();
-                    let fbo = gl.createFramebuffer();
-                    gl.bindTexture(gl.TEXTURE_2D, tex);
-
-                    gl.bindFramebuffer(gl.READ_FRAMEBUFFER, fbo);
-                    gl.framebufferTexture2D(gl.READ_FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, tex, 0);
-                    gl.readBuffer(gl.COLOR_ATTACHMENT0);
-
-                    gl.bindFramebuffer(gl.DRAW_FRAMEBUFFER, null);
-                    gl.drawBuffers([gl.BACK]);    
-                    gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, true);
-    
+                    let ctx = canvas.getContext('2d');
+                
                     return { 
                         blit: function(src) {
-                            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, src);
-                            gl.blitFramebuffer(0,0,src.width,src.height,0,canvas.height,canvas.width,0, gl.COLOR_BUFFER_BIT, gl.LINEAR);
+                            ctx.drawImage(src, 0, 0);
                         },
                         destroy: function() {
-                            gl.deleteTexture(tex);
-                            gl.deleteFramebuffer(fbo);
-                            let ext = gl.getExtension('WEBGL_lose_context');
-                            if(ext) ext.loseContext();
                         }
                     };
+                    // let gl = canvas.getContext("webgl2", { antialias: false, premultipliedAlpha: true, alpha: true });
+                    // let tex = gl.createTexture();
+                    // let fbo = gl.createFramebuffer();
+                    // gl.bindTexture(gl.TEXTURE_2D, tex);
+// 
+                    // gl.bindFramebuffer(gl.READ_FRAMEBUFFER, fbo);
+                    // gl.framebufferTexture2D(gl.READ_FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, tex, 0);
+                    // gl.readBuffer(gl.COLOR_ATTACHMENT0);
+// 
+                    // gl.bindFramebuffer(gl.DRAW_FRAMEBUFFER, null);
+                    // gl.drawBuffers([gl.BACK]);    
+                    // gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, true);
+    // 
+                    // let check = function() {
+                    //     let err = gl.getError();
+                    //     if(err != gl.NO_ERROR) {
+                    //         console.log("Error: " + err);
+                    //     }
+                    // };
+    // 
+                    // return { 
+                    //     blit: function(src) {
+                    //         gl.bindTexture(gl.TEXTURE_2D, tex);
+                    //         check();
+                    //         gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, src);
+                    //         check();
+                    //                 
+                    //         gl.bindFramebuffer(gl.READ_FRAMEBUFFER, fbo);
+                    //         check();
+                    //         gl.framebufferTexture2D(gl.READ_FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, tex, 0);
+                    //         check();
+                    //         gl.readBuffer(gl.COLOR_ATTACHMENT0);
+                    //         check();
+// 
+                    //         gl.bindFramebuffer(gl.DRAW_FRAMEBUFFER, null);
+                    //         check();
+                    //         gl.drawBuffers([gl.BACK]);    
+                    //         check();
+                    //         gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, true);
+                    //         check();
+            // 
+                    //         let status = gl.checkFramebufferStatus(gl.READ_FRAMEBUFFER);
+                    //         if(status != gl.FRAMEBUFFER_COMPLETE) {
+                    //             console.log("Error: " + status);
+                    //         }   
+                    //         
+                    //         gl.blitFramebuffer(0,0,src.width,src.height,0,canvas.height,canvas.width,0, gl.COLOR_BUFFER_BIT, gl.NEAREST);
+                    //         check();
+                    //     },
+                    //     destroy: function() {
+                    //         gl.deleteTexture(tex);
+                    //         gl.deleteFramebuffer(fbo);
+                    //         let ext = gl.getExtension('WEBGL_lose_context');
+                    //         if(ext) ext.loseContext();
+                    //     }
+                    // };
                 };
             })();
         """
@@ -529,7 +568,7 @@ type WebGLApplication(commandStreamMode : CommandStreamMode, debug : bool) =
     let runtime = Runtime(device, commandStreamMode)
     
     new(mode : CommandStreamMode) =
-        new WebGLApplication(mode, (mode = CommandStreamMode.Debug))
+        new WebGLApplication(mode, (mode = mode))
     
     member x.Device = device
     member x.Runtime = runtime
@@ -540,7 +579,7 @@ type WebGLApplication(commandStreamMode : CommandStreamMode, debug : bool) =
         let swap = 
             match antialiasing with
             | Antialiasing.FXAA -> new WebGLSwapChainFXAA(device, canvas, dst, blit) :> WebGLSwapChain
-            | Antialiasing.MSAA s -> new WebGLSwapChainMSAA(device, canvas, dst, blit, s) :> WebGLSwapChain
+            | Antialiasing.MSAA s -> new WebGLSwapChainSimple(device, canvas, dst, blit) :> WebGLSwapChain //new WebGLSwapChainMSAA(device, canvas, dst, blit, s) :> WebGLSwapChain
             | Antialiasing.None -> new WebGLSwapChainSimple(device, canvas, dst, blit) :> WebGLSwapChain
         new WebGLRenderControl(runtime, swap, dst)
 

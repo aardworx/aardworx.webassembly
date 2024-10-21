@@ -78,6 +78,7 @@ module App =
             ]
            
             renderControl {
+                RenderControl.FXAA
                 
                 model.DraggingPoint |> AVal.map (fun v ->
                     if Option.isSome v then Some (Style [Css.Cursor "crosshair"])
@@ -152,6 +153,7 @@ module App =
                 }
 
                 sg {
+                    Sg.Active(model.DraggingPoint |> AVal.map Option.isNone)
                     Sg.Active(model.Hover |> AVal.map Option.isSome)
                     let pos = model.Hover |> AVal.map (function Some p -> p | None -> V3d.Zero)
                     Sg.NoEvents

@@ -1,3 +1,6 @@
+// ===============================================================================
+//                    AUTO GENERATED FILE (see Generator.fsx)
+// ===============================================================================
 #include <emscripten.h>
 #include <emscripten/html5.h>
 #include <string.h>

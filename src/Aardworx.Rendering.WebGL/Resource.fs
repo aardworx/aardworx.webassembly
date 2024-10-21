@@ -9,6 +9,7 @@ open System.Runtime.CompilerServices
 
 #nowarn "9"
 
+/// Unique ID generator.
 type UniqueId private() =
     static let currentIds = System.Collections.Concurrent.ConcurrentDictionary<string, ref<Set<int>> * ref<int>>()
 
@@ -35,22 +36,34 @@ type UniqueId private() =
             | ValueNone -> Interlocked.Increment(&id.contents)
         myId //sprintf "%s%03d" name myId
 
+/// Basic interface for resources.
 [<AllowNullLiteral>]
 type IResource =
     inherit IDisposable
+    
+    /// The resource's device.
     abstract Device : Device
+    
+    /// Whether the resource is disposed.
     abstract IsDisposed : bool
+    
+    /// Tries to add a reference to the resource. (fails if resource is already disposed)
     abstract TryAddReference : unit -> bool
+    
+    /// The resource's unique name.
     abstract UniqueName : string
 
+/// Resource Extensions.
 [<AbstractClass; Sealed; Extension>]
 type IResourceExtensions private() =
 
+    /// Adds a reference to the resource and fails if the resource is already disposed.
     [<Extension>]
     static member AddReference(this : IResource) =
         if not (this.TryAddReference()) then
             raise <| ObjectDisposedException(this.GetType().FullName)
 
+/// Base class for resources.
 [<AbstractClass; AllowNullLiteral>]
 type ResourceBase(device : Device, name : string, sizeInBytes : int64) as this =
 
@@ -69,17 +82,21 @@ type ResourceBase(device : Device, name : string, sizeInBytes : int64) as this =
         else 
             null
             
+    /// abstract method to free the resource.
     abstract Free : unit -> unit
     
-    member x.UniqueName = uniqueName
-
     member internal x.CheckDisposed() =
         if refCount <= 0 then raise <| ObjectDisposedException(x.GetType().FullName)
         
+    /// The resource's unique name.
+    member x.UniqueName = uniqueName
+
+    /// The resource's device.
     member x.Device = 
         x.CheckDisposed()
         device
 
+    /// Tries to add a reference to the resource. (fails if resource is already disposed)
     member x.TryAddReference() =
         lock x (fun () ->
             if refCount <= 0 then 
@@ -90,6 +107,7 @@ type ResourceBase(device : Device, name : string, sizeInBytes : int64) as this =
                 true
         )
 
+    /// Adds a reference to the resource and fails if the resource is already disposed.
     member x.AddReference() =
         lock x (fun () ->
             if refCount <= 0 then raise <| ObjectDisposedException(x.GetType().FullName)
@@ -97,9 +115,11 @@ type ResourceBase(device : Device, name : string, sizeInBytes : int64) as this =
             //Report.Debug("added reference to {0}: {1}", uniqueName, refCount)
         )
         
+    /// Whether the resource is disposed.
     member x.IsDisposed =
         refCount <= 0
 
+    /// Disposes the resource.
     member x.Dispose() =
         let delete = 
             lock x (fun () ->
@@ -128,31 +148,38 @@ type ResourceBase(device : Device, name : string, sizeInBytes : int64) as this =
         member x.UniqueName = x.UniqueName
         member x.TryAddReference() = x.TryAddReference()
 
+/// Base class for resources.
 and [<AbstractClass; AllowNullLiteral>] Resource(device : Device, name : string, handle : uint32, sizeInBytes : int64) =
     inherit ResourceBase(device, name, sizeInBytes)
     let mutable handle = handle
 
+    /// Abstract method for destroying the resource.
     abstract Destroy : GL -> unit
 
+    /// Free implementation
     override x.Free() =
         if not device.IsDisposed then
             device.Run x.Destroy
           
         handle <- Unchecked.defaultof<_>
 
+    /// Handle of the resource.
     member internal x.HandleTask =
         x.CheckDisposed()
         handle
 
+    /// Handle of the resource.
     member x.Handle = 
         x.CheckDisposed()
         handle
 
+/// Base class for resources that are not shared between contexts.
 and [<AbstractClass>] UnsharedResource<'a>(device : Device, name : string, createHandle : UnsharedResource<'a> -> GL -> 'a, deleteHandle : UnsharedResource<'a> -> GL -> 'a -> unit, sizeInBytes : int64) =
     inherit ResourceBase(device, name, sizeInBytes)
 
     let handles = Dict<WebGLContext, 'a>()
 
+    /// Gets the Handle for a given context (creates it if necessary).
     member x.GetHandle(ctx : WebGLContext) =
         if not ctx.IsCurrent then 
             failwithf "[WebGL] cannot get handle for non-current context"
@@ -178,9 +205,11 @@ and [<AbstractClass>] UnsharedResource<'a>(device : Device, name : string, creat
                 deleteHandle x ctx.GL h
             realHandle
           
+    /// Abstract method for destroying the resource.
     abstract Destroy : unit -> unit
     default x.Destroy() = ()
 
+    /// Abstract method that is invoked when the resource is destroyed.
     abstract Destroyed : unit -> unit
     default x.Destroyed() = ()
 

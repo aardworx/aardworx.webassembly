@@ -182,7 +182,6 @@ type Runtime(device : Device, defaultCommandStreamMode : CommandStreamMode) as t
                 if src.Samples = dst.Samples then
                     x.Copy(src, srcRange.Min, dst, dstRange.Min, s)
                 else
-                    printfn "RESOLVE"
                     if srcRange.Min = V3i.Zero && dstRange.Min = V3i.Zero && s.XY = src.Size then
                         let dst = 
                             match dst with
@@ -192,7 +191,7 @@ type Runtime(device : Device, defaultCommandStreamMode : CommandStreamMode) as t
                                 tex.[l.Level, l.Slices.Min]
                             | _ -> failwith "dst not a texture"
                             
-                        x.ResolveMultisamples(src, dst, ImageTrafo.MirrorY)
+                        x.ResolveMultisamples(src, dst, ImageTrafo.Identity)
                     else
                         failwith "bad resolve"
             else

@@ -5,20 +5,24 @@ open FSharp.Data.Adaptive
 #nowarn "9"
 #nowarn "4321"
 
+/// Interface for adaptive resources.
 type IAdaptiveResource =
     abstract Release : unit -> unit
 
+/// Interface for adaptive resources.
 type IAdaptiveResource<'a> =
     inherit IAdaptiveResource
     abstract Acquire : unit -> aval<'a>
 
+/// Interface for adaptive resources.
 and ares<'a> = IAdaptiveResource<'a>
  
+/// Functions for creating adaptive resources.
 module ARes =
     let inline private (!) (a : ref<'a>) = a.Value
     let inline private (:=) (a : ref<'a>) (value : 'a) = a.Value <- value
 
-
+    /// Creates an adaptive resource from a given `create` and `destroy` function.
     let ofCreateDestroy (create : unit -> aval<'a>) (destroy : aval<'a> -> unit) =
         let refCount = ref 0
         let current = ref Unchecked.defaultof<aval<'a>>
@@ -41,6 +45,7 @@ module ARes =
                 )
         }
 
+    /// Creates an adaptive resource from an aval by applying a `create` function.
     let mapVal (create : 'a -> 'b) (destroy : 'b -> unit) (value : aval<'a>) =
         let refCount = ref 0
         let aval = ref Unchecked.defaultof<aval<'b>>
@@ -76,6 +81,7 @@ module ARes =
                 )
         }
         
+    /// Creates an adaptive resource from two avals by applying a `create` function.
     let mapVal2 (create : 'a -> 'b -> 'c) (destroy : 'c -> unit) (va : aval<'a>) (vb : aval<'b>) =
         let create = OptimizedClosures.FSharpFunc<_,_,_>.Adapt create
         let refCount = ref 0
@@ -112,6 +118,7 @@ module ARes =
                 )
         }
     
+    /// Applies a mapping function to an adaptive resource.
     let map (mapping : 'a -> 'b) (input : ares<'a>) =
         let cache = ref Unchecked.defaultof<aval<'b>>
         let refCount = ref 0
@@ -140,6 +147,7 @@ module ARes =
                 )
         }
         
+    /// Applies a mapping function to two adaptive resources.
     let map2 (mapping : 'a -> 'b -> 'c) (va : ares<'a>) (vb : ares<'b>) =
         let cache = ref Unchecked.defaultof<aval<'c>>
         let refCount = ref 0

@@ -193,11 +193,11 @@ type DeviceFramebufferExtensions private() =
                          
                     match depth with
                     | Some tex ->
-                        let att = unbox<FramebufferAttachment> GLEnum.DepthAttachment
+                        let att = FramebufferAttachment.DepthStencilAttachment
                         attach att tex
-                        
-                        let att = unbox<FramebufferAttachment> GLEnum.StencilAttachment
-                        attach att tex
+                        //
+                        // let att = unbox<FramebufferAttachment> GLEnum.StencilAttachment
+                        // attach att tex
                     | None ->
                         ()
 
@@ -648,10 +648,15 @@ type DeviceFramebufferExtensions private() =
     static member Blit(this : CommandStream, src : SubRenderbuffer, dst : SubTextureImage, ?linear : bool) =  
         
         let filter =
-            match linear with
-            | Some false -> BlitFramebufferFilter.Nearest
-            | _ -> BlitFramebufferFilter.Linear
-
+            if src.Renderbuffer.Format = TextureFormat.Rgba8 then
+                match linear with
+                | Some false -> BlitFramebufferFilter.Nearest
+                | _ -> BlitFramebufferFilter.Linear
+            else
+                BlitFramebufferFilter.Nearest
+        
+        
+        
         let srcDepth = TextureFormat.isDepth src.Renderbuffer.Format
         let dstDepth = TextureFormat.isDepth dst.Texture.Format
         if srcDepth <> dstDepth then

@@ -7,55 +7,94 @@ open Aardvark.Base
 
 #nowarn "9"
 
+/// Texture Limits.
 type TextureLimits =
     {
+        /// Maximum size of a 2D texture.
         MaxSize2d           : V2i
+        /// Maximum size of a 3D texture.
         MaxSize3d           : V3i
+        /// Maximum size of a cube texture.
         MaxSizeCube         : int
+        /// Maximum number of layers in a texture array.
         MaxLayers           : int
+        /// Maximum number of samples in a color texture.
         MaxColorSamples     : int
+        /// Maximum number of samples in a depth texture.
         MaxDepthSamples     : int
+        /// Maximum level-of-detail bias.
         MaxLodBias          : float
+        /// Compressed texture formats.
         CompressedFormats   : Set<TextureFormat>
+        /// Maximum number of texture bindings.
         MaxBindings         : int
     }
     
+/// Buffer Limits.
 type BufferLimits =
     {
+        /// Minimum alignment for uniform buffer offsets.
         MinUniformBufferAlign       : int
+        /// Maximum number of uniform buffer bindings.
         MaxUniformBufferBindings    : int
-
     }
 
+/// Device features.
 type DeviceFeatures =
     {
+        /// Whether anisotropic texture filtering is supported.
         TextureFilterAnisotropic : bool
+        
+        /// Whether timer queries are supported.
         TimerQuery               : bool
     }
 
+/// Device information.
 type DeviceInformation =
     {
+        /// Vendor.
         Vendor              : string
+        
+        /// Renderer.
         Renderer            : string
+        
+        /// Driver.
         Driver              : option<string>
+        
+        /// OpenGL ES version.
         Version             : Version
+        
+        /// GLSL version.
         GLSLVersion         : Version
+        
+        /// GLSL suffix.
         GLSLSuffix          : string
+        
+        /// Dedicated memory.
         Memory              : Mem
 
+        /// Device features.
         Features            : DeviceFeatures
 
+        /// Supported extensions.
         Extensions          : Set<string>
+        
+        /// Texture limits.
         TextureLimits       : TextureLimits
+        
+        /// Buffer limits.
         BufferLimits        : BufferLimits
     }
 
+/// Device information module.
 module DeviceInformation =
     
+    /// Checks whether the given device information is from an Intel device.
     let isIntel (info : DeviceInformation) =
         info.Vendor.ToLower().Contains "intel" ||
         info.Renderer.ToLower().Contains "intel"
 
+    /// formats the given device information.
     let toString (verbose : bool) (info : DeviceInformation) =
         String.concat "\r\n" [|
             sprintf "Device" 
@@ -105,6 +144,7 @@ module DeviceInformation =
 
         |]
 
+/// Device serves as the central object for interacting with the WebGL API.
 type Device(ctx : WebGLContext, debug : bool) as this =
     static let mutable lastDevice : Device = Unchecked.defaultof<_>
 
@@ -114,6 +154,7 @@ type Device(ctx : WebGLContext, debug : bool) as this =
     let gl = ctx.GL
     do lastDevice <- this
 
+    // read device information
     let info =
         ctx.MakeCurrent()
         try
@@ -198,7 +239,26 @@ type Device(ctx : WebGLContext, debug : bool) as this =
                         gl.GetStringS UNMASKED_VENDOR_WEBGL, renderer, None
                 else 
                     gl.GetStringS StringName.Vendor, gl.GetStringS StringName.Renderer, None
-
+            //
+            //
+            // let checkFormats =
+            //     [
+            //         TextureFormat.Rgba8
+            //         TextureFormat.Depth24Stencil8
+            //         TextureFormat.DepthComponent32
+            //         TextureFormat.Rgb32i
+            //         TextureFormat.Rgb32ui
+            //         TextureFormat.Rgb32f
+            //         TextureFormat.Rgba32i
+            //         TextureFormat.Rgba32ui
+            //         TextureFormat.Rgba32f
+            //     ]
+            //
+            // for fmt in checkFormats do
+            //     let sams = Array.zeroCreate<int> 8
+            //     gl.GetInternalformat(GLEnum.Renderbuffer, unbox<InternalFormat> (int fmt), InternalFormatPName.Samples, 8u, System.Span<int>(sams))
+            //     printfn "%A: %A" fmt (sams |> Array.filter (fun v -> v <> 0))
+            //
             {
                 Vendor = vendor
                 Renderer = renderer
@@ -244,37 +304,42 @@ type Device(ctx : WebGLContext, debug : bool) as this =
 
     new(ctx) = Device(ctx, false)
 
-
-
-
     static member internal UnsafeLastDevice = lastDevice
 
-
-
-
+    /// The WebGL context.
     member x.Context = ctx
+    
+    /// Device Information.
     member x.Info = info
+    
+    /// Is the Device in debug mode.
     member x.Debug = debug
+    
+    /// Is the Device disposed.
     member x.IsDisposed = isDisposed
 
+    /// Event that is triggered when the device is disposed.
     member x.OnDispose : FSharp.Control.IEvent<unit> = onDispose.Publish
 
-
+    /// invoked when a resource is created.
     member x.ResourceCreated(_name : string) =
         ()
 
+    /// invoked when a resource is destroyed.
     member x.ResourceDestroyed(_name : string) =
         ()
 
+    /// adds an action that will be executed the next time the device runs a command.
     member x.AddPending (key : 'a, action : GL -> unit) =
         pending.[key :> obj] <- action
         ()
 
-
+    /// gets or sets the current Call (used for debugging).
     member x.CurrentCall
         with get() = currentCall
         and internal set c = currentCall <- c
 
+    /// synchronously runs an action on the virtual device-thread.
     member x.Run<'a>(action : GL -> 'a) : 'a =
         if inRun then 
             // for p in pending.Values do p gl
@@ -300,12 +365,14 @@ type Device(ctx : WebGLContext, debug : bool) as this =
             finally
                 inRun <- false
 
+    /// runs all pending actions.
     member x.RunPending() =
         x.Run (fun gl ->
             for p in pending.Values do p gl
             pending.Clear()
         )
 
+    /// Disposes the device.
     member x.Dispose() =
         if not isDisposed then
             isDisposed <- true
@@ -313,22 +380,7 @@ type Device(ctx : WebGLContext, debug : bool) as this =
             ctx.Dispose()
             pending.Clear()
 
-    //member x.Enqueue<'a>(action : GL -> 'a) : Task<'a> =
-    //    Task.Run (fun () ->
-    //        let o = WebGLContext.Current
-    //        if o <> ctx then
-    //            ctx.MakeCurrent()
-    //            try
-    //                action gl
-    //            finally
-    //                if isNull o then ctx.ReleaseCurrent()
-    //                else o.MakeCurrent()
-    //        else
-    //            action gl
-    //    )
-
-    //member x.GL : GL = gl
-
+    /// Gets/Sets the runtime.
     member x.Runtime
         with get() = runtime
         and internal set r = runtime <- r

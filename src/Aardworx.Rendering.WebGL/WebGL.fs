@@ -9,38 +9,48 @@ open Silk.NET.OpenGLES
 
 #nowarn "9"
 
+/// Raw wrappers for WebGL.
 module WebGLRaw =
     
-
+    /// WebGL context handle.
     type WebGLContextHandle = int
 
+    /// WebGL bindings.
     module WebGL =
 
-    
+        /// Creates a WebGL context for a canvas with the given element-id.
         [<DllImport("WebGL")>]
         extern WebGLContextHandle emCreateContext(string id)
         
+        /// swaps the front and back buffers of the current context.
         [<DllImport("WebGL")>]
         extern int emSwapBuffers()
     
+        /// Destroys the given context.
         [<DllImport("WebGL")>]
         extern int emDestroyContext(WebGLContextHandle handle)
 
+        /// Makes the given context the current context.
         [<DllImport("WebGL")>]
         extern int emMakeCurrent(WebGLContextHandle ctx)
     
+        /// Returns whether the given context is the current context.
         [<DllImport("WebGL")>]
         extern int emIsCurrent(WebGLContextHandle ctx)
         
+        /// Returns the current context.
         [<DllImport("WebGL")>]
         extern WebGLContextHandle emGetCurrent()
         
+        /// Enables the given extension for the given context.
         [<DllImport("WebGL")>]
         extern int emEnableExtension(WebGLContextHandle ctx, string name)
 
+        /// Returns the address of the given function.
         [<DllImport("WebGL")>]
         extern nativeint emGetProcAddress(string name)
 
+/// WebGL context.
 [<AllowNullLiteral>]
 type WebGLContext private(handle : WebGLRaw.WebGLContextHandle) =
     static let selectorTable = Dictionary<string, WebGLRaw.WebGLContextHandle>()
@@ -56,6 +66,7 @@ type WebGLContext private(handle : WebGLRaw.WebGLContextHandle) =
     member internal x.EnableExtension(name : string) =
         WebGLRaw.WebGL.emEnableExtension(handle, name) <> 0
 
+    /// Creates a new WebGL context for the given handle.
     static member Create(handle : WebGLRaw.WebGLContextHandle) : WebGLContext =
         if handle = 0 then failwith "[WebGL] invalid context handle" 
         lock table (fun () ->
@@ -71,6 +82,7 @@ type WebGLContext private(handle : WebGLRaw.WebGLContextHandle) =
                 ctx
         )
 
+    /// Creates a new WebGL context for the given selector.
     static member Create(selector : string) : WebGLContext =
         let handle = 
             lock selectorTable (fun () ->
@@ -84,6 +96,7 @@ type WebGLContext private(handle : WebGLRaw.WebGLContextHandle) =
             )
         WebGLContext.Create(handle)
         
+    /// Creates a new WebGL context by adding an invisible canvas to the document.
     static member Create() =
         let id = Guid.NewGuid() |> string
         let c = JS.Window.Document.CreateCanvasElement()
@@ -93,25 +106,31 @@ type WebGLContext private(handle : WebGLRaw.WebGLContextHandle) =
         c.Height <- 768
         WebGLContext.Create("#" + id)
 
+    /// Returns the current WebGL context (or null if none is current).
     static member Current : WebGLContext = 
         let h = WebGLRaw.WebGL.emGetCurrent()
         if h = 0 then null
         else WebGLContext.Create h
 
+    /// Disposes the context.
     member x.Dispose() =
         WebGLRaw.WebGL.emDestroyContext handle |> ignore
 
+    /// Returns the address of the given function.
     member x.GetProcAddress(proc : string) = 
         WebGLRaw.WebGL.emGetProcAddress(proc)
 
+    /// Returns the address of the given function (if exisiting)
     member x.TryGetProcAddress(proc : string , result : byref<nativeint>) =
         result <- WebGLRaw.WebGL.emGetProcAddress(proc)
         result <> 0n
 
+    /// Registers an action to be executed when the context becomes current.
     member x.WhenCurrent(action : GL -> unit) =
         if x.IsCurrent then action gl
         else whenCurrent <- action :: whenCurrent
 
+    /// Makes the context the current context.
     member x.MakeCurrent() =
         if WebGLRaw.WebGL.emGetCurrent() <> handle then
             let res = WebGLRaw.WebGL.emMakeCurrent handle
@@ -120,11 +139,13 @@ type WebGLContext private(handle : WebGLRaw.WebGLContextHandle) =
         for c in whenCurrent do c gl
         whenCurrent <- []
 
+    /// Releases the current context.
     member x.ReleaseCurrent() =
         if WebGLRaw.WebGL.emGetCurrent() <> handle then failwithf "[WebGL] cannot release non-current context %A" x
         let res = WebGLRaw.WebGL.emMakeCurrent 0
         if res <> 0 then failwithf "[WebGL] could not release current %A: %d" x res
 
+    /// Swaps the front and back buffers of the current context.
     member x.SwapBuffers() =
         let o = WebGLContext.Current
         if o = x then 
@@ -139,12 +160,14 @@ type WebGLContext private(handle : WebGLRaw.WebGLContextHandle) =
                 if isNull o then x.ReleaseCurrent()
                 else o.MakeCurrent()
 
-
+    /// Returns whether the context is the current context.
     member x.IsCurrent =
         WebGLRaw.WebGL.emGetCurrent() = handle
 
+    /// Returns the underlying GL object.
     member x.GL = gl
 
+    /// Returns the handle of the context.
     member x.Handle = handle
 
     override x.ToString() =
@@ -173,9 +196,13 @@ type WebGLContext private(handle : WebGLRaw.WebGLContextHandle) =
 
 
 
+exception WebGLException of string
+
 [<AutoOpen>]
 module WebGLExceptions =
 
-    let inline fail str = failwith ("[WebGL] " + str)
+    /// Raises a WebGL exception.
+    let inline fail str = raise <| WebGLException str
 
-    let inline failf fmt = Printf.kprintf (fun str -> failwith ("[WebGL] " + str)) fmt
+    /// Raises a WebGL exception.
+    let inline failf fmt = Printf.kprintf (fun str -> raise <| WebGLException str) fmt

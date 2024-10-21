@@ -1,9 +1,14 @@
+// ===============================================================================
+//                    AUTO GENERATED FILE (see Generator.fsx)
+// ===============================================================================
 namespace Aardworx.Rendering.WebGL
 open Silk.NET.OpenGLES
 open System.Runtime.InteropServices
 open Microsoft.FSharp.NativeInterop
 #nowarn "9"
 
+/// As of dotnet 8.0 the WebAssembly runtime does not support passing floats directly to C functions.
+/// This module provides a way to convert float32 values to int32 values that can be passed to C functions.
 module WrappedCommands =
     let inline private float32Bits (v : float32) =
         use ptr = fixed [| v |]
