@@ -14,6 +14,21 @@ module Shader =
         fragment {
             return v.c
         }
+        
+
+    type Fragment =
+        {
+            [<Semantic("PickViewPosition")>] vp : V3d
+        }
+    
+    let withViewPos (v : Effects.Vertex) =
+        fragment {
+            let vp = uniform.ProjTrafoInv * v.pos
+            let vp = vp.XYZ / vp.W
+            let vp = vp + V3d(0.1, 0.0, 0.0)
+            return { vp = vp.XYZ }
+        }
+        
 
 type Message =
     | Increment
@@ -148,8 +163,14 @@ module App =
                 }
                 
                 // render a green teapot centered at the origin
-                Primitives.Teapot(C4b.Green)
-                
+                sg {
+                    Sg.Shader {
+                        DefaultSurfaces.trafo
+                        DefaultSurfaces.simpleLighting
+                        Shader.withViewPos
+                    }
+                    Primitives.Teapot(C4b.Green)
+                }
                 // a yellow octahedron hovering 1 unit above the teapot
                 sg {
                     Sg.Translate(0.0, 0.0, 1.0)

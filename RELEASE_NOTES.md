@@ -1,3 +1,6 @@
+### 1.1.11
+* relaxed BlendMode constraints for integer formats
+
 ### 1.1.10
 * various bugfixes
 

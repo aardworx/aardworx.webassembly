@@ -978,26 +978,32 @@ type CommandStream private(state : CommandStreamState, ownState : bool, backend 
 
     member x.SetBlendState(blendState : BlendState) =
         let modes =
-            state.FramebufferSignature.AttachmentIndices |> Map.map (fun name _idx ->
-                blendState.AttachmentMode |> AVal.bind (fun map ->
-                    match Map.tryFind name map with
-                    | Some mode -> AVal.constant mode
-                    | None -> blendState.Mode
-                )
+            state.FramebufferSignature.AttachmentIndices |> Map.toArray |> Array.choose (fun (name, idx) ->
+                let isInt = state.FramebufferSignature.ColorAttachments.[idx].Format |> TextureFormat.isIntegerFormat
+                if isInt then
+                    None
+                else
+                    Some (
+                        blendState.AttachmentMode |> AVal.bind (fun map ->
+                            match Map.tryFind name map with
+                            | Some mode -> AVal.constant mode
+                            | None -> blendState.Mode
+                        )
+                    )
             )
 
         let allModesEqual() =
-            if modes |> Map.forall (fun _ m -> m.IsConstant) then
-                let modes = modes |> Map.map (fun _ m -> AVal.force m)
-                if Map.isEmpty modes then
+            if modes |> Array.forall (fun m -> m.IsConstant) then
+                let modes = modes |> Array.map (fun m -> AVal.force m)
+                if modes.Length <= 1 then
                     true
                 else
                     use e = (modes :> seq<_>).GetEnumerator()
                     e.MoveNext() |> ignore
                     let mutable eq = true
-                    let m = e.Current.Value
+                    let m = e.Current
                     while eq && e.MoveNext() do
-                        if e.Current.Value <> m then
+                        if e.Current <> m then
                             eq <- false
                     eq
 
@@ -1007,7 +1013,7 @@ type CommandStream private(state : CommandStreamState, ownState : bool, backend 
         // BlendMode
         if state.FramebufferSignature.AttachmentCount = 1 || allModesEqual() then
             match Seq.tryHead modes with
-            | Some (KeyValue(_, mode)) ->
+            | Some mode ->
                 x.SetBlendMode(mode)
             | None ->
                 x.SetBlendMode BlendMode.None
