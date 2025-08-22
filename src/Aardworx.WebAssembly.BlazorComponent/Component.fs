@@ -80,6 +80,78 @@ type RenderControl() =
     interface IDisposable with
         member x.Dispose() = x.Dispose()
     
+open Aardvark.Dom
+
+type ElmRenderApp<'model, 'amodel, 'message> =
+    {
+        Initial         : 'model
+        Update          : Env<'message> -> 'model -> 'message -> 'model
+        View            : Env<'message> ->  RenderControlInfo -> 'amodel -> ISceneNode
+        Unpersist       : Adaptify.Unpersist<'model, 'amodel>
+    }
+    
+[<AbstractClass>]
+type ElmComponent<'model, 'amodel, 'message>() =
+    inherit ComponentBase()
+    do printfn "INIT"
+    let mutable runtime : IJSRuntime = Unchecked.defaultof<_>
+    let id = RandomElementId()
+    
+    let mutable app : WebGLApplication = Unchecked.defaultof<_>
+
+    let mutable amodel = Unchecked.defaultof<'amodel>
+    let mutable env : Env<'message> = Unchecked.defaultof<_>
+
+    abstract member ElmApp : App<'model, 'amodel, 'message>
+    
+    [<Inject>]
+    member x.Runtime
+        with get() = runtime
+        and set s = runtime <- s
+    
+    member x.Model = amodel
+    
+    member x.Run(msgs : seq<'message>) =
+        if not (isNull (env :> obj)) then
+            env.Emit msgs
+    
+    override this.BuildRenderTree(builder) =
+        builder.AddMarkupContent(0, $"<div id=\"{id}\"></div>")
+        base.BuildRenderTree(builder)
+    
+    override this.OnAfterRender(firstRender) =
+        base.OnAfterRender(firstRender)
+        
+        if firstRender then
+            printfn "AFTER RENDER"
+            JSRuntime.Instance <- runtime :?> WebAssemblyJSRuntime
+            app <- new WebGLApplication(CommandStreamMode.Managed, false)
+            let (adaptiveModel, e) = Aardworx.WebAssembly.Dom.Boot.runInElement (Some id) app this.ElmApp
+            amodel <- adaptiveModel
+            env <- e
+            
+          
+    member x.Dispose() =
+        printfn "DISPOSE"
+        app.Dispose()
+        
+        
+        
+    interface IDisposable with
+        member x.Dispose() = x.Dispose()
+    
+type SimpleElmComponent<'model, 'amodel, 'message>() =
+    inherit ElmComponent<'model, 'amodel, 'message>()
+    
+    let mutable all = Unchecked.defaultof<App<'model, 'amodel, 'message>>
+    
+    member x.App
+        with get() = all
+        and set v = all <- v
+    
+    override x.ElmApp = all
+    
+    
 //     
 // type Thing() =
 //     interface IComponent with

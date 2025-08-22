@@ -190,7 +190,7 @@ module Boot =
             })()
         """
    
-    let runView (app : WebGLApplication) (view : DomContext -> DomNode) =
+    let runViewInElement (elementId : option<string>) (app : WebGLApplication) (view : DomContext -> DomNode)  =
         
         let server =
             { new IServer with
@@ -331,12 +331,14 @@ module Boot =
                     }
                 let dom = view context
 
-                let u = Updater.Body(app.Runtime, dom, backend :> IHtmlBackend<_>)
-
+                let u =
+                    match elementId with
+                    | None -> Updater.Body(app.Runtime, dom, backend :> IHtmlBackend<_>)
+                    | Some id -> Updater.Create($"#{id}", app.Runtime, dom, backend :> IHtmlBackend<_>)
                 
                 let state = { token = AdaptiveToken.Top; runtime = app.Runtime }
                 
-                u |> runUpdater state backend execute |> ignore
+                runUpdater state backend execute u |> ignore
 
                 ()
         )
@@ -350,40 +352,59 @@ module Boot =
         JSRuntime.Instance.InvokeVoid("window.eval", aardvarkDomJs)
         JSRuntime.Instance.InvokeVoid("window.eval", connectCode)
 
-    let run (glapp : WebGLApplication) (app : App<'model, 'adaptiveModel, 'message>) =
-        runView glapp (fun ctx ->
-            let mutable model = app.initial
-            let adaptiveModel = app.unpersist.init model
-            
-            let queue = AsyncBlockingCollection<seq<'message>>()
-            
-            let additional = clist []
-            
-            let env =
-                { new Env<'message> with
-                    member x.RunModal(action) =
-                        let idx = additional.Value.NewIndexAfter(additional.MaxIndex)
-                        let disp =
-                            { new IDisposable with
-                                member x.Dispose() =
-                                    transact (fun () -> additional.Remove idx |> ignore)
-                            }
-                        let dom = action disp
-                        transact (fun () -> additional.[idx] <- dom)
-                        disp
-                        
-                    member x.Emit msgs =
-                        queue.Put msgs
+    let runView (app : WebGLApplication) (view : DomContext -> DomNode) =
+        runViewInElement None app view
+    
+    let runInElement (elementId : option<string>) (glapp : WebGLApplication) (app : App<'model, 'adaptiveModel, 'message>) =
+        let mutable model = app.initial
+        let adaptiveModel = app.unpersist.init model
+        let queue = AsyncBlockingCollection<seq<'message>>()
+        
 
-                    member x.Run(js, callback) =
-                        ctx.Execute js callback
-
-                    member x.Runtime = glapp.Runtime
+        let pending = ResizeArray()
+        
+        let mutable context : DomContext =
+            { new DomContext with
+                member x.Runtime = glapp.Runtime
+                member x.Execute code callback =
+                    pending.Add(code, callback)
+                member x.StartWorker<'t, 'a, 'b when 't :> Aardvark.Dom.AbstractWorker<'a, 'b> and 't : (new : unit -> 't)>() =
+                    WorkerExtensions.run<'t, 'a, 'b>()
+            }
+             
+        let additional = clist []
+            
+        let env =
+            { new Env<'message> with
+                member x.RunModal(action) =
+                    let idx = additional.Value.NewIndexAfter(additional.MaxIndex)
+                    let disp =
+                        { new IDisposable with
+                            member x.Dispose() =
+                                transact (fun () -> additional.Remove idx |> ignore)
+                        }
+                    let dom = action disp
+                    transact (fun () -> additional.[idx] <- dom)
+                    disp
                     
-                    member x.StartWorker<'t, 'a, 'b when 't :> AbstractWorker<'a, 'b> and 't : (new : unit -> 't)>() =
-                        ctx.StartWorker<'t, 'a, 'b>()
-                }
+                member x.Emit msgs =
+                    queue.Put msgs
 
+                member x.Run(js, callback) =
+                    context.Execute js callback
+
+                member x.Runtime = glapp.Runtime
+                
+                member x.StartWorker<'t, 'a, 'b when 't :> AbstractWorker<'a, 'b> and 't : (new : unit -> 't)>() =
+                    context.StartWorker<'t, 'a, 'b>()
+            }
+             
+        runViewInElement elementId glapp (fun ctx ->
+            context <- ctx
+            for (js, callback) in pending do
+                context.Execute js callback
+            pending.Clear()
+            
             let loop =
                 task {
                     while true do
@@ -403,4 +424,9 @@ module Boot =
                 Log.warn "could not append additional nodes to root"
                 root
         )
+        
+        adaptiveModel, env
+        
+    let run (glapp : WebGLApplication) (app : App<'model, 'adaptiveModel, 'message>) =
+        runInElement None glapp app |> ignore
         

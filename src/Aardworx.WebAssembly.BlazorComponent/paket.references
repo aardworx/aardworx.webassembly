@@ -7,6 +7,8 @@ Aardvark.Rendering
 FSharp.Data.Adaptive
 Aardvark.Base
 Aardvark.Dom
+Aardvark.Dom.Remote
+Aardvark.Dom.Elm
 Aardvark.Base.FSharp
 Aardvark.Application
 Aardvark.SceneGraph

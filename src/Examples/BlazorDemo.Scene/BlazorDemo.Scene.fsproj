@@ -6,6 +6,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="Library.fs" />
+    <Compile Include="ElmApp.fs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="paket.references" />
