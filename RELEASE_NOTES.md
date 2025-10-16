@@ -1,3 +1,6 @@
+### 1.1.12
+* fixed MultiDrawArrays/Elements with FirstIndex
+
 ### 1.1.11
 * relaxed BlendMode constraints for integer formats
 

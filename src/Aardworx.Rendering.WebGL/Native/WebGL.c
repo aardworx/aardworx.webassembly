@@ -96,7 +96,10 @@ EMSCRIPTEN_KEEPALIVE void glMultiDrawArrays(GLenum mode, DrawElementsIndirectCom
         int firstIndex = indirect[i].firstIndex;
         int baseVertex = indirect[i].baseVertex;
         int count = indirect[i].count;
+
         last = &indirect[i];
+
+
         i++;
         // compact adjacent instances
         while(i < count && isNextInstance(last, &indirect[i])) {
@@ -194,6 +197,10 @@ EMSCRIPTEN_KEEPALIVE void glMultiDrawElements(GLenum mode, DrawElementsIndirectC
         int firstIndex = indirect[i].firstIndex;
         int baseVertex = indirect[i].baseVertex;
         int count = indirect[i].count;
+
+    
+        //printf("%d/%d: %d, %d, %d, %d, %d\n", i, count, instanceCount, baseInstance, firstIndex, baseVertex, count);
+        
         last = &indirect[i];
         i++;
         // compact adjacent instances
@@ -230,7 +237,7 @@ EMSCRIPTEN_KEEPALIVE void glMultiDrawElements(GLenum mode, DrawElementsIndirectC
             }
 
         }
-        i++;
+
     }
 
     // restore original bindings

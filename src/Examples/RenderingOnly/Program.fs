@@ -260,6 +260,35 @@ let run() =
             | _ -> ()
         )
         
+        let bla =
+            Sg.Delay (fun s ->
+                let o = RenderObject.ofTraversalState s
+                
+                let pos = ArrayBuffer [| V3f.OOO; V3f.IOO; V3f.IIO; V3f.OIO |]
+                let index = ArrayBuffer [| 0; 1; 2; 0; 2; 3 |]
+                
+                o.VertexAttributes <-
+                    AttributeProvider.ofList [
+                        DefaultSemantic.Positions, BufferView(pos, typeof<V3f>)
+                    ]
+                o.Indices <- Some (BufferView(index, typeof<int>))
+                o.Mode <- IndexedGeometryMode.TriangleList
+                o.DrawCalls <-
+                    DrawCalls.Direct (
+                        AVal.constant [
+                            DrawCallInfo(FaceVertexCount = 3, FirstIndex = 0, InstanceCount = 1)
+                            DrawCallInfo(FaceVertexCount = 3, FirstIndex = 3, InstanceCount = 1)
+                        ]
+                    )
+                
+                let o = o :> IRenderObject
+                { new ISceneNode with
+                    member x.GetRenderObjects(s) = ASet.single o
+                    member x.GetObjects(s) = ASet.single o, ASet.empty
+                }    
+            )
+        
+        
         // let's start to setup a scene.
         let scene =
             sg {
@@ -327,7 +356,14 @@ let run() =
                     }
                     Primitives.ScreenQuad 0.999
                 }
-                
+                sg {
+                    Sg.Translate(0.0, 0.0, 4.0)
+                    Sg.Shader {
+                        DefaultSurfaces.trafo
+                        DefaultSurfaces.constantColor C4f.Red
+                    }
+                    bla
+                }
             }
         
         // in order to render the scene we need to compile it to a `RenderTask`
