@@ -1,3 +1,6 @@
+### 1.1.13
+* updated Aardvark.Dom and fixed build issues
+
 ### 1.1.12
 * fixed MultiDrawArrays/Elements with FirstIndex 
 
