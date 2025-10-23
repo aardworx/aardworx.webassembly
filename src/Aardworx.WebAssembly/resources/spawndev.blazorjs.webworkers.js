@@ -210,9 +210,12 @@ var initWebWorkerBlazor = async function () {
                 let jsStr = await getText(s);
                 jsStr = jsStr.replace(/ fetch\(/g, ' webWorkersFetch(');
                 // Prevent automatic entry point invocation - match various patterns used by different Blazor versions
+                // For .NET 8.0: Replace .runMain() call in callEntryPoint
+                // Matches: await wt.runMain(wt.getConfig().mainAssemblyName,[])
+                jsStr = jsStr.replace(/await\s+\w+\.runMain\s*\([^\n;]+/g, 'await Promise.resolve()');
+                // Legacy patterns for older Blazor versions
                 jsStr = jsStr.replace(/[^\s]+\.call_assembly_entry_point\([^)]+\)/g, 'new Promise((resolve, reject) => { resolve(); })');
                 jsStr = jsStr.replace(/[^\s]+\.invokeEntrypoint\([^)]+\)/g, 'new Promise((resolve, reject) => { resolve(); })');
-                jsStr = jsStr.replace(/await\s+[^\s]+\.runMain\([^)]*\)/g, 'await new Promise((resolve, reject) => { resolve(); })');
                 // fix dynamic imports (if neeed)
                 if (!dynamicImportSupported) {
                     // convert dynamic imports in blazorWebAssembly and its imports
