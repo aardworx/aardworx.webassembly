@@ -119,7 +119,6 @@ type IntWorker() =
 
     override x.Run(ctx) =
         task {
-            let rand = RandomSystem()
             while true do
                 do! Task.Delay(500)
                 let arr = Array.zeroCreate<byte> (64 <<< 20)
@@ -374,6 +373,21 @@ let run() =
         // tell the `RenderControl` to run our task whenever necessary
         ctrl.RenderTask <- rt
          
+        let! w = Worker.start<IntWorker>()
+       
+        let run() =
+            task {
+                while true do
+                    let! msg = w.Receive()
+                    match msg with
+                    | WorkerMessage.Binary arr ->
+                        printfn "Received %A" (Mem arr.Length)
+                    | _ ->
+                        ()
+            }
+        
+        run() |> ignore
+        
         ctrl.AfterFirstFrame.Add (fun _ ->
             task {
                 let! workerTest = Worker.start<IntWorker>()
