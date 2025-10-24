@@ -202,21 +202,35 @@ var initWebWorkerBlazor = async function () {
         // load webworker-enabled scripts in order found in index.html (and _framework/blazor.webassembly.js)
         for (var i = 0; i < indexHtmlScripts.length; i++) {
             let s = indexHtmlScripts[i];
-            let scriptEl = bodyEl.appendChild(document.createElement('script'));
-            scriptEl.setAttribute('src', s);
+            let scriptEl = document.createElement('script');
             if (i == blazorWebAssemblyJSIndex) {
                 scriptEl.setAttribute('autostart', "false");
                 // fix fetch relative paths
                 let jsStr = await getText(s);
                 jsStr = jsStr.replace(/ fetch\(/g, ' webWorkersFetch(');
-                jsStr = jsStr.replace(/[^ ]+\.call_assembly_entry_point\([^)]+\)/g, 'new Promise((resolve, reject) => { resolve(); })');
+                // Prevent automatic entry point invocation - match various patterns used by different Blazor versions
+                // For .NET 8.0: Replace .runMain() call in callEntryPoint
+                // Matches: await wt.runMain(wt.getConfig().mainAssemblyName,[])
+                // Must handle nested parentheses carefully to avoid breaking try-catch syntax
+                jsStr = jsStr.replace(/await\s+(\w+)\.runMain\s*\(\s*\1\.getConfig\(\)[^)]*,\s*\[[^\]]*\]\s*\)/g, 'await Promise.resolve()');
+                // Fallback: simpler pattern if the above doesn't match
+                jsStr = jsStr.replace(/(\w+)\.runMain\s*\(/g, '$1.runMainDisabled(');
+                // Add dummy runMainDisabled function at the start
+                jsStr = 'self.runMainDisabled = async function() { return Promise.resolve(); };' + jsStr;
+                // Legacy patterns for older Blazor versions
+                jsStr = jsStr.replace(/[^\s]+\.call_assembly_entry_point\([^)]+\)/g, 'new Promise((resolve, reject) => { resolve(); })');
+                jsStr = jsStr.replace(/[^\s]+\.invokeEntrypoint\([^)]+\)/g, 'new Promise((resolve, reject) => { resolve(); })');
                 // fix dynamic imports (if neeed)
                 if (!dynamicImportSupported) {
                     // convert dynamic imports in blazorWebAssembly and its imports
                     jsStr = fixModuleScript(jsStr);
                 }
+                // Set inline text content instead of src to use our modified version
                 scriptEl.text = jsStr;
+            } else {
+                scriptEl.setAttribute('src', s);
             }
+            bodyEl.appendChild(scriptEl);
         } 
         // init document
         document.initDocument();
