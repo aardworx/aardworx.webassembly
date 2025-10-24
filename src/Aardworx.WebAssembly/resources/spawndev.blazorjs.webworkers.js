@@ -202,8 +202,7 @@ var initWebWorkerBlazor = async function () {
         // load webworker-enabled scripts in order found in index.html (and _framework/blazor.webassembly.js)
         for (var i = 0; i < indexHtmlScripts.length; i++) {
             let s = indexHtmlScripts[i];
-            let scriptEl = bodyEl.appendChild(document.createElement('script'));
-            scriptEl.setAttribute('src', s);
+            let scriptEl = document.createElement('script');
             if (i == blazorWebAssemblyJSIndex) {
                 scriptEl.setAttribute('autostart', "false");
                 // fix fetch relative paths
@@ -221,8 +220,12 @@ var initWebWorkerBlazor = async function () {
                     // convert dynamic imports in blazorWebAssembly and its imports
                     jsStr = fixModuleScript(jsStr);
                 }
+                // Set inline text content instead of src to use our modified version
                 scriptEl.text = jsStr;
+            } else {
+                scriptEl.setAttribute('src', s);
             }
+            bodyEl.appendChild(scriptEl);
         } 
         // init document
         document.initDocument();
