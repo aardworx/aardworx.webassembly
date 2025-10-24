@@ -211,7 +211,12 @@ var initWebWorkerBlazor = async function () {
                 // Prevent automatic entry point invocation - match various patterns used by different Blazor versions
                 // For .NET 8.0: Replace .runMain() call in callEntryPoint
                 // Matches: await wt.runMain(wt.getConfig().mainAssemblyName,[])
-                jsStr = jsStr.replace(/await\s+\w+\.runMain\s*\([^\n;]+/g, 'await Promise.resolve()');
+                // Must handle nested parentheses carefully to avoid breaking try-catch syntax
+                jsStr = jsStr.replace(/await\s+(\w+)\.runMain\s*\(\s*\1\.getConfig\(\)[^)]*,\s*\[[^\]]*\]\s*\)/g, 'await Promise.resolve()');
+                // Fallback: simpler pattern if the above doesn't match
+                jsStr = jsStr.replace(/(\w+)\.runMain\s*\(/g, '$1.runMainDisabled(');
+                // Add dummy runMainDisabled function at the start
+                jsStr = 'self.runMainDisabled = async function() { return Promise.resolve(); };' + jsStr;
                 // Legacy patterns for older Blazor versions
                 jsStr = jsStr.replace(/[^\s]+\.call_assembly_entry_point\([^)]+\)/g, 'new Promise((resolve, reject) => { resolve(); })');
                 jsStr = jsStr.replace(/[^\s]+\.invokeEntrypoint\([^)]+\)/g, 'new Promise((resolve, reject) => { resolve(); })');
