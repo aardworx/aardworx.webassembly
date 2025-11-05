@@ -10,9 +10,12 @@
     <WasmBuildNative>true</WasmBuildNative>
   </PropertyGroup>
   <PropertyGroup>
-    <!-- Test: Add --js-library flag for WebGPU stub -->
-    <EmccExtraLDFlags>--js-library $(MSBuildThisFileDirectory)Native/library_webgpu_stub.js $(EmccExtraLDFlags)</EmccExtraLDFlags>
+    <!-- Dawn emdawnwebgpu integration using --js-library -->
+    <EmccExtraLDFlags>--js-library $(MSBuildThisFileDirectory)Native/library_webgpu.js --closure-args=--externs=$(MSBuildThisFileDirectory)Native/webgpu-externs.js $(EmccExtraLDFlags)</EmccExtraLDFlags>
   </PropertyGroup>
+  <ItemGroup>
+    <NativeFileReference Include="Native\webgpu.cpp" />
+  </ItemGroup>
   <ItemGroup>
     <Compile Include="WebGPUTest.fs" />
     <Compile Include="Program.fs" />
