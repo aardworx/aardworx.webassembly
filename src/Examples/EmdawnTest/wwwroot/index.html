@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>EmdawnTest - WebGPU Integration Test</title>
+    <base href="/" />
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 20px;
+            background-color: #1e1e1e;
+            color: #d4d4d4;
+        }
+        h1 {
+            color: #4ec9b0;
+        }
+        #app {
+            padding: 20px;
+        }
+        .info {
+            background-color: #2d2d30;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <h1>EmdawnTest - WebGPU Integration Test</h1>
+        <div class="info">
+            <p>This is a test project to verify WebGPU integration with .NET 8 Blazor WebAssembly.</p>
+            <p><strong>Check the browser console</strong> for output from:</p>
+            <ul>
+                <li>F# code calling WebGPU functions via DllImport</li>
+                <li>JavaScript stub library responding to WebGPU calls</li>
+            </ul>
+        </div>
+        <div id="blazor-error-ui">
+            An unhandled error has occurred.
+            <a href="" class="reload">Reload</a>
+            <a class="dismiss">🗙</a>
+        </div>
+    </div>
+    <script src="_framework/blazor.webassembly.js"></script>
+</body>
+</html>

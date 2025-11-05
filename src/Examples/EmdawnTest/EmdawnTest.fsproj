@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <DisableImplicitFSharpCoreReference>true</DisableImplicitFSharpCoreReference>
+    <PublishTrimmed>false</PublishTrimmed>
+    <OutputPath>..\..\..\bin\$(Configuration)\</OutputPath>
+    <BlazorEnableCompression>false</BlazorEnableCompression>
+    <RunAOTCompilation>false</RunAOTCompilation>
+    <WasmBuildNative>true</WasmBuildNative>
+  </PropertyGroup>
+  <PropertyGroup>
+    <!-- Test: Add --js-library flag for WebGPU stub -->
+    <EmccExtraLDFlags>--js-library $(MSBuildThisFileDirectory)Native/library_webgpu_stub.js $(EmccExtraLDFlags)</EmccExtraLDFlags>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="WebGPUTest.fs" />
+    <Compile Include="Program.fs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\Aardworx.WebAssembly\Aardworx.WebAssembly.fsproj" />
+  </ItemGroup>
+  <Import Project="..\..\..\.paket\Paket.Restore.targets" />
+</Project>
