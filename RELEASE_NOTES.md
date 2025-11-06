@@ -1,3 +1,6 @@
+### 1.1.14
+* fixed false leaking-resource warnings in certain scenarios
+
 ### 1.1.13
 * updated Aardvark.Dom and fixed build issues
 
