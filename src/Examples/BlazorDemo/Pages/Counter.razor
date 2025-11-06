@@ -1,18 +1,18 @@
 ﻿@page "/counter"
+@using System.ComponentModel.DataAnnotations
 @using Aardworx.WebAssembly.BlazorComponent
 @using BlazorDemo
 <PageTitle>Counter</PageTitle>
 
-<ElmComponent Initial="5" @ref="elm"></ElmComponent>
+<ElmComponent Initial="5" @ref="_elm"></ElmComponent>
 
 
-<button class="btn btn-secondary" @onclick="() => elm.Increment()">External HTML increment</button>
+<button class="btn btn-secondary" @onclick="() => _elm.Increment()">External HTML increment</button>
 
-<button class="btn btn-secondary" @onclick="() => elm.Decrement()">External HTML decrement</button>
-<button class="btn btn-secondary" @onclick="() => elm.Reset()">External HTML reset</button>
+<button class="btn btn-secondary" @onclick="() => _elm.Decrement()">External HTML decrement</button>
+<button class="btn btn-secondary" @onclick="() => _elm.Reset()">External HTML reset</button>
 
 @code {
-
-    ElmComponent elm;
+    ElmComponent _elm = null!;
 
 }
