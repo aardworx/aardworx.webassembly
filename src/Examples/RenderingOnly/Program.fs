@@ -223,7 +223,7 @@ let run() =
         let texture = JSTextureCube([|ft; bk; up; dn; rt; lf|], true) :> ITexture
       
         // Create the `WebGLApplication` and a `RenderControl` using our utility from above.
-        let app = new WebGLApplication(CommandStreamMode.Managed)
+        let app = new WebGLApplication(CommandStreamMode.Managed, true)
         let ctrl = createRenderControl app
 
         let time =

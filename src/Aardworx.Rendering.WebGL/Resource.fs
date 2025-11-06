@@ -82,6 +82,14 @@ type ResourceBase(device : Device, name : string, sizeInBytes : int64) as this =
         else 
             null
             
+    [<CompilerMessage("internal use only", 9000, IsHidden = true)>]
+    member x.ReleaseTrackerObject() =
+        if not (isNull trackerObj) then 
+            if sizeInBytes > 0L then GC.RemoveMemoryPressure(sizeInBytes)
+            trackerObj.Dispose()
+            trackerObj <- null
+        
+            
     /// abstract method to free the resource.
     abstract Free : unit -> unit
     

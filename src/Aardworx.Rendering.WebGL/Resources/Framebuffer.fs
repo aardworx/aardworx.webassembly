@@ -10,7 +10,7 @@ open Microsoft.FSharp.NativeInterop
 open FSharp.Data.Adaptive
 
 #nowarn "9"
-
+#nowarn "9000" // internals
 
 type Framebuffer(device : Device, signature : FramebufferSignature, size : V2i, colors : Map<int, Choice<Renderbuffer, TextureLevel>>, depth : option<Choice<Renderbuffer, TextureLevel>>, handle : uint32) =
     inherit Resource(device, "Framebuffer", handle, 0L)
@@ -232,13 +232,21 @@ type DeviceFramebufferExtensions private() =
         
     [<Extension>]
     static member DefaultFramebuffer(this : Device, size : V2i) =
-        new Framebuffer(
-            this, defaultSignature,
-            size,
-            Map.ofList [0, Choice1Of2 (new Renderbuffer(this, TextureFormat.Rgba8, size, None, 0u)) ],
-            Some (Choice1Of2 (new Renderbuffer(this, TextureFormat.Depth24Stencil8, size, None, 0u))),
-            0u
-        )
+        let color = new Renderbuffer(this, TextureFormat.Rgba8, size, None, 0u)
+        let depth = new Renderbuffer(this, TextureFormat.Depth24Stencil8, size, None, 0u)
+        let fbo =
+            new Framebuffer(
+                this, defaultSignature,
+                size,
+                Map.ofList [0, Choice1Of2 color ],
+                Some (Choice1Of2 depth),
+                0u
+            )
+        // cleanup the tracking GC objects since these renderbuffers are just dummies
+        color.ReleaseTrackerObject()
+        depth.ReleaseTrackerObject()
+        fbo.ReleaseTrackerObject()
+        fbo
 
 
         
