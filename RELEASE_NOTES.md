@@ -1,3 +1,17 @@
+### 1.2.0
+* updated to Aardvark.Rendering 5.6.4 / FShade 5.7.3 / Aardvark.Dom 1.1.0
+* migrated all shader code to explicit float32/V*f types (FShade no longer silently lowers double to float)
+* fixed shader output type table: every color TextureFormat (Rgba8 etc.) now maps to V*f instead of V*d, matching FShade 5.7's strict typing
+* added C3f/C4f to vertex attribute lookup tables (needed for primitives that emit per-vertex float colors)
+* fixed Y-orientation bug in `IRuntime.ReadPixels(IFramebuffer, ...)`: the previous `TransformedPixImage(MirrorY)` returned a strided view, leaving `.Volume.Data` bottom-up; replaced with an in-place row swap so the byte array is top-down as callers expect
+* fixed `IRuntime.ReadPixels` PBO size: was hardcoded to 16 bytes (1 pixel), now uses the actual readback size — large reads previously triggered `INVALID_OPERATION: readPixels: buffer is not large enough`
+* implemented `IRuntime.Download(IBackendTexture, ...)` via the FBO + glReadPixels trick (WebGL has no glGetTexImage); supports color-renderable 2D / 2D-array slice / cubemap face. 3D volumes, compressed, depth, and stencil downloads remain unimplemented (those have no clean WebGL path)
+* updated remainder of the WebGL backend for the Aardvark.Rendering 5.6 API surface (uint64 buffer/texture handles + `IBufferRange`, `DrawCallInfo[]` instead of list, `OutputDescription` PascalCase fields, `voption` from `TryGetUniform`/`TryGetAttribute`, `Range1f` for shader depth range, new `IRuntime` abstracts for debug labels / micromaps / position fetch / invocation reorder, `Image.create` parameter order, `BufferView` `normalized` ctor arg, `INativeBuffer.Use`, `Cursor.ResizeH/ResizeV` rename, etc.)
+* added `Aardvark.FontProvider` 0.1.1 explicit dependency (no longer transitive from Rendering.Text)
+* updated `aardpack 2.0.7`, `adaptify 1.3.7`, `fshadeaot 5.7.3` (the old `fshadeaot 5.2.15` targeted net6 and would not run)
+* suppressed harmless MSB3277 build noise from upstream Aardvark.Base.dll's baked System.Text.Json 10.0 reference via `Directory.Build.props`
+* added Playwright + in-browser test harness under `src/Tests/Aardworx.Rendering.WebGL.Tests/` and `tests/playwright/`; covers buffer roundtrip / buffer copy / texture upload-readback / framebuffer clear-readback / a deterministic teapot golden-image render
+
 ### 1.1.14
 * fixed false leaking-resource warnings in certain scenarios
 

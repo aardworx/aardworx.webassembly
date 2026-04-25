@@ -39,11 +39,14 @@ type Buffer(device : Device, handle : uint32, sizeInBytes : int64, usage : Buffe
         member x.Size = x.Size
 
     interface IBackendBuffer with
-        member x.Buffer = x
-        member x.Offset = 0
-        member x.Handle = handle :> obj
-        member x.SizeInBytes = nativeint sizeInBytes
+        member x.Buffer = x :> IBackendBuffer
+        member x.Offset = 0UL
+        member x.Handle = uint64 handle
+        member x.SizeInBytes = uint64 sizeInBytes
         member x.Runtime = device.Runtime :> IBufferRuntime
+        member x.Name
+            with get () = ""
+            and set (_ : string) = ()
 
 
     member x.GetSlice(firstByte : option<int64>, lastByte : option<int64>) =
@@ -388,12 +391,11 @@ type DeviceBufferExtensions private() =
                 if dst.Buffer.Usage.HasFlag BufferUsage.Index then BufferTargetARB.ElementArrayBuffer
                 else BufferTargetARB.PixelPackBuffer
         
-            let ptr = src.Pin()
-            e.AddTemporaryResource { new IDisposable with member x.Dispose() = src.Unpin() }
-
-            e.BindBuffer(target, dst.Buffer.Handle)
-            e.BufferSubData(target, nativeint dst.Offset, size, ptr)
-            e.BindBuffer(target, 0u)
+            src.Use(fun ptr ->
+                e.BindBuffer(target, dst.Buffer.Handle)
+                e.BufferSubData(target, nativeint dst.Offset, size, ptr)
+                e.BindBuffer(target, 0u)
+            )
         
     [<Extension>]
     static member Copy(this : CommandStream, src : 'a[], dst : BufferRange) =
@@ -827,24 +829,22 @@ type DeviceBufferExtensions private() =
     [<Extension>]
     static member Draw(this : CommandStream, mode : IndexedGeometryMode, indexed : bool, draws : DrawCalls) =
         match draws with
-        | Direct calls ->
+        | DrawCalls.Direct calls ->
             if calls.IsConstant then
                 match AVal.force calls with
-                | [] -> ()
-                | [c] -> 
+                | [||] -> ()
+                | [|c|] ->
                     if indexed then this.DrawIndexed(mode, c)
                     else this.Draw(mode, c)
                 | calls ->
-                    let ptr = calls |> List.toArray
-                    if indexed then this.MultiDrawIndexed(mode, ptr)
-                    else this.MultiDraw(mode, ptr)
-                    
-            else
-                let ptr = calls |> AVal.map List.toArray
-                if indexed then this.MultiDrawIndexed(mode, ptr)
-                else this.MultiDraw(mode, ptr)
+                    if indexed then this.MultiDrawIndexed(mode, calls)
+                    else this.MultiDraw(mode, calls)
 
-        | Indirect buffer ->
+            else
+                if indexed then this.MultiDrawIndexed(mode, calls)
+                else this.MultiDraw(mode, calls)
+
+        | DrawCalls.Indirect buffer ->
             let data = 
                 buffer |> AVal.map (fun ib ->
                     match ib.Buffer with

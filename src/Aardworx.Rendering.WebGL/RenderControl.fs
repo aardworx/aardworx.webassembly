@@ -180,7 +180,7 @@ module private ResolveShader =
 
     let resolve (v : Effects.Vertex) =
         fragment {
-            return nearestSam.SampleLevel(v.tc, 0.0)
+            return nearestSam.SampleLevel(v.tc, 0.0f)
         }
 
 type RenderControl(element : HTMLCanvasElement, ?scale : float, ?commandStreamMode : CommandStreamMode) =
@@ -568,8 +568,13 @@ type RenderControl(element : HTMLCanvasElement, ?scale : float, ?commandStreamMo
                 | Aardvark.Application.Cursor.Arrow -> element.Style.Cursor <- "default"
                 | Aardvark.Application.Cursor.Crosshair -> element.Style.Cursor <- "crosshair"
                 | Aardvark.Application.Cursor.Hand -> element.Style.Cursor <- "pointer"
-                | Aardvark.Application.Cursor.HorizontalResize -> element.Style.Cursor <- "col-resize"
-                | Aardvark.Application.Cursor.VerticalResize -> element.Style.Cursor <- "row-resize"
+                | Aardvark.Application.Cursor.ResizeH -> element.Style.Cursor <- "col-resize"
+                | Aardvark.Application.Cursor.ResizeV -> element.Style.Cursor <- "row-resize"
+                | Aardvark.Application.Cursor.ResizeNESW -> element.Style.Cursor <- "nesw-resize"
+                | Aardvark.Application.Cursor.ResizeNWSE -> element.Style.Cursor <- "nwse-resize"
+                | Aardvark.Application.Cursor.ResizeAll -> element.Style.Cursor <- "all-scroll"
+                | Aardvark.Application.Cursor.NotAllowed -> element.Style.Cursor <- "not-allowed"
+                | Aardvark.Application.Cursor.Wait -> element.Style.Cursor <- "wait"
                 | Aardvark.Application.Cursor.Text -> element.Style.Cursor <- "text"
                 | Aardvark.Application.Cursor.Custom _ -> element.Style.Cursor <- "default"
 

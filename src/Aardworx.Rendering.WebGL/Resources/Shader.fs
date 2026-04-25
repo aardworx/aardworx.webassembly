@@ -17,30 +17,30 @@ module internal RenderBufferFormatExtensions =
     module TextureFormat =
         let toShaderType =
             LookupTable.lookup [
-                TextureFormat.R3G3B2, typeof<V3d>
-                TextureFormat.Rgb4, typeof<V3d>
-                TextureFormat.Rgb5, typeof<V3d>
-                TextureFormat.Rgb8, typeof<V3d>
-                TextureFormat.Rgb10, typeof<V3d>
-                TextureFormat.Rgb12, typeof<V3d>
-                TextureFormat.Rgb16, typeof<V3d>
-                TextureFormat.Rgba2, typeof<V4d>
-                TextureFormat.Rgba4, typeof<V4d>
-                TextureFormat.Rgba8, typeof<V4d>
-                TextureFormat.Rgb10A2, typeof<V4d>
-                TextureFormat.Rgba12, typeof<V4d>
-                TextureFormat.Rgba16, typeof<V4d>
-                TextureFormat.DepthComponent16, typeof<float>
-                TextureFormat.DepthComponent24, typeof<float>
-                TextureFormat.DepthComponent32, typeof<float>
-                TextureFormat.R8, typeof<float>
-                TextureFormat.R16, typeof<float>
-                TextureFormat.Rg8, typeof<V2d>
-                TextureFormat.Rg16, typeof<V2d>
-                TextureFormat.R16f, typeof<float>
-                TextureFormat.R32f, typeof<float>
-                TextureFormat.Rg16f, typeof<V2d>
-                TextureFormat.Rg32f, typeof<V2d>
+                TextureFormat.R3G3B2, typeof<V3f>
+                TextureFormat.Rgb4, typeof<V3f>
+                TextureFormat.Rgb5, typeof<V3f>
+                TextureFormat.Rgb8, typeof<V3f>
+                TextureFormat.Rgb10, typeof<V3f>
+                TextureFormat.Rgb12, typeof<V3f>
+                TextureFormat.Rgb16, typeof<V3f>
+                TextureFormat.Rgba2, typeof<V4f>
+                TextureFormat.Rgba4, typeof<V4f>
+                TextureFormat.Rgba8, typeof<V4f>
+                TextureFormat.Rgb10A2, typeof<V4f>
+                TextureFormat.Rgba12, typeof<V4f>
+                TextureFormat.Rgba16, typeof<V4f>
+                TextureFormat.DepthComponent16, typeof<float32>
+                TextureFormat.DepthComponent24, typeof<float32>
+                TextureFormat.DepthComponent32, typeof<float32>
+                TextureFormat.R8, typeof<float32>
+                TextureFormat.R16, typeof<float32>
+                TextureFormat.Rg8, typeof<V2f>
+                TextureFormat.Rg16, typeof<V2f>
+                TextureFormat.R16f, typeof<float32>
+                TextureFormat.R32f, typeof<float32>
+                TextureFormat.Rg16f, typeof<V2f>
+                TextureFormat.Rg32f, typeof<V2f>
                 TextureFormat.R8i, typeof<int>
                 TextureFormat.R8ui, typeof<int>
                 TextureFormat.R16i, typeof<int>
@@ -53,17 +53,17 @@ module internal RenderBufferFormatExtensions =
                 TextureFormat.Rg16ui, typeof<V2i>
                 TextureFormat.Rg32i, typeof<V2i>
                 TextureFormat.Rg32ui, typeof<V2i>
-                TextureFormat.Rgba32f, typeof<V4d>
-                TextureFormat.Rgb32f, typeof<V3d>
-                TextureFormat.Rgba16f, typeof<V4d>
-                TextureFormat.Rgb16f, typeof<V3d>
-                TextureFormat.Depth24Stencil8, typeof<float>
-                TextureFormat.R11fG11fB10f, typeof<V3d>
-                TextureFormat.Rgb9E5, typeof<V3d>
-                TextureFormat.Srgb8, typeof<V3d>
-                TextureFormat.Srgb8Alpha8, typeof<V4d>
-                TextureFormat.DepthComponent32f, typeof<float>
-                TextureFormat.Depth32fStencil8, typeof<float>
+                TextureFormat.Rgba32f, typeof<V4f>
+                TextureFormat.Rgb32f, typeof<V3f>
+                TextureFormat.Rgba16f, typeof<V4f>
+                TextureFormat.Rgb16f, typeof<V3f>
+                TextureFormat.Depth24Stencil8, typeof<float32>
+                TextureFormat.R11fG11fB10f, typeof<V3f>
+                TextureFormat.Rgb9E5, typeof<V3f>
+                TextureFormat.Srgb8, typeof<V3f>
+                TextureFormat.Srgb8Alpha8, typeof<V4f>
+                TextureFormat.DepthComponent32f, typeof<float32>
+                TextureFormat.Depth32fStencil8, typeof<float32>
                 TextureFormat.StencilIndex8, typeof<int>
                 TextureFormat.Rgba32ui, typeof<V4i>
                 TextureFormat.Rgb32ui, typeof<V3i>
@@ -101,7 +101,7 @@ type Program(device : Device, inputSemantics : Map<int, Symbol>, iface : GLSLPro
     member x.Samplers = samplers
 
     interface IBackendSurface with
-        member x.Handle = handle
+        member x.Handle = uint64 handle
 
     override x.Destroy(gl : GL) =
         gl.DeleteProgram handle
@@ -908,7 +908,9 @@ type ShaderExtensions private() =
         Backend.Create {
             version = GLSLVersion(3,0,0, "es")
             enabledExtensions = Set.empty //Set.ofList ["GL_ARB_separate_shader_objects"]
+            availableExtensions = Map.empty
             createUniformBuffers = true
+            pushConstants = false
             createPerStageUniforms = false
             createDescriptorSets = false
             stepDescriptorSets = false
@@ -919,7 +921,8 @@ type ShaderExtensions private() =
             depthWriteMode = false
             useInOut = true
             bindingMode = BindingMode.None
-            reverseTessellationWinding = false 
+            reverseTessellationWinding = false
+            separateTexturesAndSamplers = false
         }
 
     static let printLog (title : string) (code : string) (log : string) =
@@ -960,7 +963,7 @@ type ShaderExtensions private() =
 
                 let module_ = 
                     effect |> Effect.toModule { 
-                        depthRange = Range1d(-1.0, 1.0)
+                        depthRange = Range1f(-1.0f, 1.0f)
                         flipHandedness = false
                         lastStage = ShaderStage.Fragment
                         outputs = outputs |> Map.map (fun k (a,b) -> shaderType k a, b)
@@ -1095,7 +1098,7 @@ type ShaderExtensions private() =
             | _ -> TextureFormat.toShaderType fmt
 
         effect |> Effect.toModule { 
-            depthRange = Range1d(-1.0, 1.0)
+            depthRange = Range1f(-1.0f, 1.0f)
             flipHandedness = false
             lastStage = ShaderStage.Fragment
             outputs = outputs |> Map.map (fun k (a,b) -> shaderType k a, b)

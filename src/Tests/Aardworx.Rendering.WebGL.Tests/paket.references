@@ -1,0 +1,12 @@
+FSharp.Core
+Microsoft.AspNetCore.Components.WebAssembly
+Microsoft.AspNetCore.Components.WebAssembly.DevServer
+Silk.NET.OpenGLES
+Aardvark.Base
+Aardvark.Base.FSharp
+Aardvark.Rendering
+Aardvark.Application
+Aardvark.SceneGraph
+Aardvark.Dom.Core
+Aardvark.Dom.Elm
+FSharp.Data.Adaptive

@@ -91,7 +91,7 @@ typedef struct {
 } glGetTransformFeedbackVaryingArgs;
 
 EMSCRIPTEN_KEEPALIVE void _glGetTransformFeedbackVarying(glGetTransformFeedbackVaryingArgs* args) {
-    glGetTransformFeedbackVarying(args->program, args->index, args->bufSize, args->length, args->size, args->type, args->name);
+    glGetTransformFeedbackVarying(args->program, args->index, args->bufSize, (GLsizei*)args->length, (GLsizei*)args->size, args->type, (GLchar*)args->name);
 }
 
 typedef struct {
@@ -235,7 +235,7 @@ typedef struct {
 } glGetActiveAttribArgs;
 
 EMSCRIPTEN_KEEPALIVE void _glGetActiveAttrib(glGetActiveAttribArgs* args) {
-    glGetActiveAttrib(args->program, args->index, args->bufSize, args->length, args->size, args->type, args->name);
+    glGetActiveAttrib(args->program, args->index, args->bufSize, (GLsizei*)args->length, args->size, args->type, (GLchar*)args->name);
 }
 
 typedef struct {
@@ -249,7 +249,7 @@ typedef struct {
 } glGetActiveUniformArgs;
 
 EMSCRIPTEN_KEEPALIVE void _glGetActiveUniform(glGetActiveUniformArgs* args) {
-    glGetActiveUniform(args->program, args->index, args->bufSize, args->length, args->size, args->type, args->name);
+    glGetActiveUniform(args->program, args->index, args->bufSize, (GLsizei*)args->length, args->size, args->type, (GLchar*)args->name);
 }
 
 EMSCRIPTEN_KEEPALIVE void _glLineWidth(int width) {

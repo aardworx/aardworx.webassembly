@@ -30,10 +30,10 @@ module Shader =
         fragment {
             let vp = uniform.ProjTrafoInv * v.pos
             let vp = Vec.normalize (vp.XYZ / vp.W)
-            let wd = uniform.ViewTrafoInv * V4d(vp, 0.0) |> Vec.xyz |> Vec.normalize
-            
-            let wd = V3d(wd.X, wd.Z, wd.Y)
-            
+            let wd = uniform.ViewTrafoInv * V4f(vp, 0.0f) |> Vec.xyz |> Vec.normalize
+
+            let wd = V3f(wd.X, wd.Z, wd.Y)
+
             return sam.Sample(wd)
         }
     
@@ -152,25 +152,25 @@ module Sg =
         
         type Fragment =
             {
-                [<Color>] c : V4d
-                [<Depth>] d : float
+                [<Color>] c : V4f
+                [<Depth>] d : float32
             }
         let blit (v : Effects.Vertex) =
             fragment {
-                let mutable sum = V4d.Zero
-                
-                let px = uniform.Factor * V2i (v.tc * V2d uniform.ViewportSize)
-                
+                let mutable sum = V4f.Zero
+
+                let px = uniform.Factor * V2i (v.tc * V2f uniform.ViewportSize)
+
                 for x in 0 .. uniform.Factor - 1 do
                     for y in 0 .. uniform.Factor - 1 do
                         sum <- sum + color.[px + V2i(x,y)]
-                
-                let avg = sum / float (uniform.Factor * uniform.Factor)
-                
-                let d = depth.SampleLevel(v.tc, 0.0).X
-                if d >= 1.0 || avg.W <= 0.0 then discard()
-                
-                
+
+                let avg = sum / float32 (uniform.Factor * uniform.Factor)
+
+                let d = depth.SampleLevel(v.tc, 0.0f).X
+                if d >= 1.0f || avg.W <= 0.0f then discard()
+
+
                 return { c = avg; d = d }
             }
     
@@ -274,10 +274,10 @@ let run() =
                 o.Mode <- IndexedGeometryMode.TriangleList
                 o.DrawCalls <-
                     DrawCalls.Direct (
-                        AVal.constant [
+                        AVal.constant [|
                             DrawCallInfo(FaceVertexCount = 3, FirstIndex = 0, InstanceCount = 1)
                             DrawCallInfo(FaceVertexCount = 3, FirstIndex = 3, InstanceCount = 1)
-                        ]
+                        |]
                     )
                 
                 let o = o :> IRenderObject

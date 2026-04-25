@@ -58,7 +58,7 @@ type Framebuffer(device : Device, signature : FramebufferSignature, size : V2i, 
         
 
     interface IFramebuffer with
-        member x.GetHandle _ = handle :> obj
+        member x.Handle = uint64 handle
         member x.Attachments = ifaceAttachments
         member x.Signature = signature :> IFramebufferSignature
         member x.Size = size

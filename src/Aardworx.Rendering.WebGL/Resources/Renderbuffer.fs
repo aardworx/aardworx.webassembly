@@ -13,7 +13,10 @@ type Renderbuffer(device : Device, format : TextureFormat, size : V2i, samples :
     member x.Samples = samples
 
     interface IRenderbuffer with
-        member x.Handle = handle :> obj
+        member x.Handle = uint64 handle
+        member x.Name
+            with get () = ""
+            and set (_ : string) = ()
 
     interface IFramebufferOutput with
         member x.Runtime = device.Runtime :> ITextureRuntime

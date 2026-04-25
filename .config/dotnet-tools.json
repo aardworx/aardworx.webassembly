@@ -1,30 +1,34 @@
 {
-    "version": 1,
-    "isRoot": true,
-    "tools": {
-      "paket": {
-        "version": "8.0.3",
-        "commands": [
-          "paket"
-        ]
-      },
-      "aardpack": {
-        "version": "2.0.4",
-        "commands": [
-          "aardpack"
-        ]
-      },
-      "adaptify": {
-        "version": "1.3.3",
-        "commands": [
-          "adaptify"
-        ]
-      },
-      "fshadeaot": {
-        "version": "5.2.15",
-        "commands": [
-          "fshadeaot"
-        ]
-      }
+  "version": 1,
+  "isRoot": true,
+  "tools": {
+    "paket": {
+      "version": "8.0.3",
+      "commands": [
+        "paket"
+      ],
+      "rollForward": false
+    },
+    "aardpack": {
+      "version": "2.0.7",
+      "commands": [
+        "aardpack"
+      ],
+      "rollForward": false
+    },
+    "adaptify": {
+      "version": "1.3.7",
+      "commands": [
+        "adaptify"
+      ],
+      "rollForward": false
+    },
+    "fshadeaot": {
+      "version": "5.7.3",
+      "commands": [
+        "fshadeaot"
+      ],
+      "rollForward": false
     }
   }
+}

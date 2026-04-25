@@ -5,6 +5,7 @@ open Aardvark.Base
 open Aardvark.Dom
 
 #nowarn "9"
+#nowarn "3511"
 
 open System.Runtime.InteropServices
 

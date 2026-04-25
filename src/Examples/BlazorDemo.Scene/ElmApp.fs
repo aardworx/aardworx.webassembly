@@ -47,6 +47,7 @@ module ElmApp =
                     LookAt = V3d.Zero
                     Sky = V3d.OOI
                     Config = None
+                    AnimationFinished = None
                 }
                 
                 let! s = RenderControl.ViewportSize

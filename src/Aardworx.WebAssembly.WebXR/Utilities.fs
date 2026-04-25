@@ -8,6 +8,8 @@ open Aardworx.Rendering.WebGL
 open Aardworx.WebAssembly.WebXR
 open FSharp.Data.Adaptive
 
+#nowarn "3511"
+
 #nowarn "9"
 
 type XRRenderInfo =
@@ -150,11 +152,9 @@ module WebXR =
                                             layerObj.GetViewport v
                                         )
                                     let desc =
-                                        {
-                                            framebuffer = fbo
-                                            viewport = Box2i(V2i o, V2i o + V2i s - V2i.II) 
-                                        }
-                                    renderTask.Run desc        
+                                        OutputDescription.ofFramebuffer fbo
+                                    let desc = { desc with Viewport = Box2i(V2i o, V2i o + V2i s - V2i.II) }
+                                    renderTask.Run(desc : OutputDescription)
                                 
                                 if running then
                                     session.RequestAnimationFrame render

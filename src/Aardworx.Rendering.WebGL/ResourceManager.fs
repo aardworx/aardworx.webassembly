@@ -386,21 +386,21 @@ type RenderObjectResourceManagerExtensions private() =
                 let sem = Symbol.Create inputName
                 let loc = ip.paramLocation
                 match o.VertexAttributes.TryGetAttribute sem with
-                | Some vAtt ->
+                | ValueSome vAtt ->
                     match index with
                     | Some idx ->
                         let attStride = if vAtt.Stride = 0 then Marshal.SizeOf vAtt.ElementType else vAtt.Stride
-                        let view = BufferView(vAtt.Buffer, vAtt.ElementType, vAtt.Offset + offsets.[idx] * attStride, stride * attStride)
+                        let view = BufferView(vAtt.Buffer, vAtt.ElementType, vAtt.Offset + offsets.[idx] * attStride, stride * attStride, vAtt.Normalized)
                         Some (loc, (BindingFrequency.Instance, view))
                     | None ->
                         Some (loc, (BindingFrequency.Vertex, vAtt) )
-                | None ->
+                | ValueNone ->
                     match o.InstanceAttributes.TryGetAttribute sem with
-                    | Some iAtt ->
+                    | ValueSome iAtt ->
                         match index with
                         | Some _ -> failf "cannot instance GS"
                         | None -> Some (loc, (BindingFrequency.Instance, iAtt))
-                    | None ->
+                    | ValueNone ->
                         Log.warn "attribute %s not found" ip.paramSemantic
                         None
             )
@@ -411,11 +411,9 @@ type RenderObjectResourceManagerExtensions private() =
 
         let tryGet (name : string) =
             match Uniforms.tryGetDerivedUniform name o.Uniforms with
-            | Some v -> ValueSome v
-            | None ->
-                match o.Uniforms.TryGetUniform(Ag.Scope.Root, Symbol.Create name) with
-                | Some v -> ValueSome v
-                | None -> ValueNone
+            | ValueSome v -> ValueSome v
+            | ValueNone ->
+                o.Uniforms.TryGetUniform(Ag.Scope.Root, Symbol.Create name)
         let ub =
             program.Interface.uniformBuffers
             |> MapExt.toSeq
@@ -459,8 +457,8 @@ type RenderObjectResourceManagerExtensions private() =
             if instancedGS then
                 match o.DrawCalls with
                 | DrawCalls.Direct calls ->
-                    calls |> AVal.map (List.map (fun c ->
-                        let instanceCount = 
+                    calls |> AVal.map (Array.map (fun (c : DrawCallInfo) ->
+                        let instanceCount =
                             match o.Mode with
                             | IndexedGeometryMode.PointList -> c.FaceVertexCount
                             | IndexedGeometryMode.LineStrip -> c.FaceVertexCount - 1

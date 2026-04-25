@@ -208,7 +208,7 @@ type RenderTask(manager : ResourceManager, signature : FramebufferSignature, mod
 
                 manager.Device.Run(fun gl ->
                     for KeyValue(_, prog) in passPrograms do
-                        prog.SetFramebuffer(o.framebuffer :?> Framebuffer, o.viewport)
+                        prog.SetFramebuffer(o.Framebuffer :?> Framebuffer, o.Viewport)
                         prog.Run(t)
                     gl.BindVertexArray 0u
                 )
@@ -232,5 +232,8 @@ type RenderTask(manager : ResourceManager, signature : FramebufferSignature, mod
         member this.Runtime: Option<IRuntime> = manager.Device.Runtime |> Some
         member this.Update(_arg1: AdaptiveToken, _arg2: RenderToken): unit = 
             ()
-        member this.Use(arg1: unit -> 'a): 'a = 
+        member this.Use(arg1: unit -> 'a): 'a =
             arg1()
+        member this.Name
+            with get () = ""
+            and set (_ : string) = ()

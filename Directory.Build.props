@@ -1,0 +1,11 @@
+<Project>
+  <PropertyGroup>
+    <!--
+      MSB3277 is emitted because some upstream Aardvark.* assemblies were
+      packaged with a baked reference to System.Text.Json 10.0 even on the
+      net8.0 TFM. MSBuild correctly unifies to the framework-provided 8.0
+      version at runtime. Suppressing the noise (~hundreds of lines per build).
+    -->
+    <MSBuildWarningsAsMessages>$(MSBuildWarningsAsMessages);MSB3277</MSBuildWarningsAsMessages>
+  </PropertyGroup>
+</Project>

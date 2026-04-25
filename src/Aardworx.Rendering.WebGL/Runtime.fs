@@ -79,10 +79,10 @@ type GeometryPool(device : Device, attributes : Map<Symbol, Type>) =
             manager.Free arg1
             fixBuffers()
 
-        member this.TryGetBufferView(name: Symbol): Option<BufferView> = 
+        member this.TryGetBufferView(name: Symbol): voption<BufferView> =
             match Map.tryFind name buffers with
-            | Some (_, b) -> BufferView(AVal.cast<IBuffer> b, Map.find name attributes) |> Some
-            | _ -> None
+            | Some (_, b) -> BufferView(AVal.cast<IBuffer> b, Map.find name attributes) |> ValueSome
+            | _ -> ValueNone
 
         member this.UsedMemory: Mem = 
             manager.Capactiy |> Mem
@@ -199,7 +199,7 @@ type Runtime(device : Device, defaultCommandStreamMode : CommandStreamMode) as t
         
         
         member x.SupportsLayeredShaderInputs = false
-        member x.ShaderDepthRange = Range1d(-1.0, 1.0)
+        member x.ShaderDepthRange = Range1f(-1.0f, 1.0f)
         member x.DebugConfig =
             if device.Debug then DebugLevel.Full
             else DebugLevel.None
@@ -211,8 +211,16 @@ type Runtime(device : Device, defaultCommandStreamMode : CommandStreamMode) as t
         //member x.DebugLevel = DebugLevel.None
         member x.MaxRayRecursionDepth = 0
         member x.SupportsRaytracing = false
+        member x.SupportsInvocationReorder = false
+        member x.SupportsMicromaps = false
+        member x.SupportsPositionFetch = false
+        member x.GetMaxMicromapSubdivisionLevel(_format) = 0
+        member x.DebugLabelsEnabled = false
 
-        member x.CreateAccelerationStructure(_, _, _) = 
+        member x.CreateAccelerationStructure(_, _) =
+            failwith "not rt"
+
+        member x.PrepareMicromap(_) =
             failwith "not rt"
   
         member x.TryUpdateAccelerationStructure(_, _) =
@@ -355,23 +363,37 @@ type Runtime(device : Device, defaultCommandStreamMode : CommandStreamMode) as t
                         
                         //gl.BaseStream.ReadPixels(offset.X, src.Size.Y - size.Y - offset.Y, uint32 size.X, uint32 size.Y, pfmt, ptyp, gc.AddrOfPinnedObject())
                         
+                        let byteCount = unativeint img.Array.Length
                         gl.BaseStream.GenBuffers(APtr.constant 1u, pb)
                         gl.BaseStream.BindBuffer(APtr.constant BufferTargetARB.PixelPackBuffer, pb)
-                        gl.BaseStream.BufferData(BufferTargetARB.PixelPackBuffer, 16un, 0n, BufferUsageARB.StreamRead)
+                        gl.BaseStream.BufferData(BufferTargetARB.PixelPackBuffer, byteCount, 0n, BufferUsageARB.StreamRead)
                         //gl.BaseStream.BindBuffer(BufferTargetARB.PixelPackBuffer, buffer.Handle)
                         gl.BaseStream.ReadPixels(offset.X, src.Size.Y - size.Y - offset.Y, uint32 size.X, uint32 size.Y, pfmt, ptyp, 0n)
                         // gl.BaseStream.FenceSync(APtr.constant SyncCondition.SyncGpuCommandsComplete, APtr.constant SyncBehaviorFlags.None, ret)
                         // gl.BaseStream.WaitSync(ret, APtr.constant SyncBehaviorFlags.None, APtr.constant 10000000UL)
-                        gl.BaseStream.GetBufferSubData(BufferTargetARB.PixelPackBuffer, 0n, 16un, gc.AddrOfPinnedObject())
+                        gl.BaseStream.GetBufferSubData(BufferTargetARB.PixelPackBuffer, 0n, byteCount, gc.AddrOfPinnedObject())
                         gl.BaseStream.BindBuffer(BufferTargetARB.PixelPackBuffer, 0u)
                         gl.BaseStream.DeleteBuffers(APtr.constant 1u, pb)
                         
                         gl.BaseStream.BindFramebuffer(FramebufferTarget.Framebuffer, 0u)
                         //gl.PopFramebuffer()
                     )
-                    let res = img.TransformedPixImage(ImageTrafo.MirrorY)
-                    res
-                    
+                    // glReadPixels gives bottom-up rows; flip in place so the returned
+                    // PixImage's backing array is top-down (matches the .Volume.Data
+                    // contract that callers rely on; a TransformedPixImage view leaves
+                    // the bytes bottom-up).
+                    let arr = img.Array :?> byte[]
+                    let rowBytes = int (abs img.VolumeInfo.DY)
+                    let rows = int img.VolumeInfo.SY
+                    let tmp = Array.zeroCreate<byte> rowBytes
+                    for y in 0 .. rows / 2 - 1 do
+                        let topOff = y * rowBytes
+                        let botOff = (rows - 1 - y) * rowBytes
+                        System.Array.Copy(arr, topOff, tmp, 0, rowBytes)
+                        System.Array.Copy(arr, botOff, arr, topOff, rowBytes)
+                        System.Array.Copy(tmp, 0, arr, botOff, rowBytes)
+                    img
+
                 finally
                     gc.Free()
             | None ->
@@ -420,7 +442,7 @@ type Runtime(device : Device, defaultCommandStreamMode : CommandStreamMode) as t
                     NativePtr.free fboHandle
 
                 override x.Perform(token, _, output) =
-                    let dst = output.framebuffer :?> Framebuffer
+                    let dst = output.Framebuffer :?> Framebuffer
                     NativePtr.write fboHandle dst.Handle
                     cmd.Run(token)
 
@@ -489,19 +511,19 @@ type Runtime(device : Device, defaultCommandStreamMode : CommandStreamMode) as t
             manager.CreateProgram(unbox signature, effect) :> IBackendSurface
 
             
-        member this.Copy(srcBuffer: IBackendBuffer, srcOffset: nativeint, dstBuffer: IBackendBuffer, dstOffset: nativeint, size: nativeint): unit = 
+        member this.Copy(srcBuffer: IBackendBuffer, srcOffset: uint64, dstBuffer: IBackendBuffer, dstOffset: uint64, size: uint64, _flush: bool): unit =
             let srcBuffer = srcBuffer :?> Buffer
             let dstBuffer = dstBuffer :?> Buffer
             device.RunCommand (fun cmd ->
                 cmd.Copy(srcBuffer.Sub(int64 srcOffset, int64 size), dstBuffer.Sub(int64 dstOffset, int64 size))
             )
-            
-        member this.Download(srcBuffer: IBackendBuffer, srcOffset: nativeint, dstData: nativeint, size: nativeint): unit = 
+
+        member this.Download(srcBuffer: IBackendBuffer, srcOffset: uint64, dstData: nativeint, size: uint64): unit =
             let srcBuffer = srcBuffer :?> Buffer
             device.RunCommand (fun cmd ->
                 cmd.Copy(srcBuffer.Sub(int64 srcOffset, int64 size), dstData)
             )
-        member this.Upload(srcData: nativeint, dst: IBackendBuffer, dstOffset: nativeint, size: nativeint): unit = 
+        member this.Upload(srcData: nativeint, dst: IBackendBuffer, dstOffset: uint64, size: uint64, _flush: bool): unit =
             let dstBuffer = dst :?> Buffer
             device.RunCommand (fun cmd ->
                 cmd.Copy(srcData, dstBuffer.Sub(int64 dstOffset, int64 size))
@@ -509,7 +531,7 @@ type Runtime(device : Device, defaultCommandStreamMode : CommandStreamMode) as t
 
         
           
-        member this.Upload(tex, tensor, fmt, offset, size) =
+        member this.Upload<'T when 'T : unmanaged>(tex : ITextureSubResource, tensor : NativeTensor4<'T>, fmt : Col.Format, offset : V3i, size : V3i) =
             let tfmt = tex.Texture.Format
             use pbo = device.GetPixelBuffer(tfmt, size)
             pbo.Write(tensor, fmt)
@@ -533,8 +555,84 @@ type Runtime(device : Device, defaultCommandStreamMode : CommandStreamMode) as t
         member this.CreateTimeQuery() = raise (System.NotImplementedException())
         member this.CreateLodRenderer(config, data) = raise (System.NotImplementedException())
 
-        member this.Download(tex, tensor, fmt, offset, size): unit = 
-            raise (System.NotImplementedException())
+        member this.Download<'T when 'T : unmanaged>(tex : ITextureSubResource, tensor : NativeTensor4<'T>, fmt : Col.Format, offset : V3i, size : V3i) : unit =
+            // WebGL has no glGetTexImage; use the FBO + glReadPixels trick.
+            let texture = tex.Texture :?> Texture
+            let level = tex.Level
+            let slice = tex.Slice
+
+            // Compute effective size (V3i.Zero = full target)
+            let levelSize =
+                let s = texture.Size
+                let div n = max 1 (n >>> level)
+                V3i(div s.X, div s.Y, div s.Z)
+
+            let size = if size = V3i.Zero then V3i(levelSize.X - offset.X, levelSize.Y - offset.Y, max 1 (levelSize.Z - offset.Z)) else size
+
+            if size.Z > 1 then
+                failwith "WebGL Download: 3D / multi-slice regions not supported (only single 2D layer at a time)"
+
+            match texture.Dimension with
+            | TextureDimension.Texture2D | TextureDimension.TextureCube -> ()
+            | d -> failwithf "WebGL Download: unsupported texture dimension %A" d
+
+            // ReadPixels into a PixelBuffer, then copy out to the tensor.
+            let pboSize = V3i(size.X, size.Y, 1)
+            use pbo = device.GetPixelBuffer(texture.Format, pboSize)
+
+            device.Run (fun gl ->
+                let mutable fbo = 0u
+                gl.GenFramebuffers(1u, &fbo)
+                let prevFbo =
+                    let mutable v = 0
+                    gl.GetInteger(GLEnum.FramebufferBinding, &v)
+                    uint32 v
+                let prevPack =
+                    let mutable v = 0
+                    gl.GetInteger(GLEnum.PixelPackBufferBinding, &v)
+                    uint32 v
+                try
+                    gl.BindFramebuffer(FramebufferTarget.Framebuffer, fbo)
+
+                    let attachTarget =
+                        match texture.Dimension with
+                        | TextureDimension.TextureCube ->
+                            // slice 0..5 maps to +X..-Z
+                            unbox<TextureTarget> (int TextureTarget.TextureCubeMapPositiveX + slice)
+                        | _ ->
+                            TextureTarget.Texture2D
+
+                    if texture.Dimension = TextureDimension.Texture2D && texture.Layers.IsSome then
+                        gl.FramebufferTextureLayer(
+                            FramebufferTarget.Framebuffer,
+                            FramebufferAttachment.ColorAttachment0,
+                            texture.Handle, level, slice)
+                    else
+                        gl.FramebufferTexture2D(
+                            FramebufferTarget.Framebuffer,
+                            FramebufferAttachment.ColorAttachment0,
+                            attachTarget,
+                            texture.Handle, level)
+
+                    let status = gl.CheckFramebufferStatus(FramebufferTarget.Framebuffer)
+                    if status <> GLEnum.FramebufferComplete then
+                        failwithf "WebGL Download: framebuffer incomplete (0x%X)" (int status)
+
+                    gl.ReadBuffer(ReadBufferMode.ColorAttachment0)
+                    gl.BindBuffer(BufferTargetARB.PixelPackBuffer, pbo.Handle)
+
+                    // ReadPixels reads bottom-up; our offset.Y is top-down — flip Y.
+                    let yReadGL = levelSize.Y - offset.Y - size.Y
+                    gl.ReadPixels(offset.X, yReadGL, uint32 size.X, uint32 size.Y, pbo.PixelFormat, pbo.PixelType, VoidPtr.zero)
+
+                    gl.BindBuffer(BufferTargetARB.PixelPackBuffer, prevPack)
+                finally
+                    gl.BindFramebuffer(FramebufferTarget.Framebuffer, prevFbo)
+                    gl.DeleteFramebuffers(1u, &fbo)
+            )
+
+            // Copy from PBO to user tensor (with Y-flip to compensate for GL bottom-up).
+            pbo.Read(tensor, fmt)
         member this.DownloadDepth(texture, level, slice, offset, target) = raise (System.NotImplementedException())
         member this.DownloadStencil(texture, level, slice, offset, target) = raise (System.NotImplementedException())
         // member this.ResourceManager = raise (System.NotImplementedException())

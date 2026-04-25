@@ -49,21 +49,24 @@ module internal VertexArray =
         LookupTable.lookup [
             typeof<C3b>, VertexAttribType.UnsignedByte
             typeof<C4b>, VertexAttribType.UnsignedByte
-            
+
             typeof<C3us>, VertexAttribType.UnsignedShort
             typeof<C4us>, VertexAttribType.UnsignedShort
+
+            typeof<C3f>, VertexAttribType.Float
+            typeof<C4f>, VertexAttribType.Float
 
             typeof<int>, VertexAttribType.Int
             typeof<V2i>, VertexAttribType.Int
             typeof<V3i>, VertexAttribType.Int
             typeof<V4i>, VertexAttribType.Int
-            
+
 
             typeof<float32>, VertexAttribType.Float
             typeof<V2f>, VertexAttribType.Float
             typeof<V3f>, VertexAttribType.Float
             typeof<V4f>, VertexAttribType.Float
-            
+
             typeof<M44f>, VertexAttribType.Float
 
             typeof<float>, VertexAttribType.Double
@@ -71,28 +74,31 @@ module internal VertexArray =
             typeof<V3d>, VertexAttribType.Double
             typeof<V4d>, VertexAttribType.Double
         ]
-        
+
     let private vertexAttribSize =
         LookupTable.lookup [
             typeof<C3b>, [|0, 3|]
             typeof<C4b>, [|0, 4|]
-            
+
             typeof<C3us>, [|0, 3|]
             typeof<C4us>, [|0, 4|]
+
+            typeof<C3f>, [|0, 3|]
+            typeof<C4f>, [|0, 4|]
 
             typeof<int>, [|0, 1|]
             typeof<V2i>, [|0, 2|]
             typeof<V3i>, [|0, 3|]
             typeof<V4i>, [|0, 4|]
-            
+
 
             typeof<float32>, [|0, 1|]
             typeof<V2f>, [|0, 2|]
             typeof<V3f>, [|0, 3|]
             typeof<V4f>, [|0, 4|]
-            
+
             typeof<M44f>, [|0, 4; 16, 4; 32, 4; 48, 4|]
-            
+
             typeof<float>, [|0, 1|]
             typeof<V2d>, [|0, 2|]
             typeof<V3d>, [|0, 3|]

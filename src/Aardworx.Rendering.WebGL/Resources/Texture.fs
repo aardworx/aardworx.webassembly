@@ -64,16 +64,21 @@ type Texture(device : Device, handle : uint32, target : TextureTarget, dimension
             | None -> 1
 
 
+    interface ITexture with
+        member this.WantMipMaps = this.Levels > 1
+
     interface IBackendTexture with
         member this.Count = defaultArg this.Layers 1
         member this.Dimension = this.Dimension
         member this.Format = this.Format
-        member this.Handle = this.Handle :> obj
+        member this.Handle = uint64 this.Handle
         member this.MipMapLevels = this.Levels
         member this.Runtime = device.Runtime :> _
         member this.Samples = defaultArg this.Samples 1
         member this.Size = this.Size
-        member this.WantMipMaps = this.Levels > 1
+        member this.Name
+            with get () = ""
+            and set (_ : string) = ()
 
     override x.Destroy(gl : GL) =
         if handle <> 0u then

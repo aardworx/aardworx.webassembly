@@ -604,7 +604,7 @@ type TextureSliceCommandStreamExtensions private() =
                 let l0 = t.PixImageMipMap.[0]
 
                 let levels =
-                    if t.TextureParams.wantMipMaps then 
+                    if t.TextureParams.HasFlag TextureParams.WantMipMaps then 
                         if t.PixImageMipMap.LevelCount = 1 then  1 + int (floor (Fun.Log2(max (float l0.Size.X) (float l0.Size.Y))))
                         else t.PixImageMipMap.LevelCount
                     else
@@ -649,7 +649,7 @@ type TextureSliceCommandStreamExtensions private() =
                 if l0.Size.X <> l0.Size.Y then failf "CubeMap is not square: %A" l0.Size
 
                 let levels =
-                    if t.TextureParams.wantMipMaps then 
+                    if t.TextureParams.HasFlag TextureParams.WantMipMaps then 
                         if fx.LevelCount = 1 then  1 + int (floor (Fun.Log2(float l0.Size.X)))
                         else fx.LevelCount
                     else
@@ -737,15 +737,15 @@ type TextureSliceCommandStreamExtensions private() =
             
             | :? FileTexture as t ->
                 let img =
-                    if System.IO.File.Exists t.FileName then
-                        try PixImage.Load t.FileName
-                        with _ -> failf "could not load image from %s" t.FileName
+                    if System.IO.File.Exists t.Path then
+                        try PixImage.Load t.Path
+                        with _ -> failf "could not load image from %s" t.Path
                     else
-                        failf "texture file %s does not exist" t.FileName
+                        failf "texture file %s does not exist" t.Path
                             
 
                 let levels = 
-                    if t.TextureParams.wantMipMaps then 1 + int (floor (Fun.Log2(max (float img.Size.X) (float img.Size.Y))))
+                    if t.TextureParams.HasFlag TextureParams.WantMipMaps then 1 + int (floor (Fun.Log2(max (float img.Size.X) (float img.Size.Y))))
                     else 1
                                 
                 let tex = this.CreateTexture2D(TextureFormat.ofPixFormat img.PixFormat t.TextureParams, img.Size, levels = levels)

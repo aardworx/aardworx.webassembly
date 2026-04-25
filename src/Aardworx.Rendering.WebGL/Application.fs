@@ -75,7 +75,7 @@ type private WebGLSwapChainFXAA internal(device : Device, main : HTMLCanvasEleme
         obj.DepthState <- { DepthState.Default with Test = AVal.constant DepthTest.Always }
         obj.RasterizerState <- RasterizerState.Default
         obj.Mode <- IndexedGeometryMode.TriangleStrip
-        obj.DrawCalls <- DrawCalls.Direct (AVal.constant [DrawCallInfo 4])
+        obj.DrawCalls <- DrawCalls.Direct (AVal.constant [|DrawCallInfo 4|])
         obj.Indices <- None
         obj.IsActive <- AVal.constant true
         obj.StencilState <- StencilState.Default
@@ -397,8 +397,8 @@ type WebGLRenderControl internal(runtime : Runtime, swapChain : WebGLSwapChain, 
         with get() =
             match element.Style.Cursor with
             | "none" -> Cursor.None
-            | "ns-resize" -> Cursor.VerticalResize
-            | "ew-resize" -> Cursor.HorizontalResize
+            | "ns-resize" -> Cursor.ResizeV
+            | "ew-resize" -> Cursor.ResizeH
             | "pointer" -> Cursor.Hand
             | "text" -> Cursor.Text
             | "crosshair" -> Cursor.Crosshair
@@ -407,8 +407,8 @@ type WebGLRenderControl internal(runtime : Runtime, swapChain : WebGLSwapChain, 
             let htmlCursor = 
                 match c with
                 | Cursor.None -> "none"
-                | Cursor.VerticalResize -> "ns-resize"
-                | Cursor.HorizontalResize -> "ew-resize"
+                | Cursor.ResizeV -> "ns-resize"
+                | Cursor.ResizeH -> "ew-resize"
                 | Cursor.Hand -> "pointer"
                 | Cursor.Text -> "text"
                 | Cursor.Crosshair -> "crosshair"

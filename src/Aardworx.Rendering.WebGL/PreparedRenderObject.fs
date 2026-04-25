@@ -115,11 +115,11 @@ type RenderObjectCommandExtensions private() =
         let calls =
             if o.IsActive.IsConstant then
                 if AVal.force o.IsActive then o.DrawCalls 
-                else DrawCalls.Direct (AVal.constant [])
+                else DrawCalls.Direct (AVal.constant [||])
             else
                 match o.DrawCalls with
                 | DrawCalls.Direct calls ->
-                    o.IsActive |> AVal.bind (function true -> calls | _ -> AVal.constant []) |> DrawCalls.Direct
+                    o.IsActive |> AVal.bind (function true -> calls | _ -> AVal.constant [||]) |> DrawCalls.Direct
                 | DrawCalls.Indirect calls ->
                     o.IsActive |> AVal.bind (function true -> calls | _ -> AVal.constant (IndirectBuffer.ofList [])) |> DrawCalls.Indirect
 
@@ -161,11 +161,11 @@ type RenderObjectCommandExtensions private() =
         let calls =
             if o.IsActive.IsConstant then
                 if AVal.force o.IsActive then o.DrawCalls 
-                else DrawCalls.Direct (AVal.constant [])
+                else DrawCalls.Direct (AVal.constant [||])
             else
                 match o.DrawCalls with
                 | DrawCalls.Direct calls ->
-                    o.IsActive |> AVal.bind (function true -> calls | _ -> AVal.constant []) |> DrawCalls.Direct
+                    o.IsActive |> AVal.bind (function true -> calls | _ -> AVal.constant [||]) |> DrawCalls.Direct
                 | DrawCalls.Indirect calls ->
                     o.IsActive |> AVal.bind (function true -> calls | _ -> AVal.constant (IndirectBuffer.ofList [])) |> DrawCalls.Indirect
 
