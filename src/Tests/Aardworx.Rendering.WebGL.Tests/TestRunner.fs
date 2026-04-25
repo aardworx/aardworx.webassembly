@@ -2,6 +2,7 @@ namespace Aardworx.Rendering.WebGL.Tests
 
 open System
 open System.Diagnostics
+open System.Threading.Tasks
 open Aardworx.WebAssembly
 open Aardworx.Rendering.WebGL
 open Aardvark.Rendering
@@ -37,6 +38,30 @@ module TestRunner =
     let attach (name : string) (dataUrl : string) =
         currentAttachments.Add(name, dataUrl)
 
+    let private formatError (e : exn) =
+        let inner = if isNull e.InnerException then "" else "\n--- inner ---\n" + e.InnerException.ToString()
+        e.GetType().Name + ": " + e.Message + "\n" + (e.StackTrace |> Option.ofObj |> Option.defaultValue "") + inner
+
+    let private resultFromOutcome (name : string) (sw : Stopwatch) (snapshot : unit -> (string * string) list) (outcome : Choice<unit, exn>) =
+        sw.Stop()
+        let attachments = snapshot()
+        match outcome with
+        | Choice1Of2 () ->
+            { Name = name; Passed = true; Skipped = false; DurationMs = sw.Elapsed.TotalMilliseconds; Error = None; Attachments = attachments }
+        | Choice2Of2 (:? PendingTestException as p) ->
+            { Name = name; Passed = false; Skipped = true; DurationMs = sw.Elapsed.TotalMilliseconds; Error = Some p.Data0; Attachments = attachments }
+        | Choice2Of2 e ->
+            // Unwrap AggregateException with a single inner — typical with task-based throws.
+            let e =
+                match e with
+                | :? AggregateException as ae when ae.InnerExceptions.Count = 1 -> ae.InnerExceptions.[0]
+                | e -> e
+            match e with
+            | :? PendingTestException as p ->
+                { Name = name; Passed = false; Skipped = true; DurationMs = sw.Elapsed.TotalMilliseconds; Error = Some p.Data0; Attachments = attachments }
+            | e ->
+                { Name = name; Passed = false; Skipped = false; DurationMs = sw.Elapsed.TotalMilliseconds; Error = Some (formatError e); Attachments = attachments }
+
     let run (tests : (string * (TestCtx -> unit)) list) (ctx : TestCtx) : TestResult list =
         tests
         |> List.map (fun (name, body) ->
@@ -44,24 +69,47 @@ module TestRunner =
             let sw = Stopwatch.StartNew()
             let snapshotAttachments() = currentAttachments |> List.ofSeq
             try
-                try
-                    body ctx
-                    sw.Stop()
-                    { Name = name; Passed = true; Skipped = false; DurationMs = sw.Elapsed.TotalMilliseconds; Error = None; Attachments = snapshotAttachments() }
-                with
-                | PendingTestException reason ->
-                    sw.Stop()
-                    { Name = name; Passed = false; Skipped = true; DurationMs = sw.Elapsed.TotalMilliseconds; Error = Some reason; Attachments = snapshotAttachments() }
-                | e ->
-                    sw.Stop()
-                    let msg =
-                        let inner = if isNull e.InnerException then "" else "\n--- inner ---\n" + e.InnerException.ToString()
-                        e.GetType().Name + ": " + e.Message + "\n" + (e.StackTrace |> Option.ofObj |> Option.defaultValue "") + inner
-                    { Name = name; Passed = false; Skipped = false; DurationMs = sw.Elapsed.TotalMilliseconds; Error = Some msg; Attachments = snapshotAttachments() }
+                let outcome =
+                    try
+                        body ctx
+                        Choice1Of2 ()
+                    with e -> Choice2Of2 e
+                resultFromOutcome name sw snapshotAttachments outcome
             with e ->
                 // safety net for anything thrown outside of the try above
                 { Name = name; Passed = false; Skipped = false; DurationMs = 0.0; Error = Some (e.ToString()); Attachments = snapshotAttachments() }
         )
+
+    /// Async runner — awaits each test sequentially. Tests are expected to be
+    /// short and order-stable so we don't try to parallelise them.
+    let runAsync (tests : (string * (TestCtx -> Task<unit>)) list) (ctx : TestCtx) : Task<TestResult list> =
+        task {
+            let acc = ResizeArray<TestResult>()
+            for (name, body) in tests do
+                currentAttachments.Clear()
+                let sw = Stopwatch.StartNew()
+                let snapshotAttachments() = currentAttachments |> List.ofSeq
+                let! outcome =
+                    task {
+                        try
+                            do! body ctx
+                            return Choice1Of2 ()
+                        with e ->
+                            return Choice2Of2 e
+                    }
+                acc.Add (resultFromOutcome name sw snapshotAttachments outcome)
+            return List.ofSeq acc
+        }
+
+    /// Lift a sync test body into an async one — preserves the original thrown
+    /// exception (including PendingTestException) for the runner to classify.
+    let liftSync (body : TestCtx -> unit) : TestCtx -> Task<unit> =
+        fun ctx ->
+            try
+                body ctx
+                Task.FromResult ()
+            with e ->
+                Task.FromException<unit>(e)
 
     let renderResults (target : HTMLElement) (results : TestResult list) =
         let doc = Window.Document

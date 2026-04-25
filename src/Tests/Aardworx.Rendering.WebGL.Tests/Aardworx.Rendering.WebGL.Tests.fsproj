@@ -13,6 +13,8 @@
   <ItemGroup>
     <Compile Include="TestRunner.fs" />
     <Compile Include="Tests.fs" />
+    <Compile Include="DomTests.fs" />
+    <Compile Include="WorkerTests.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>
   <ItemGroup>

@@ -57,7 +57,13 @@ let run () =
                     }
 
                 resultsDiv.InnerText <- "running tests..."
-                let results = TestRunner.run (Tests.mkAll refState) ctx
+                // Keep ordering stable: rendering tests first (existing behaviour),
+                // then DOM/JS interop, then Web Worker tests.
+                let allTests =
+                    Tests.mkAllAsync refState
+                    @ DomTests.mkAll ()
+                    @ WorkerTests.mkAll ()
+                let! results = TestRunner.runAsync allTests ctx
                 TestRunner.renderResults resultsDiv results
                 TestRunner.exportToWindow results
             with e ->

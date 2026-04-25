@@ -1,3 +1,8 @@
+### 1.2.1
+* fixed `JSImage.tryLoad` never resolving on load failure: the `<img>` error handler was registered as `oneror` (typo) instead of `onerror`, so 404s and decode errors hung forever
+* fixed `WorkerContext.Terminate` throwing `JSException`: the host-side `window.workers.terminate` JS function it dispatches to was never defined; added it alongside the other `window.workers.*` shims
+* added in-browser test coverage for the JS interop and Web Worker APIs (DOM mutation, `JsObj.Evaluate`, `Window.Location`, `JSImage` round-trip, `Worker.start` / send / receive / echo / dispose)
+
 ### 1.2.0
 * updated to Aardvark.Rendering 5.6.4 / FShade 5.7.3 / Aardvark.Dom 1.1.0
 * migrated all shader code to explicit float32/V*f types (FShade no longer silently lowers double to float)

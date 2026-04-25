@@ -175,7 +175,11 @@ module Worker =
                     "window.workers.sendString = function(id, str) {"
                     "    window.workers.list[id].postMessage(str);"
                     "};"
-                    
+                    "window.workers.terminate = function(id) {"
+                    "    let w = window.workers.list[id];"
+                    "    if (w) { w.terminate(); delete window.workers.list[id]; }"
+                    "};"
+
                     "window.workers.receiveString = Module.mono_bind_static_method('[Aardworx.WebAssembly] Aardworx.WebAssembly.Worker:receiveString');"
                     "window.workers.receiveBinary = Module.mono_bind_static_method('[Aardworx.WebAssembly] Aardworx.WebAssembly.Worker:receiveBinary');"
                     "window.workers.booted = Module.mono_bind_static_method('[Aardworx.WebAssembly] Aardworx.WebAssembly.Worker:workerBooted');"

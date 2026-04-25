@@ -185,7 +185,7 @@ type JSRuntime private() =
                     ret((self.width | 0), (self.height | 0));
                 };
 
-                self.oneror = function() {
+                self.onerror = function() {
                     ret(-1, -1);
                 };
 

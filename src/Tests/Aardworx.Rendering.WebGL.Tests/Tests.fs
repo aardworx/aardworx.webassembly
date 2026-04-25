@@ -412,3 +412,9 @@ module Tests =
     /// Backwards-compatible default (no reference fetched) — auto-bootstraps.
     let all : (string * (TestCtx -> unit)) list =
         mkAll { Reference = None; CaptureRequested = false }
+
+    /// Async-shaped variant of `mkAll`. Wraps the existing sync rendering tests
+    /// via `TestRunner.liftSync` so they slot into `TestRunner.runAsync` without
+    /// changing their bodies.
+    let mkAllAsync (state : RefState) : (string * (TestCtx -> System.Threading.Tasks.Task<unit>)) list =
+        mkAll state |> List.map (fun (name, body) -> name, TestRunner.liftSync body)
