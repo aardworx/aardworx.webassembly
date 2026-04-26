@@ -448,6 +448,96 @@ module Tests =
             color.Dispose()
             signature.Dispose()
 
+    // ------------------------------------------------------------------
+    // Render-then-pick benchmark — rotates the teapot per frame, then does
+    // a readback. Measures the realistic "pick after a real frame change"
+    // cost (render + GPU sync + readback), not just the steady-state read
+    // overhead the bare-readback bench captures.
+    // ------------------------------------------------------------------
+
+    let private renderPickBench (ctx : TestCtx) =
+        let size = V2i(256, 256)
+        let signature =
+            ctx.Runtime.CreateFramebufferSignature(
+                [DefaultSemantic.Colors, TextureFormat.Rgba8
+                 DefaultSemantic.DepthStencil, TextureFormat.Depth24Stencil8],
+                samples = 1
+            )
+        let color = ctx.Runtime.CreateTexture2D(size, TextureFormat.Rgba8, levels = 1, samples = 1)
+        let depth = ctx.Runtime.CreateTexture2D(size, TextureFormat.Depth24Stencil8, levels = 1, samples = 1)
+        try
+            let fbo =
+                ctx.Runtime.CreateFramebuffer(
+                    signature,
+                    [DefaultSemantic.Colors, color.GetOutputView()
+                     DefaultSemantic.DepthStencil, depth.GetOutputView()]
+                )
+            try
+                let viewTrafo = CameraView.lookAt (V3d(2.5, 2.5, 1.5)) V3d.Zero V3d.OOI |> CameraView.viewTrafo
+                let projTrafo = Frustum.perspective 60.0 0.1 100.0 (float size.X / float size.Y) |> Frustum.projTrafo
+
+                // Rotation cval driven from the host loop — bumping it inside a
+                // `transact` invalidates the model trafo and forces the render
+                // task to actually issue draw calls (otherwise renderTask.Run is
+                // a no-op once the scene is steady-state).
+                let angle = cval 0.0
+                let scene =
+                    sg {
+                        Sg.View viewTrafo
+                        Sg.Proj projTrafo
+                        Sg.Trafo (angle |> AVal.map Trafo3d.RotationZ)
+                        Sg.Shader {
+                            DefaultSurfaces.trafo
+                            DefaultSurfaces.simpleLighting
+                        }
+                        Primitives.Teapot(C4b.Green)
+                    }
+
+                let clear =
+                    ClearValues.empty
+                    |> ClearValues.color (C4f(0.1f, 0.1f, 0.2f, 1.0f))
+                    |> ClearValues.depth 1.0
+                    |> ClearValues.stencil 0
+                use clearTask = ctx.Runtime.CompileClear(signature, AVal.constant clear)
+                let renderObjects = scene.GetRenderObjects(TraversalState.empty ctx.Runtime)
+                use renderTask = ctx.Runtime.CompileRender(signature, renderObjects)
+
+                let runFrame () =
+                    transact (fun () -> angle.Value <- angle.Value + 0.05)
+                    clearTask.Run(AdaptiveToken.Top, RenderToken.Empty, OutputDescription.ofFramebuffer fbo)
+                    renderTask.Run(AdaptiveToken.Top, RenderToken.Empty, OutputDescription.ofFramebuffer fbo)
+
+                let bench (label : string) (warmup : int) (iters : int) (after : unit -> unit) =
+                    let sw = System.Diagnostics.Stopwatch()
+                    for _ in 1 .. warmup do
+                        runFrame()
+                        after()
+                    sw.Restart()
+                    for _ in 1 .. iters do
+                        runFrame()
+                        after()
+                    sw.Stop()
+                    let total = sw.Elapsed.TotalMilliseconds
+                    sprintf "%s × %d in %.1f ms (%.3f ms/frame)" label iters total (total / float iters)
+
+                // (a) render only — establishes the per-frame floor.
+                let r1 = bench "render"        4 100 (fun () -> ())
+                // (b) render + 1-pixel pick — the realistic hover-pick path.
+                let r2 = bench "render+1pxpick" 4 100 (fun () ->
+                    let _ = ctx.Runtime.ReadPixels(fbo, DefaultSemantic.Colors, V2i(128, 128), V2i(1, 1))
+                    ())
+                // (c) render + full-frame readback — worst-case (e.g. JPEG stream).
+                let r3 = bench "render+256pxread" 2 30 (fun () ->
+                    let _ = ctx.Runtime.ReadPixels(fbo, DefaultSemantic.Colors, V2i.Zero, size)
+                    ())
+                TestRunner.pending (sprintf "%s | %s | %s" r1 r2 r3)
+            finally
+                fbo.Dispose()
+        finally
+            depth.Dispose()
+            color.Dispose()
+            signature.Dispose()
+
     /// Build the test list. `state` carries the pre-fetched reference (if any)
     /// and whether the URL asked us to (re-)capture.
     let mkAll (state : RefState) : (string * (TestCtx -> unit)) list =
@@ -458,6 +548,7 @@ module Tests =
             "framebuffer clear+readback", framebufferClearReadback
             "teapot reference render", mkTeapotTest state
             "readpixels benchmark", readPixelsBench
+            "render+pick benchmark", renderPickBench
         ]
 
     /// Backwards-compatible default (no reference fetched) — auto-bootstraps.
