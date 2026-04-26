@@ -88,6 +88,144 @@ type GeometryPool(device : Device, attributes : Map<Symbol, Type>) =
             manager.Capactiy |> Mem
 
 
+/// Single-threaded WebGL query implementation.
+///
+/// Models the `IQuery` Begin/End/Reset lifecycle plus the typed
+/// `IQuery<unit, 'Result>` result-retrieval contract on top of one
+/// underlying `glGenQueries` handle. The aardvark.rendering GL backend has
+/// a much richer query implementation that handles multiple GL contexts,
+/// re-entrant Begin/End and threaded waits — none of which apply here:
+/// WebGL is single-threaded JS and we have exactly one context. Keeping
+/// this thin avoids dragging in `Monitor`/`ResourceLock` machinery that
+/// has no meaning in the browser.
+[<AbstractClass>]
+type internal WebGLQuery<'Result>(device : Device, target : QueryTarget) =
+    let mutable handle = 0u
+    let mutable hasBegun = false
+    let mutable resultReady = false
+    let mutable cachedResult : 'Result voption = ValueNone
+
+    let ensureHandle () =
+        if handle = 0u then
+            device.Run (fun gl -> handle <- gl.GenQuery())
+
+    /// Decode the raw `GL_QUERY_RESULT` (uint64) into the typed result.
+    /// Subclasses pick the unit (samples, nanoseconds, …).
+    abstract member DecodeResult : raw : uint64 -> 'Result
+
+    /// Test if the GPU has finished and the result is fetchable. Cheap —
+    /// just a `GL_QUERY_RESULT_AVAILABLE` poll.
+    member private x.PollAvailable () =
+        if handle = 0u then false
+        else
+            device.Run (fun gl ->
+                gl.GetQueryObject(handle, QueryObjectParameterName.QueryResultAvailable) <> 0u
+            )
+
+    member private x.FetchResult () =
+        device.Run (fun gl ->
+            let raw = gl.GetQueryObject(handle, QueryObjectParameterName.QueryResult)
+            x.DecodeResult (uint64 raw)
+        )
+
+    member x.Begin () =
+        ensureHandle ()
+        hasBegun <- true
+        resultReady <- false
+        cachedResult <- ValueNone
+        device.Run (fun gl -> gl.BeginQuery(target, handle))
+
+    member x.End () =
+        if hasBegun then
+            device.Run (fun gl -> gl.EndQuery(target))
+            hasBegun <- false
+
+    member x.Reset () =
+        cachedResult <- ValueNone
+        resultReady <- false
+        // Don't delete the handle — keep it for reuse on the next Begin.
+
+    member x.HasResult () =
+        match cachedResult with
+        | ValueSome _ -> true
+        | ValueNone -> x.PollAvailable ()
+
+    member x.TryGetResult (reset : bool) =
+        match cachedResult with
+        | ValueSome v ->
+            if reset then x.Reset ()
+            Some v
+        | ValueNone ->
+            if x.PollAvailable () then
+                let v = x.FetchResult ()
+                cachedResult <- ValueSome v
+                if reset then x.Reset ()
+                Some v
+            else
+                None
+
+    member x.GetResult (reset : bool) =
+        // WebGL has no blocking glClientWaitSync for query results; we have
+        // to busy-poll. In practice callers almost always ask one frame
+        // later when the result is ready, so this rarely spins more than
+        // a few microseconds.
+        match cachedResult with
+        | ValueSome v ->
+            if reset then x.Reset ()
+            v
+        | ValueNone ->
+            while not (x.PollAvailable ()) do ()
+            let v = x.FetchResult ()
+            cachedResult <- ValueSome v
+            if reset then x.Reset ()
+            v
+
+    member x.Dispose () =
+        if handle <> 0u then
+            let h = handle
+            handle <- 0u
+            device.Run (fun gl -> gl.DeleteQuery(h))
+
+    interface IDisposable with
+        member x.Dispose () = x.Dispose ()
+
+    interface IQuery with
+        member x.Reset () = x.Reset ()
+        member x.Begin () = x.Begin ()
+        member x.End () = x.End ()
+
+    interface IQuery<unit, 'Result> with
+        member x.HasResult () = x.HasResult ()
+        member x.TryGetResult ((), reset) = x.TryGetResult reset
+        member x.GetResult ((), reset) = x.GetResult reset
+
+type internal WebGLOcclusionQuery(device : Device, precise : bool) =
+    inherit WebGLQuery<uint64>(
+        device,
+        // WebGL2 does not expose `SAMPLES_PASSED` (the pixel-accurate count) —
+        // only the boolean ANY_SAMPLES_PASSED variants. We honour `precise`
+        // by picking the non-conservative form when requested, but the result
+        // is still 0 or 1, never an exact sample count.
+        (if precise then QueryTarget.AnySamplesPassed else QueryTarget.AnySamplesPassedConservative)
+    )
+    override _.DecodeResult raw = raw
+
+    interface IOcclusionQuery with
+        // True precision is impossible on WebGL2 — we never get an exact sample
+        // count, just any-samples-passed. Report this honestly.
+        member _.IsPrecise = false
+
+type internal WebGLTimeQuery(device : Device) =
+    // GL_TIME_ELAPSED returns nanoseconds — convert to MicroTime by
+    // wrapping the int64 directly (MicroTime stores ticks-of-100ns, see
+    // Aardvark.Base.MicroTime). We divide ns by 100 to get ticks.
+    inherit WebGLQuery<MicroTime>(device, QueryTarget.TimeElapsed)
+    override _.DecodeResult raw =
+        // Avoid overflow on very long frames: 64-bit ns / 100 fits comfortably.
+        MicroTime(int64 (raw / 100UL))
+    interface ITimeQuery
+
+
 type Runtime(device : Device, defaultCommandStreamMode : CommandStreamMode) as this =
     let manager = ResourceManager(device)
     do device.Runtime <- this :> IRuntime
@@ -267,7 +405,92 @@ type Runtime(device : Device, defaultCommandStreamMode : CommandStreamMode) as t
             )
             
         member this.Clear(tex : IBackendTexture, clearValues : ClearValues) : unit =
-            failwith "not implemented"
+            // Mirrors the Aardvark GL backend (see Runtime.fs:Clear(texture)).
+            // Attaches level 0 / slice 0 of the texture to a temporary FBO and
+            // routes through the right glClearBuffer* family for the format
+            // (integer vs float colour, depth-only vs depth+stencil).
+            // Restricted to level 0 / slice 0 to match the GL backend's
+            // contract — callers who need to clear other layers/levels
+            // should attach them themselves.
+            let texture = tex :?> Texture
+            let fmt = texture.Format
+
+            device.Run (fun gl ->
+                let mutable fbo = 0u
+                gl.GenFramebuffers(1u, &fbo)
+                let prevFbo =
+                    let mutable v = 0
+                    gl.GetInteger(GLEnum.DrawFramebufferBinding, &v)
+                    uint32 v
+                try
+                    gl.BindFramebuffer(FramebufferTarget.DrawFramebuffer, fbo)
+
+                    let attach =
+                        match fmt.Aspect with
+                        | TextureAspect.Depth        -> FramebufferAttachment.DepthAttachment
+                        | TextureAspect.Stencil      -> FramebufferAttachment.StencilAttachment
+                        | TextureAspect.DepthStencil -> FramebufferAttachment.DepthStencilAttachment
+                        | _                          -> FramebufferAttachment.ColorAttachment0
+
+                    // FramebufferTexture2D for plain 2D / Cube; FramebufferTextureLayer for arrays / 3D.
+                    if texture.Layers.IsSome then
+                        gl.FramebufferTextureLayer(FramebufferTarget.DrawFramebuffer, attach, texture.Handle, 0, 0)
+                    else
+                        let target =
+                            match texture.Dimension with
+                            | TextureDimension.TextureCube -> TextureTarget.TextureCubeMapPositiveX
+                            | _ -> TextureTarget.Texture2D
+                        gl.FramebufferTexture2D(FramebufferTarget.DrawFramebuffer, attach, target, texture.Handle, 0)
+
+                    if attach = FramebufferAttachment.ColorAttachment0 then
+                        match clearValues.[DefaultSemantic.Colors] with
+                        | Some color ->
+                            // glDrawBuffers tells GL which color attachments are active. Without
+                            // this, ClearBuffer* may be a no-op for the FBO we just bound.
+                            let bufs = [| GLEnum.ColorAttachment0 |]
+                            use pBufs = fixed bufs
+                            gl.DrawBuffers(1u, pBufs)
+                            if TextureFormat.isIntegerFormat fmt then
+                                let arr =
+                                    if TextureFormat.isSigned fmt then color.Integer.ToArray()
+                                    else color.Integer.ToV4ui().ToArray() |> Array.map int
+                                use p = fixed arr
+                                gl.ClearBuffer(GLEnum.Color, 0, p)
+                            else
+                                let arr = color.Float.ToArray()
+                                use p = fixed arr
+                                gl.ClearBuffer(GLEnum.Color, 0, p)
+                        | None -> ()
+                    else
+                        // Depth / stencil / depth-stencil attachment. Use ClearBufferfi for the
+                        // combined case, otherwise ClearBufferfv / ClearBufferiv individually.
+                        let depth = clearValues.Depth |> Option.map float32
+                        let stencil = clearValues.Stencil |> Option.map int
+                        match attach with
+                        | FramebufferAttachment.DepthStencilAttachment ->
+                            let d = defaultArg depth 1.0f
+                            let s = defaultArg stencil 0
+                            // ClearBufferfi(buffer=DepthStencil, drawBuffer=0, depth, stencil)
+                            gl.ClearBuffer(GLEnum.DepthStencil, 0, d, s)
+                        | FramebufferAttachment.DepthAttachment ->
+                            match depth with
+                            | Some d ->
+                                let arr = [| d |]
+                                use p = fixed arr
+                                gl.ClearBuffer(GLEnum.Depth, 0, p)
+                            | None -> ()
+                        | FramebufferAttachment.StencilAttachment ->
+                            match stencil with
+                            | Some s ->
+                                let arr = [| s |]
+                                use p = fixed arr
+                                gl.ClearBuffer(GLEnum.Stencil, 0, p)
+                            | None -> ()
+                        | _ -> ()
+                finally
+                    gl.BindFramebuffer(FramebufferTarget.DrawFramebuffer, prevFbo)
+                    gl.DeleteFramebuffers(1u, &fbo)
+            )
 
         //member this.ClearColor(texture, color) =
         //    let tex = texture :?> Texture
@@ -574,16 +797,53 @@ type Runtime(device : Device, defaultCommandStreamMode : CommandStreamMode) as t
             )
             
 
-        member this.Copy(src: IBackendTexture, srcBaseSlice: int, srcBaseLevel: int, dst: IBackendTexture, dstBaseSlice: int, dstBaseLevel: int, slices: int, levels: int): unit = 
-            raise (System.NotImplementedException())
-        member this.DownloadAsync(srcBuffer, srcOffset, dstData, size) = raise (System.NotImplementedException())
+        member this.Copy(src: IBackendTexture, srcBaseSlice: int, srcBaseLevel: int, dst: IBackendTexture, dstBaseSlice: int, dstBaseLevel: int, slices: int, levels: int): unit =
+            // Iterate per (slice, level) and reuse the existing single-image
+            // BlitFramebuffer-based copy path (`this.Copy(IFramebufferOutput,
+            // ...)` indirectly via cmd.Blit). WebGL2 has no glCopyImageSubData,
+            // so per-image FBO blit is the only option — and we already
+            // implement it correctly for one image at a time.
+            let srcTex = src :?> Texture
+            let dstTex = dst :?> Texture
+            device.RunCommand (fun cmd ->
+                for l in 0 .. levels - 1 do
+                    let srcLevel = srcBaseLevel + l
+                    let dstLevel = dstBaseLevel + l
+                    // Use the smaller of the two level sizes — a degenerate
+                    // copy (e.g. mipmap mismatch) clips to what fits.
+                    let inline divLevel (s : V3i) lvl =
+                        let d n = max 1 (n >>> lvl)
+                        V3i(d s.X, d s.Y, d s.Z)
+                    let sSize = divLevel srcTex.Size srcLevel
+                    let dSize = divLevel dstTex.Size dstLevel
+                    let size = V3i(min sSize.X dSize.X, min sSize.Y dSize.Y, min sSize.Z dSize.Z)
+                    for s in 0 .. slices - 1 do
+                        let srcImage = srcTex.[srcLevel, srcBaseSlice + s, V3i.Zero .. size - V3i.III]
+                        let dstImage = dstTex.[dstLevel, dstBaseSlice + s, V3i.Zero .. size - V3i.III]
+                        cmd.Blit(srcImage, dstImage, false)
+            )
 
-        member this.CreateOcclusionQuery(precise) = raise (System.NotImplementedException())
+        member this.DownloadAsync(srcBuffer, srcOffset, dstData, size) =
+            // WebGL is single-threaded JS; there is no meaningful async path.
+            // Honour the IRuntime contract — return a thunk that, when
+            // invoked, blocks until the data is in the destination — by
+            // performing the synchronous download up-front and returning a
+            // no-op thunk. Callers that `let f = DownloadAsync(...) in f()`
+            // get correct semantics; callers that drop the thunk still get
+            // their data, which is the same as Vulkan's eager fallback.
+            (this :> IRuntime).Download(srcBuffer, srcOffset, dstData, size)
+            id
+
+        member this.CreateOcclusionQuery(precise) =
+            new WebGLOcclusionQuery(device, precise) :> IOcclusionQuery
         member this.CreatePipelineQuery(statistics) = raise (System.NotImplementedException())
         member this.CreateSparseTexture(size, levels, slices, dim, format, brickSize, maxMemory) = raise (System.NotImplementedException())
         member this.CreateStreamingTexture(mipMaps) = raise (System.NotImplementedException())
         member this.CreateTextureView(texture, levels, slices, isArray) = raise (System.NotImplementedException())
-        member this.CreateTimeQuery() = raise (System.NotImplementedException())
+        member this.CreateTimeQuery() =
+            if not device.Info.Features.TimerQuery then
+                failf "WebGL timer queries unavailable: GL_EXT_disjoint_timer_query_webgl2 not supported by this context"
+            new WebGLTimeQuery(device) :> ITimeQuery
         member this.CreateLodRenderer(config, data) = raise (System.NotImplementedException())
 
         member this.Download<'T when 'T : unmanaged>(tex : ITextureSubResource, tensor : NativeTensor4<'T>, fmt : Col.Format, offset : V3i, size : V3i) : unit =

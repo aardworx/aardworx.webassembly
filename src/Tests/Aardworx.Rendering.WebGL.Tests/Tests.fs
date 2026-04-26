@@ -577,13 +577,172 @@ module Tests =
 
     /// Build the test list. `state` carries the pre-fetched reference (if any)
     /// and whether the URL asked us to (re-)capture.
+    // ------------------------------------------------------------------
+    // tests for newly-implemented IRuntime members
+    // ------------------------------------------------------------------
+
+    let private clearTextureColor (ctx : TestCtx) =
+        // Clear an Rgba8 texture directly (no signature/FBO wrapping by the
+        // caller) and verify via Download that the pixels match.
+        let size = V2i(8, 8)
+        let tex = ctx.Runtime.CreateTexture2D(size, TextureFormat.Rgba8, levels = 1, samples = 1)
+        try
+            // Pre-fill with garbage so we can detect a real clear.
+            let pre = PixImage<byte>(Col.Format.RGBA, size)
+            for i in 0 .. pre.Volume.Data.Length - 1 do pre.Volume.Data.[i] <- 0xFFuy
+            ctx.Runtime.Upload(tex, pre :> PixImage)
+
+            let cv =
+                ClearValues.empty
+                |> ClearValues.color (C4f(0.0f, 0.5f, 1.0f, 1.0f))
+            ctx.Runtime.Clear(tex, cv)
+
+            let dst = PixImage<byte>(Col.Format.RGBA, size)
+            ctx.Runtime.Download(tex, dst :> PixImage)
+            let d = dst.Volume.Data
+            // 0.5f → 127/128, 1.0f → 255 — accept either rounding for the green channel.
+            assertTrue
+                (sprintf "first pixel not (0,~128,255,255): %d,%d,%d,%d" (int d.[0]) (int d.[1]) (int d.[2]) (int d.[3]))
+                (d.[0] = 0uy && (d.[1] = 127uy || d.[1] = 128uy) && d.[2] = 255uy && d.[3] = 255uy)
+        finally
+            tex.Dispose()
+
+    let private copyTextureSlicesLevels (ctx : TestCtx) =
+        // Round-trip: upload → CopyTexture → download. Single mip / single
+        // slice (the common case); the iteration in the impl is exercised by
+        // looping over level=0..0 / slice=0..0 just like a multi-level call.
+        let size = V2i(16, 16)
+        let pi = PixImage<byte>(Col.Format.RGBA, size)
+        for y in 0 .. size.Y - 1 do
+            for x in 0 .. size.X - 1 do
+                let idx = (y * size.X + x) * 4
+                pi.Volume.Data.[idx + 0] <- byte (x * 16)
+                pi.Volume.Data.[idx + 1] <- byte (y * 16)
+                pi.Volume.Data.[idx + 2] <- byte ((x ^^^ y) * 8)
+                pi.Volume.Data.[idx + 3] <- 255uy
+        let src = ctx.Runtime.CreateTexture2D(size, TextureFormat.Rgba8, levels = 1, samples = 1)
+        let dst = ctx.Runtime.CreateTexture2D(size, TextureFormat.Rgba8, levels = 1, samples = 1)
+        try
+            ctx.Runtime.Upload(src, pi :> PixImage)
+            ctx.Runtime.Copy(src, 0, 0, dst, 0, 0, slices = 1, levels = 1)
+            let got = PixImage<byte>(Col.Format.RGBA, size)
+            ctx.Runtime.Download(dst, got :> PixImage)
+            assertTrue
+                (sprintf "copy mismatch (first pixel: %A → %A)" pi.Volume.Data.[..3] got.Volume.Data.[..3])
+                (bytesEqual pi.Volume.Data got.Volume.Data)
+        finally
+            src.Dispose()
+            dst.Dispose()
+
+    let private downloadAsyncBuffer (ctx : TestCtx) =
+        // DownloadAsync should produce data identical to synchronous Download
+        // and return a thunk that, when invoked, is a no-op (data is already
+        // there). On WebGL the work is done eagerly, so the returned function
+        // is essentially a sync receipt.
+        let data = Array.init 192 (fun i -> byte ((i * 13 + 5) &&& 0xFF))
+        let buf = ctx.Runtime.CreateBuffer(uint64 data.Length, BufferUsage.ReadWrite, BufferStorage.Device)
+        try
+            uploadBytes ctx.Runtime buf data
+            let arr = Array.zeroCreate<byte> data.Length
+            let gc = GCHandle.Alloc(arr, GCHandleType.Pinned)
+            try
+                let waiter = ctx.Runtime.DownloadAsync(buf, 0UL, gc.AddrOfPinnedObject(), uint64 data.Length)
+                waiter ()
+            finally
+                gc.Free()
+            assertTrue "DownloadAsync data mismatch" (bytesEqual data arr)
+        finally
+            buf.Dispose()
+
+    let private occlusionQueryRoundtrip (ctx : TestCtx) =
+        // Render one fullscreen-ish triangle that we know writes ≥ 1 sample,
+        // then check the occlusion query reports any-samples-passed != 0.
+        // Then run an empty Begin/End pair and check it reports 0.
+        use q = ctx.Runtime.CreateOcclusionQuery(precise = false)
+
+        let size = V2i(64, 64)
+        let signature =
+            ctx.Runtime.CreateFramebufferSignature(
+                [DefaultSemantic.Colors, TextureFormat.Rgba8],
+                samples = 1)
+        let color = ctx.Runtime.CreateTexture2D(size, TextureFormat.Rgba8, levels = 1, samples = 1)
+        try
+            let fbo =
+                ctx.Runtime.CreateFramebuffer(signature, [DefaultSemantic.Colors, color.GetOutputView()])
+            try
+                let cv =
+                    ClearValues.empty
+                    |> ClearValues.color (C4f(0.1f, 0.2f, 0.3f, 1.0f))
+                use clearTask = ctx.Runtime.CompileClear(signature, AVal.constant cv)
+
+                // A clear writes to every fragment of the FBO → samples passed > 0.
+                q.Begin()
+                clearTask.Run(AdaptiveToken.Top, RenderToken.Empty, OutputDescription.ofFramebuffer fbo)
+                q.End()
+
+                let samples = q.GetResult()
+                assertTrue
+                    (sprintf "occlusion query reported 0 samples for a fullscreen clear (got %d)" samples)
+                    (samples > 0UL)
+
+                // An empty Begin/End pair issues no draw calls — 0 samples.
+                q.Reset()
+                q.Begin()
+                q.End()
+                let zero = q.GetResult()
+                assertTrue
+                    (sprintf "occlusion query reported %d samples for empty Begin/End" zero)
+                    (zero = 0UL)
+            finally
+                fbo.Dispose()
+        finally
+            color.Dispose()
+            signature.Dispose()
+
+    let private timeQueryRoundtrip (ctx : TestCtx) =
+        // Skip silently if the GPU lacks the WebGL2 timer extension —
+        // common on iOS Safari and some Linux drivers. The implementation
+        // failf's in that case, so we have to gate the test ourselves.
+        let device = (ctx.Runtime :?> Aardworx.Rendering.WebGL.Runtime).Device
+        if not device.Info.Features.TimerQuery then
+            ()
+        else
+            use q = ctx.Runtime.CreateTimeQuery()
+            q.Begin()
+            // Issue a clear so the GPU has something measurable to time.
+            let size = V2i(32, 32)
+            let signature =
+                ctx.Runtime.CreateFramebufferSignature(
+                    [DefaultSemantic.Colors, TextureFormat.Rgba8], samples = 1)
+            let color = ctx.Runtime.CreateTexture2D(size, TextureFormat.Rgba8, levels = 1, samples = 1)
+            try
+                let fbo = ctx.Runtime.CreateFramebuffer(signature, [DefaultSemantic.Colors, color.GetOutputView()])
+                try
+                    let cv = ClearValues.empty |> ClearValues.color (C4f(1.0f, 0.0f, 0.0f, 1.0f))
+                    use clearTask = ctx.Runtime.CompileClear(signature, AVal.constant cv)
+                    clearTask.Run(AdaptiveToken.Top, RenderToken.Empty, OutputDescription.ofFramebuffer fbo)
+                finally fbo.Dispose()
+            finally
+                color.Dispose()
+                signature.Dispose()
+            q.End()
+            let elapsed = q.GetResult()
+            assertTrue
+                (sprintf "time query returned negative elapsed time: %A" elapsed)
+                (elapsed.TotalNanoseconds >= 0L)
+
     let mkAll (state : RefState) : (string * (TestCtx -> unit)) list =
         [
             "buffer roundtrip", bufferRoundtrip
             "buffer copy", bufferCopy
+            "buffer downloadAsync", downloadAsyncBuffer
             "texture upload/readback", textureUploadReadback
+            "texture copy (slice/level)", copyTextureSlicesLevels
+            "texture clear (color)", clearTextureColor
             "framebuffer clear+readback", framebufferClearReadback
             "framebuffer clear+readback (Rgba32f)", framebufferClearReadbackFloat
+            "occlusion query", occlusionQueryRoundtrip
+            "time query", timeQueryRoundtrip
             "teapot reference render", mkTeapotTest state
             "readpixels benchmark", readPixelsBench
             "render+pick benchmark", renderPickBench

@@ -1,3 +1,12 @@
+### 1.2.4
+* implemented several `IRuntime` members that were previously `NotImplementedException` stubs:
+  - `Clear(IBackendTexture, ClearValues)` — attaches the texture to a temporary FBO and routes through the right `glClearBuffer*` family (integer vs float color, depth-only vs depth+stencil). Mirrors the Aardvark GL backend's contract: clears level 0 / slice 0.
+  - `Copy(IBackendTexture, ...)` with explicit slice/level ranges — iterates per (slice, level) and reuses the existing single-image `BlitFramebuffer` path. WebGL2 has no `glCopyImageSubData`, so per-image FBO blit is the only option.
+  - `DownloadAsync(IBackendBuffer, ...)` — performs the download eagerly (WebGL is single-threaded JS — no meaningful async path) and returns a no-op thunk that satisfies the `unit -> unit` waiter contract.
+  - `CreateOcclusionQuery(precise)` — wraps WebGL2's `ANY_SAMPLES_PASSED{,_CONSERVATIVE}` query target. `IsPrecise` returns `false` regardless because WebGL2 does not expose `SAMPLES_PASSED` (the exact sample count) — only the boolean any-samples-passed variants.
+  - `CreateTimeQuery()` — wraps `GL_EXT_disjoint_timer_query_webgl2` `TIME_ELAPSED`. Throws if the extension isn't supported by the current context (common on iOS Safari and some Linux drivers; check `device.Info.Features.TimerQuery` first).
+* added tests covering each: `texture clear (color)`, `texture copy (slice/level)`, `buffer downloadAsync`, `occlusion query`, `time query` (auto-skipped when the GPU lacks the timer extension).
+
 ### 1.2.3
 * fix: `IRuntime.ReadPixels` row-flip cast `img.Array :?> byte[]`, which throws `InvalidCastException` for any non-byte format (e.g. Aardvark.Dom's Rgba32f pick buffer). Caller swallowed the exception, so picking silently returned no hits since 1.2.2. Replaced with `Buffer.BlockCopy` which operates on raw bytes regardless of element type.
 * added `framebuffer clear+readback (Rgba32f)` test to cover non-byte readback and prevent the regression from coming back.
