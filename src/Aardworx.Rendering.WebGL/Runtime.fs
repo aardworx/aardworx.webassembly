@@ -165,20 +165,25 @@ type internal WebGLQuery<'Result>(device : Device, target : QueryTarget) =
                 None
 
     member x.GetResult (reset : bool) =
-        // WebGL has no blocking glClientWaitSync for query results; we have
-        // to busy-poll. In practice callers almost always ask one frame
-        // later when the result is ready, so this rarely spins more than
-        // a few microseconds.
+        // WebGL is single-threaded JS — a busy-poll here would deadlock the
+        // browser tab, since the GPU's "query result available" status is
+        // only visible to JS after the event loop runs. Callers must use
+        // TryGetResult in an async polling loop (with Task.Delay or
+        // Task.Yield between attempts) to make progress.
         match cachedResult with
         | ValueSome v ->
             if reset then x.Reset ()
             v
         | ValueNone ->
-            while not (x.PollAvailable ()) do ()
-            let v = x.FetchResult ()
-            cachedResult <- ValueSome v
-            if reset then x.Reset ()
-            v
+            if x.PollAvailable () then
+                let v = x.FetchResult ()
+                cachedResult <- ValueSome v
+                if reset then x.Reset ()
+                v
+            else
+                raise (System.InvalidOperationException(
+                    "WebGL query result not yet available — use TryGetResult in an async polling loop instead. " +
+                    "GetResult cannot block on WebGL because the browser event loop must run between End() and the result becoming available."))
 
     member x.Dispose () =
         if handle <> 0u then

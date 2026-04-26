@@ -89,6 +89,7 @@ module TestRunner =
                 currentAttachments.Clear()
                 let sw = Stopwatch.StartNew()
                 let snapshotAttachments() = currentAttachments |> List.ofSeq
+                printfn "[test] %s ..." name
                 let! outcome =
                     task {
                         try
@@ -97,7 +98,13 @@ module TestRunner =
                         with e ->
                             return Choice2Of2 e
                     }
-                acc.Add (resultFromOutcome name sw snapshotAttachments outcome)
+                let r = resultFromOutcome name sw snapshotAttachments outcome
+                let tag =
+                    if r.Skipped then "SKIP"
+                    elif r.Passed then "PASS"
+                    else "FAIL"
+                printfn "[test] %s %s (%.1fms)%s" tag name r.DurationMs (match r.Error with Some e -> " -- " + e | None -> "")
+                acc.Add r
             return List.ofSeq acc
         }
 

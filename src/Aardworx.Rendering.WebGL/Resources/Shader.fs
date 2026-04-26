@@ -956,12 +956,10 @@ type ShaderExtensions private() =
 
             let create() =
                 
-                let shaderType (sem : string) (fmt : TextureFormat) =
-                    match sem with
-                    | "Normals" -> typeof<V3d>
-                    | _ -> TextureFormat.toShaderType fmt
+                let shaderType (_sem : string) (fmt : TextureFormat) =
+                    TextureFormat.toShaderType fmt
 
-                let module_ = 
+                let module_ =
                     effect |> Effect.toModule { 
                         depthRange = Range1f(-1.0f, 1.0f)
                         flipHandedness = false
@@ -1092,12 +1090,10 @@ type ShaderExtensions private() =
             |> Map.ofSeq
         
 
-        let shaderType (sem : string) (fmt : TextureFormat) =
-            match sem with
-            | "Normals" -> typeof<V3d>
-            | _ -> TextureFormat.toShaderType fmt
+        let shaderType (_sem : string) (fmt : TextureFormat) =
+            TextureFormat.toShaderType fmt
 
-        effect |> Effect.toModule { 
+        effect |> Effect.toModule {
             depthRange = Range1f(-1.0f, 1.0f)
             flipHandedness = false
             lastStage = ShaderStage.Fragment

@@ -654,82 +654,133 @@ module Tests =
         finally
             buf.Dispose()
 
+    /// Poll a query's TryGetResult while yielding to the browser event loop
+    /// between attempts. WebGL is single-threaded JS — a busy spin would
+    /// deadlock the page since the GPU's "result available" status only
+    /// becomes visible after the event loop tick.
+    let private pollQuery<'a> (q : IQuery<unit, 'a>) (timeoutMs : int) : System.Threading.Tasks.Task<'a option> =
+        task {
+            let sw = System.Diagnostics.Stopwatch.StartNew()
+            let mutable result = q.TryGetResult()
+            while result.IsNone && sw.ElapsedMilliseconds < int64 timeoutMs do
+                do! System.Threading.Tasks.Task.Delay(5)
+                result <- q.TryGetResult()
+            return result
+        }
+
     let private occlusionQueryRoundtrip (ctx : TestCtx) =
-        // Render one fullscreen-ish triangle that we know writes ≥ 1 sample,
-        // then check the occlusion query reports any-samples-passed != 0.
-        // Then run an empty Begin/End pair and check it reports 0.
-        use q = ctx.Runtime.CreateOcclusionQuery(precise = false)
+        task {
+            // Render a real teapot (same setup as the reference render) so the
+            // fragment shader actually runs. glClear bypasses the fragment
+            // stage, so it would count as 0 samples — useless as a test.
+            // After the draw, an any-samples-passed query must return > 0.
+            // Then verify an empty Begin/End reports 0 (the trivial case).
+            use q = ctx.Runtime.CreateOcclusionQuery(precise = false)
 
-        let size = V2i(64, 64)
-        let signature =
-            ctx.Runtime.CreateFramebufferSignature(
-                [DefaultSemantic.Colors, TextureFormat.Rgba8],
-                samples = 1)
-        let color = ctx.Runtime.CreateTexture2D(size, TextureFormat.Rgba8, levels = 1, samples = 1)
-        try
-            let fbo =
-                ctx.Runtime.CreateFramebuffer(signature, [DefaultSemantic.Colors, color.GetOutputView()])
-            try
-                let cv =
-                    ClearValues.empty
-                    |> ClearValues.color (C4f(0.1f, 0.2f, 0.3f, 1.0f))
-                use clearTask = ctx.Runtime.CompileClear(signature, AVal.constant cv)
-
-                // A clear writes to every fragment of the FBO → samples passed > 0.
-                q.Begin()
-                clearTask.Run(AdaptiveToken.Top, RenderToken.Empty, OutputDescription.ofFramebuffer fbo)
-                q.End()
-
-                let samples = q.GetResult()
-                assertTrue
-                    (sprintf "occlusion query reported 0 samples for a fullscreen clear (got %d)" samples)
-                    (samples > 0UL)
-
-                // An empty Begin/End pair issues no draw calls — 0 samples.
-                q.Reset()
-                q.Begin()
-                q.End()
-                let zero = q.GetResult()
-                assertTrue
-                    (sprintf "occlusion query reported %d samples for empty Begin/End" zero)
-                    (zero = 0UL)
-            finally
-                fbo.Dispose()
-        finally
-            color.Dispose()
-            signature.Dispose()
-
-    let private timeQueryRoundtrip (ctx : TestCtx) =
-        // Skip silently if the GPU lacks the WebGL2 timer extension —
-        // common on iOS Safari and some Linux drivers. The implementation
-        // failf's in that case, so we have to gate the test ourselves.
-        let device = (ctx.Runtime :?> Aardworx.Rendering.WebGL.Runtime).Device
-        if not device.Info.Features.TimerQuery then
-            ()
-        else
-            use q = ctx.Runtime.CreateTimeQuery()
-            q.Begin()
-            // Issue a clear so the GPU has something measurable to time.
-            let size = V2i(32, 32)
+            let size = V2i(128, 128)
             let signature =
                 ctx.Runtime.CreateFramebufferSignature(
-                    [DefaultSemantic.Colors, TextureFormat.Rgba8], samples = 1)
+                    [DefaultSemantic.Colors, TextureFormat.Rgba8
+                     DefaultSemantic.DepthStencil, TextureFormat.Depth24Stencil8],
+                    samples = 1)
             let color = ctx.Runtime.CreateTexture2D(size, TextureFormat.Rgba8, levels = 1, samples = 1)
+            let depth = ctx.Runtime.CreateTexture2D(size, TextureFormat.Depth24Stencil8, levels = 1, samples = 1)
             try
-                let fbo = ctx.Runtime.CreateFramebuffer(signature, [DefaultSemantic.Colors, color.GetOutputView()])
+                let fbo =
+                    ctx.Runtime.CreateFramebuffer(
+                        signature,
+                        [DefaultSemantic.Colors, color.GetOutputView()
+                         DefaultSemantic.DepthStencil, depth.GetOutputView()])
                 try
-                    let cv = ClearValues.empty |> ClearValues.color (C4f(1.0f, 0.0f, 0.0f, 1.0f))
-                    use clearTask = ctx.Runtime.CompileClear(signature, AVal.constant cv)
+                    let viewTrafo = CameraView.lookAt (V3d(2.5, 2.5, 1.5)) V3d.Zero V3d.OOI |> CameraView.viewTrafo
+                    let projTrafo =
+                        Frustum.perspective 60.0 0.1 100.0 (float size.X / float size.Y)
+                        |> Frustum.projTrafo
+                    let scene =
+                        sg {
+                            Sg.View viewTrafo
+                            Sg.Proj projTrafo
+                            Sg.Shader {
+                                DefaultSurfaces.trafo
+                                DefaultSurfaces.simpleLighting
+                            }
+                            Primitives.Teapot(C4b.Green)
+                        }
+                    let clear =
+                        ClearValues.empty
+                        |> ClearValues.color (C4f(0.0f, 0.0f, 0.0f, 1.0f))
+                        |> ClearValues.depth 1.0
+                        |> ClearValues.stencil 0
+                    use clearTask = ctx.Runtime.CompileClear(signature, AVal.constant clear)
                     clearTask.Run(AdaptiveToken.Top, RenderToken.Empty, OutputDescription.ofFramebuffer fbo)
-                finally fbo.Dispose()
+                    let renderObjects = scene.GetRenderObjects(TraversalState.empty ctx.Runtime)
+                    use renderTask = ctx.Runtime.CompileRender(signature, renderObjects)
+
+                    // Draw inside Begin/End → fragment shader runs → samples > 0.
+                    q.Begin()
+                    renderTask.Run(AdaptiveToken.Top, RenderToken.Empty, OutputDescription.ofFramebuffer fbo)
+                    q.End()
+                    let! drawn = pollQuery q 5000
+                    match drawn with
+                    | None -> failwith "occlusion query timed out (5s) waiting for teapot draw"
+                    | Some s ->
+                        assertTrue
+                            (sprintf "occlusion query reported 0 samples for a teapot draw — query is not counting fragments")
+                            (s > 0UL)
+
+                    // Empty Begin/End → no draws → 0 samples.
+                    q.Reset()
+                    q.Begin()
+                    q.End()
+                    let! empty = pollQuery q 5000
+                    match empty with
+                    | None -> failwith "occlusion query timed out (5s) waiting for empty Begin/End"
+                    | Some s ->
+                        assertTrue
+                            (sprintf "occlusion query reported %d samples for empty Begin/End (expected 0)" s)
+                            (s = 0UL)
+                finally
+                    fbo.Dispose()
             finally
+                depth.Dispose()
                 color.Dispose()
                 signature.Dispose()
-            q.End()
-            let elapsed = q.GetResult()
-            assertTrue
-                (sprintf "time query returned negative elapsed time: %A" elapsed)
-                (elapsed.TotalNanoseconds >= 0L)
+        }
+
+    let private timeQueryRoundtrip (ctx : TestCtx) =
+        task {
+            // Skip silently if the GPU lacks the WebGL2 timer extension —
+            // common on iOS Safari and some Linux drivers.
+            let device = (ctx.Runtime :?> Aardworx.Rendering.WebGL.Runtime).Device
+            if not device.Info.Features.TimerQuery then
+                ()
+            else
+                use q = ctx.Runtime.CreateTimeQuery()
+                q.Begin()
+                let size = V2i(32, 32)
+                let signature =
+                    ctx.Runtime.CreateFramebufferSignature(
+                        [DefaultSemantic.Colors, TextureFormat.Rgba8], samples = 1)
+                let color = ctx.Runtime.CreateTexture2D(size, TextureFormat.Rgba8, levels = 1, samples = 1)
+                try
+                    let fbo = ctx.Runtime.CreateFramebuffer(signature, [DefaultSemantic.Colors, color.GetOutputView()])
+                    try
+                        let cv = ClearValues.empty |> ClearValues.color (C4f(1.0f, 0.0f, 0.0f, 1.0f))
+                        use clearTask = ctx.Runtime.CompileClear(signature, AVal.constant cv)
+                        clearTask.Run(AdaptiveToken.Top, RenderToken.Empty, OutputDescription.ofFramebuffer fbo)
+                    finally fbo.Dispose()
+                finally
+                    color.Dispose()
+                    signature.Dispose()
+                q.End()
+                let! elapsed = pollQuery q 5000
+                match elapsed with
+                | None -> failwith "time query timed out (5s) waiting for result"
+                | Some t ->
+                    assertTrue
+                        (sprintf "time query returned negative elapsed time: %A" t)
+                        (t.TotalNanoseconds >= 0L)
+        }
 
     let mkAll (state : RefState) : (string * (TestCtx -> unit)) list =
         [
@@ -741,8 +792,6 @@ module Tests =
             "texture clear (color)", clearTextureColor
             "framebuffer clear+readback", framebufferClearReadback
             "framebuffer clear+readback (Rgba32f)", framebufferClearReadbackFloat
-            "occlusion query", occlusionQueryRoundtrip
-            "time query", timeQueryRoundtrip
             "teapot reference render", mkTeapotTest state
             "readpixels benchmark", readPixelsBench
             "render+pick benchmark", renderPickBench
@@ -752,8 +801,14 @@ module Tests =
     let all : (string * (TestCtx -> unit)) list =
         mkAll { Reference = None; CaptureRequested = false }
 
-    /// Async-shaped variant of `mkAll`. Wraps the existing sync rendering tests
-    /// via `TestRunner.liftSync` so they slot into `TestRunner.runAsync` without
-    /// changing their bodies.
+    /// Async-shaped variant of `mkAll`. Lifts the sync rendering tests via
+    /// `TestRunner.liftSync` and appends the genuinely-async query tests
+    /// (which need to yield to the browser between TryGetResult polls).
     let mkAllAsync (state : RefState) : (string * (TestCtx -> System.Threading.Tasks.Task<unit>)) list =
-        mkAll state |> List.map (fun (name, body) -> name, TestRunner.liftSync body)
+        let sync = mkAll state |> List.map (fun (name, body) -> name, TestRunner.liftSync body)
+        let asyncTests : (string * (TestCtx -> System.Threading.Tasks.Task<unit>)) list =
+            [
+                "occlusion query", occlusionQueryRoundtrip
+                "time query", timeQueryRoundtrip
+            ]
+        sync @ asyncTests
