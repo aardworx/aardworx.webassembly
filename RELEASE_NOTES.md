@@ -1,3 +1,6 @@
+### 1.2.5
+* fix: shader-output type for the `"Normals"` framebuffer attachment was hardcoded to `V3d`, regardless of the actual texture format. Every other attachment derives its type from `TextureFormat.toShaderType`, but `Normals` was special-cased — so a fragment writing `[<Normal>] : V3f` to an `Rgba32f` G-buffer died with `[FShade] cannot convert Normals value from V3f to V3d` (FShade has no V3f→V3d converter). Removed the special case in both `shaderType` helpers (`AssembleModule` / `CreateProgram` paths). `Normals` now uses the texture format like everything else, and FShade's built-in V3f→V4f widening (appending `1.0f`) handles the typical `Rgba32f` G-buffer naturally.
+
 ### 1.2.4
 * implemented several `IRuntime` members that were previously `NotImplementedException` stubs:
   - `Clear(IBackendTexture, ClearValues)` — attaches the texture to a temporary FBO and routes through the right `glClearBuffer*` family (integer vs float color, depth-only vs depth+stencil). Mirrors the Aardvark GL backend's contract: clears level 0 / slice 0.
