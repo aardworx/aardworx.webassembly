@@ -1,3 +1,10 @@
+### 1.2.2
+* `IRuntime.ReadPixels(IFramebuffer, ...)` no longer churns a fresh PBO per call:
+  - reads ≤ 4 KiB (1-pixel picks, small thumbnails) skip the PBO entirely and `glReadPixels` directly into the pinned destination — saves 6+ GL calls per readback
+  - larger reads use a Device-cached scratch PBO that's lazily created and only ever resized upward (was: GenBuffer / BufferData / DeleteBuffer every call)
+* macOS Safari (Metal-bridge IPC) hit hardest by the per-call overhead; same-Mac numbers post-fix: 1×1 pick 0.28 ms (Safari) / 0.40 ms (Chrome), 256×256 0.87 ms / 1.09 ms — Safari now actually faster than Chrome on Mac
+* added `readpixels benchmark` test that measures and reports timings per readback size; useful for spotting regressions across browsers
+
 ### 1.2.1
 * fixed `JSImage.tryLoad` never resolving on load failure: the `<img>` error handler was registered as `oneror` (typo) instead of `onerror`, so 404s and decode errors hung forever
 * fixed `WorkerContext.Terminate` throwing `JSException`: the host-side `window.workers.terminate` JS function it dispatches to was never defined; added it alongside the other `window.workers.*` shims

@@ -397,6 +397,65 @@ module Tests =
                         "teapot reference mismatch: wrongPixels=%d/%d (%.2f%%, threshold=1.00%%), maxDelta=%d (tol=5)"
                         wrong total pctWrong maxDelta
 
+    // ------------------------------------------------------------------
+    // ReadPixels benchmark — for diagnosing the macOS Safari readback
+    // perf hit. Fails the test if anything throws but otherwise just
+    // surfaces wall-clock timings in the error field so the result row
+    // shows them in the DOM and in the Playwright JSON.
+    // ------------------------------------------------------------------
+
+    let private readPixelsBench (ctx : TestCtx) =
+        let signature =
+            ctx.Runtime.CreateFramebufferSignature(
+                [DefaultSemantic.Colors, TextureFormat.Rgba8],
+                samples = 1
+            )
+        let target = V2i(256, 256)
+        let color = ctx.Runtime.CreateTexture2D(target, TextureFormat.Rgba8, levels = 1, samples = 1)
+        try
+            let fbo =
+                ctx.Runtime.CreateFramebuffer(
+                    signature,
+                    [DefaultSemantic.Colors, color.GetOutputView()]
+                )
+            try
+                // Pre-fill so glReadPixels has real bytes (not undefined).
+                let cv = ClearValues.empty |> ClearValues.color (C4f(0.5f, 0.25f, 0.75f, 1.0f))
+                use clearTask = ctx.Runtime.CompileClear(signature, AVal.constant cv)
+                clearTask.Run(AdaptiveToken.Top, RenderToken.Empty, OutputDescription.ofFramebuffer fbo)
+
+                // Three buckets:
+                //   (a) 1x1 picks         — direct path (≤ 4 KiB threshold)
+                //   (b) 32x32 thumbnails  — direct path
+                //   (c) 256x256 frames    — PBO path (cached scratch buffer)
+                // Each block runs a small warm-up then N timed iterations.
+                let bench (label : string) (size : V2i) (warmup : int) (iters : int) =
+                    let sw = System.Diagnostics.Stopwatch()
+                    for _ in 1 .. warmup do
+                        let _ = ctx.Runtime.ReadPixels(fbo, DefaultSemantic.Colors, V2i.Zero, size)
+                        ()
+                    sw.Restart()
+                    for _ in 1 .. iters do
+                        let _ = ctx.Runtime.ReadPixels(fbo, DefaultSemantic.Colors, V2i.Zero, size)
+                        ()
+                    sw.Stop()
+                    let totalMs = sw.Elapsed.TotalMilliseconds
+                    let perMs = totalMs / float iters
+                    sprintf "%s %dx%d × %d in %.1f ms (%.3f ms/call)" label size.X size.Y iters totalMs perMs
+
+                let r1 = bench "1px"  (V2i(1, 1))     16  500
+                let r2 = bench "32px" (V2i(32, 32))   8   200
+                let r3 = bench "256px"(V2i(256, 256)) 2   30
+                // Surface the numbers as a (skipped) result with no failure —
+                // this way the test row in the DOM shows the timings even when
+                // everything is healthy and there's nothing to assert against.
+                TestRunner.pending (sprintf "%s | %s | %s" r1 r2 r3)
+            finally
+                fbo.Dispose()
+        finally
+            color.Dispose()
+            signature.Dispose()
+
     /// Build the test list. `state` carries the pre-fetched reference (if any)
     /// and whether the URL asked us to (re-)capture.
     let mkAll (state : RefState) : (string * (TestCtx -> unit)) list =
@@ -407,6 +466,7 @@ module Tests =
             "framebuffer clear+readback", framebufferClearReadback
             "simple draw", simpleDraw
             "teapot reference render", mkTeapotTest state
+            "readpixels benchmark", readPixelsBench
         ]
 
     /// Backwards-compatible default (no reference fetched) — auto-bootstraps.

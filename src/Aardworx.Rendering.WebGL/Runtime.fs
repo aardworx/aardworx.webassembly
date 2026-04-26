@@ -92,6 +92,36 @@ type Runtime(device : Device, defaultCommandStreamMode : CommandStreamMode) as t
     let manager = ResourceManager(device)
     do device.Runtime <- this :> IRuntime
 
+    // Per-Runtime scratch PBO for ReadPixels' large-read path. Reused across
+    // calls to avoid per-readback GenBuffer / BufferData / DeleteBuffer churn,
+    // which is a measurable cost on macOS Safari (Metal-bridge IPC per call).
+    // Lazily created on first big read; resized only when a larger one needs it.
+    let mutable scratchPbo : uint32 = 0u
+    let mutable scratchPboSize : unativeint = 0un
+
+    /// Threshold below which ReadPixels skips the PBO entirely and reads
+    /// directly into the pinned client array. The PBO indirection costs ~6
+    /// extra GL calls; for tiny reads (1-pixel picks, small thumbnails) those
+    /// dominate the actual data transfer. 4 KiB covers up to 32x32 RGBA8.
+    static let directReadByteThreshold = 4096un
+
+    /// Ensure the scratch PBO exists and is at least `needed` bytes; resize
+    /// in place if needed. Returns the GL handle. Runs on the GL thread via
+    /// device.Run.
+    let ensureScratchPbo (needed : unativeint) =
+        device.Run (fun gl ->
+            if scratchPbo = 0u then
+                scratchPbo <- gl.GenBuffer()
+            if needed > scratchPboSize then
+                // Orphan + reallocate. STREAM_READ hints that we read once
+                // and discard, which matches the readback access pattern.
+                gl.BindBuffer(BufferTargetARB.PixelPackBuffer, scratchPbo)
+                gl.BufferData(BufferTargetARB.PixelPackBuffer, needed, VoidPtr.zero, BufferUsageARB.StreamRead)
+                gl.BindBuffer(BufferTargetARB.PixelPackBuffer, 0u)
+                scratchPboSize <- needed
+            scratchPbo
+        )
+
     member x.Device = device
     member x.ResourceManager = manager
 
@@ -330,9 +360,6 @@ type Runtime(device : Device, defaultCommandStreamMode : CommandStreamMode) as t
                 )
            
         member this.ReadPixels(src : IFramebuffer, sem : Symbol, offset : V2i, size : V2i) : PixImage =
-            // let res = PixImage<int>(Col.Format.RGBA, size)
-            // res.Volume.Data.Set 0 |> ignore
-            // res :> PixImage
             let src = src :?> Framebuffer
             match Map.tryFind sem src.Signature.AttachmentIndices with
             | Some index ->
@@ -341,47 +368,46 @@ type Runtime(device : Device, defaultCommandStreamMode : CommandStreamMode) as t
                 let (pfmt, ptyp) = ColFormat.toPixelFormatAndType format
                 let img = PixImage.Create(typ, int64 size.X, int64 size.Y)
                 let gc = GCHandle.Alloc(img.Array, GCHandleType.Pinned)
-                
-                
-                
-                
-                //let buffer = device.CreateBuffer(16L, BufferUsage.Dynamic)
-                let pb = APtr.temporary 1
-                //let ret = APtr.temporary 1
-                
-                //use clearPtr = fixed [| 128; 64; 32; 16 |]
-                
+                let byteCount = unativeint img.Array.Length
+
                 try
-                    device.RunCommand (fun gl ->
-                        gl.BaseStream.BindFramebuffer(FramebufferTarget.Framebuffer, src.Handle)
-                        gl.BaseStream.ReadBuffer (unbox<ReadBufferMode> (int ReadBufferMode.ColorAttachment0 + index))
-                        
-                        //gl.BaseStream.Viewport(0, 0, uint32 src.Size.X, uint32 src.Size.Y)
-                        //gl.BaseStream.ClearBufferiv(BufferKind.Color, 0, clearPtr)
-                        //gl.BaseStream.Clear(ClearBufferMask.ColorBufferBit)
-                        
-                        
-                        //gl.BaseStream.ReadPixels(offset.X, src.Size.Y - size.Y - offset.Y, uint32 size.X, uint32 size.Y, pfmt, ptyp, gc.AddrOfPinnedObject())
-                        
-                        let byteCount = unativeint img.Array.Length
-                        gl.BaseStream.GenBuffers(APtr.constant 1u, pb)
-                        gl.BaseStream.BindBuffer(APtr.constant BufferTargetARB.PixelPackBuffer, pb)
-                        gl.BaseStream.BufferData(BufferTargetARB.PixelPackBuffer, byteCount, 0n, BufferUsageARB.StreamRead)
-                        //gl.BaseStream.BindBuffer(BufferTargetARB.PixelPackBuffer, buffer.Handle)
-                        gl.BaseStream.ReadPixels(offset.X, src.Size.Y - size.Y - offset.Y, uint32 size.X, uint32 size.Y, pfmt, ptyp, 0n)
-                        // gl.BaseStream.FenceSync(APtr.constant SyncCondition.SyncGpuCommandsComplete, APtr.constant SyncBehaviorFlags.None, ret)
-                        // gl.BaseStream.WaitSync(ret, APtr.constant SyncBehaviorFlags.None, APtr.constant 10000000UL)
-                        gl.BaseStream.GetBufferSubData(BufferTargetARB.PixelPackBuffer, 0n, byteCount, gc.AddrOfPinnedObject())
-                        gl.BaseStream.BindBuffer(BufferTargetARB.PixelPackBuffer, 0u)
-                        gl.BaseStream.DeleteBuffers(APtr.constant 1u, pb)
-                        
-                        gl.BaseStream.BindFramebuffer(FramebufferTarget.Framebuffer, 0u)
-                        //gl.PopFramebuffer()
-                    )
-                    // glReadPixels gives bottom-up rows; flip in place so the returned
-                    // PixImage's backing array is top-down (matches the .Volume.Data
-                    // contract that callers rely on; a TransformedPixImage view leaves
-                    // the bytes bottom-up).
+                    if byteCount <= directReadByteThreshold then
+                        // Small-read fast path. Skip the PBO entirely — for 1-pixel picks
+                        // and other tiny reads the PBO indirection (Gen/Bind/BufferData/
+                        // GetBufferSubData/Delete) costs more than the data transfer
+                        // itself. macOS Safari's WebGL2 → Metal IPC makes those extra
+                        // calls especially expensive.
+                        device.RunCommand (fun gl ->
+                            gl.BaseStream.BindFramebuffer(FramebufferTarget.Framebuffer, src.Handle)
+                            gl.BaseStream.ReadBuffer (unbox<ReadBufferMode> (int ReadBufferMode.ColorAttachment0 + index))
+                            gl.BaseStream.ReadPixels(
+                                offset.X, src.Size.Y - size.Y - offset.Y,
+                                uint32 size.X, uint32 size.Y, pfmt, ptyp,
+                                gc.AddrOfPinnedObject())
+                            gl.BaseStream.BindFramebuffer(FramebufferTarget.Framebuffer, 0u))
+                    else
+                        // Large-read path: use a Device-cached PBO that's lazily created
+                        // and only ever resized upward. The original code Gen/BufferData/
+                        // Delete'd a fresh PBO every call, which thrashes the Metal-backed
+                        // allocator on Safari and also generates GC pressure on Chrome.
+                        let pbo = ensureScratchPbo byteCount
+                        device.RunCommand (fun gl ->
+                            gl.BaseStream.BindFramebuffer(FramebufferTarget.Framebuffer, src.Handle)
+                            gl.BaseStream.ReadBuffer (unbox<ReadBufferMode> (int ReadBufferMode.ColorAttachment0 + index))
+                            gl.BaseStream.BindBuffer(BufferTargetARB.PixelPackBuffer, pbo)
+                            gl.BaseStream.ReadPixels(
+                                offset.X, src.Size.Y - size.Y - offset.Y,
+                                uint32 size.X, uint32 size.Y, pfmt, ptyp, 0n)
+                            gl.BaseStream.GetBufferSubData(
+                                BufferTargetARB.PixelPackBuffer, 0n, byteCount,
+                                gc.AddrOfPinnedObject())
+                            gl.BaseStream.BindBuffer(BufferTargetARB.PixelPackBuffer, 0u)
+                            gl.BaseStream.BindFramebuffer(FramebufferTarget.Framebuffer, 0u))
+
+                    // glReadPixels yields bottom-up rows; flip in place so the
+                    // returned PixImage's backing array is top-down (matches the
+                    // .Volume.Data contract — a TransformedPixImage view would
+                    // leave the bytes bottom-up).
                     let arr = img.Array :?> byte[]
                     let rowBytes = int (abs img.VolumeInfo.DY)
                     let rows = int img.VolumeInfo.SY
