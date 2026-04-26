@@ -125,14 +125,6 @@ module Tests =
             color.Dispose()
             signature.Dispose()
 
-    let private simpleDraw (_ctx : TestCtx) =
-        // A full mini-pipeline test (FShade effect compile + render to FBO + readback)
-        // is non-trivial to wire up reliably here without exhaustively touching the
-        // FShade/RenderObject API surface.  Leave as Pending — the framebuffer-clear
-        // path already exercises FBO creation, the clear render task and ReadPixels.
-        TestRunner.pending "simple draw test scaffolding TODO — needs FShade effect + RenderObject wiring"
-
-
     // ------------------------------------------------------------------
     // teapot reference render
     // ------------------------------------------------------------------
@@ -464,7 +456,6 @@ module Tests =
             "buffer copy", bufferCopy
             "texture upload/readback", textureUploadReadback
             "framebuffer clear+readback", framebufferClearReadback
-            "simple draw", simpleDraw
             "teapot reference render", mkTeapotTest state
             "readpixels benchmark", readPixelsBench
         ]
