@@ -408,16 +408,21 @@ type Runtime(device : Device, defaultCommandStreamMode : CommandStreamMode) as t
                     // returned PixImage's backing array is top-down (matches the
                     // .Volume.Data contract — a TransformedPixImage view would
                     // leave the bytes bottom-up).
-                    let arr = img.Array :?> byte[]
+                    // Buffer.BlockCopy operates on raw bytes, so it works for
+                    // any primitive element type (byte/float32/int32/...). The
+                    // previous `:?> byte[]` cast threw InvalidCastException for
+                    // non-byte formats like Rgba32f (used by the pick buffer),
+                    // silently breaking picking.
+                    let arr = img.Array
                     let rowBytes = int (abs img.VolumeInfo.DY)
                     let rows = int img.VolumeInfo.SY
                     let tmp = Array.zeroCreate<byte> rowBytes
                     for y in 0 .. rows / 2 - 1 do
                         let topOff = y * rowBytes
                         let botOff = (rows - 1 - y) * rowBytes
-                        System.Array.Copy(arr, topOff, tmp, 0, rowBytes)
-                        System.Array.Copy(arr, botOff, arr, topOff, rowBytes)
-                        System.Array.Copy(tmp, 0, arr, botOff, rowBytes)
+                        System.Buffer.BlockCopy(arr, topOff, tmp, 0, rowBytes)
+                        System.Buffer.BlockCopy(arr, botOff, arr, topOff, rowBytes)
+                        System.Buffer.BlockCopy(tmp, 0, arr, botOff, rowBytes)
                     img
 
                 finally

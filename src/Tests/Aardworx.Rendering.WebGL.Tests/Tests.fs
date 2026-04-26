@@ -125,6 +125,43 @@ module Tests =
             color.Dispose()
             signature.Dispose()
 
+    let private framebufferClearReadbackFloat (ctx : TestCtx) =
+        // Regression: ReadPixels' row-flip used to `:?> byte[]`, which throws
+        // InvalidCastException for non-byte formats. The Aardvark.Dom pick
+        // buffer is Rgba32f, so this silently broke picking.
+        let size = V2i(4, 4)
+        let signature =
+            ctx.Runtime.CreateFramebufferSignature(
+                [DefaultSemantic.Colors, TextureFormat.Rgba32f],
+                samples = 1
+            )
+        let color = ctx.Runtime.CreateTexture2D(size, TextureFormat.Rgba32f, levels = 1, samples = 1)
+        try
+            let fbo =
+                ctx.Runtime.CreateFramebuffer(
+                    signature,
+                    [DefaultSemantic.Colors, color.GetOutputView()]
+                )
+            try
+                let cv =
+                    ClearValues.empty
+                    |> ClearValues.color (C4f(0.25f, 0.5f, 0.75f, 1.0f))
+                use clearTask = ctx.Runtime.CompileClear(signature, AVal.constant cv)
+                clearTask.Run(AdaptiveToken.Top, RenderToken.Empty, OutputDescription.ofFramebuffer fbo)
+
+                let img = ctx.Runtime.ReadPixels(fbo, DefaultSemantic.Colors, V2i.Zero, size)
+                let pi = img :?> PixImage<float32>
+                let d = pi.Volume.Data
+                let approx (a : float32) (b : float32) = abs (a - b) < 0.001f
+                assertTrue
+                    (sprintf "first float pixel not (0.25,0.5,0.75,1.0): %f,%f,%f,%f" d.[0] d.[1] d.[2] d.[3])
+                    (approx d.[0] 0.25f && approx d.[1] 0.5f && approx d.[2] 0.75f && approx d.[3] 1.0f)
+            finally
+                fbo.Dispose()
+        finally
+            color.Dispose()
+            signature.Dispose()
+
     // ------------------------------------------------------------------
     // teapot reference render
     // ------------------------------------------------------------------
@@ -546,6 +583,7 @@ module Tests =
             "buffer copy", bufferCopy
             "texture upload/readback", textureUploadReadback
             "framebuffer clear+readback", framebufferClearReadback
+            "framebuffer clear+readback (Rgba32f)", framebufferClearReadbackFloat
             "teapot reference render", mkTeapotTest state
             "readpixels benchmark", readPixelsBench
             "render+pick benchmark", renderPickBench

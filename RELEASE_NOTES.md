@@ -1,3 +1,7 @@
+### 1.2.3
+* fix: `IRuntime.ReadPixels` row-flip cast `img.Array :?> byte[]`, which throws `InvalidCastException` for any non-byte format (e.g. Aardvark.Dom's Rgba32f pick buffer). Caller swallowed the exception, so picking silently returned no hits since 1.2.2. Replaced with `Buffer.BlockCopy` which operates on raw bytes regardless of element type.
+* added `framebuffer clear+readback (Rgba32f)` test to cover non-byte readback and prevent the regression from coming back.
+
 ### 1.2.2
 * `IRuntime.ReadPixels(IFramebuffer, ...)` no longer churns a fresh PBO per call:
   - reads ≤ 4 KiB (1-pixel picks, small thumbnails) skip the PBO entirely and `glReadPixels` directly into the pinned destination — saves 6+ GL calls per readback
