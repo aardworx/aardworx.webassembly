@@ -596,7 +596,12 @@ type Runtime(device : Device, defaultCommandStreamMode : CommandStreamMode) as t
                 let (pfmt, ptyp) = ColFormat.toPixelFormatAndType format
                 let img = PixImage.Create(typ, int64 size.X, int64 size.Y)
                 let gc = GCHandle.Alloc(img.Array, GCHandleType.Pinned)
-                let byteCount = unativeint img.Array.Length
+                // Length is element count, not bytes — for non-byte formats
+                // (Rgba32ui pick buffer, Rgba32f, Rgba16, …) we need the
+                // actual byte length so the PBO is sized correctly and the
+                // ReadPixels destination buffer size matches what WebGL
+                // expects for the requested dimensions.
+                let byteCount = unativeint (System.Buffer.ByteLength img.Array)
 
                 try
                     if byteCount <= directReadByteThreshold then

@@ -100,7 +100,12 @@ module internal ColFormat =
             TextureFormat.Rg32i, (PixelFormat.RGInteger, PixelType.Int)
             TextureFormat.Rgb32i, (PixelFormat.RgbInteger, PixelType.Int)
             TextureFormat.Rgba32i, (PixelFormat.RgbaInteger, PixelType.Int)
-            
+
+            TextureFormat.R32ui, (PixelFormat.RedInteger, PixelType.UnsignedInt)
+            TextureFormat.Rg32ui, (PixelFormat.RGInteger, PixelType.UnsignedInt)
+            TextureFormat.Rgb32ui, (PixelFormat.RgbInteger, PixelType.UnsignedInt)
+            TextureFormat.Rgba32ui, (PixelFormat.RgbaInteger, PixelType.UnsignedInt)
+
             TextureFormat.R32f, (PixelFormat.Red, PixelType.Float)
             TextureFormat.Rg32f, (PixelFormat.RG, PixelType.Float)
             TextureFormat.Rgb32f, (PixelFormat.Rgb, PixelType.Float)
@@ -144,6 +149,16 @@ module internal Visitor =
                 TextureFormat.Rg32f, (fun (v : TextureFormatVisitor<'r>) -> v.Accept<float32>(Col.Format.GrayAlpha, 2))
                 TextureFormat.Rgb32f, (fun (v : TextureFormatVisitor<'r>) -> v.Accept<float32>(Col.Format.RGB, 3))
                 TextureFormat.Rgba32f, (fun (v : TextureFormatVisitor<'r>) -> v.Accept<float32>(Col.Format.RGBA, 4))
+
+                TextureFormat.R32i, (fun (v : TextureFormatVisitor<'r>) -> v.Accept<int32>(Col.Format.Gray, 1))
+                TextureFormat.Rg32i, (fun (v : TextureFormatVisitor<'r>) -> v.Accept<int32>(Col.Format.GrayAlpha, 2))
+                TextureFormat.Rgb32i, (fun (v : TextureFormatVisitor<'r>) -> v.Accept<int32>(Col.Format.RGB, 3))
+                TextureFormat.Rgba32i, (fun (v : TextureFormatVisitor<'r>) -> v.Accept<int32>(Col.Format.RGBA, 4))
+
+                TextureFormat.R32ui, (fun (v : TextureFormatVisitor<'r>) -> v.Accept<uint32>(Col.Format.Gray, 1))
+                TextureFormat.Rg32ui, (fun (v : TextureFormatVisitor<'r>) -> v.Accept<uint32>(Col.Format.GrayAlpha, 2))
+                TextureFormat.Rgb32ui, (fun (v : TextureFormatVisitor<'r>) -> v.Accept<uint32>(Col.Format.RGB, 3))
+                TextureFormat.Rgba32ui, (fun (v : TextureFormatVisitor<'r>) -> v.Accept<uint32>(Col.Format.RGBA, 4))
 
 
                 TextureFormat.Depth24Stencil8, (fun (v : TextureFormatVisitor<'r>) -> v.Accept<float32>(Col.Format.Gray, 1))

@@ -65,12 +65,12 @@ module internal RenderBufferFormatExtensions =
                 TextureFormat.DepthComponent32f, typeof<float32>
                 TextureFormat.Depth32fStencil8, typeof<float32>
                 TextureFormat.StencilIndex8, typeof<int>
-                TextureFormat.Rgba32ui, typeof<V4i>
-                TextureFormat.Rgb32ui, typeof<V3i>
-                TextureFormat.Rgba16ui, typeof<V3i>
-                TextureFormat.Rgb16ui, typeof<V3i>
-                TextureFormat.Rgba8ui, typeof<V4i>
-                TextureFormat.Rgb8ui, typeof<V3i>
+                TextureFormat.Rgba32ui, typeof<V4ui>
+                TextureFormat.Rgb32ui, typeof<V3ui>
+                TextureFormat.Rgba16ui, typeof<V4ui>
+                TextureFormat.Rgb16ui, typeof<V3ui>
+                TextureFormat.Rgba8ui, typeof<V4ui>
+                TextureFormat.Rgb8ui, typeof<V3ui>
                 TextureFormat.Rgba32i, typeof<V4i>
                 TextureFormat.Rgb32i, typeof<V3i>
                 TextureFormat.Rgba16i, typeof<V4i>

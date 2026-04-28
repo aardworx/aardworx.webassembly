@@ -561,60 +561,81 @@ type CommandStream private(state : CommandStreamState, ownState : bool, backend 
                     | None -> 0
             )
             
+        // Per-attachment clear path. Three flavours:
+        //   * Float    (`glClearBufferfv`) — float, snorm, unorm color formats.
+        //   * SInt     (`glClearBufferiv`) — signed-integer color formats.
+        //   * UInt     (`glClearBufferuiv`) — unsigned-integer color formats.
+        // Picking the wrong one against the attachment is a hard
+        // GL_INVALID_OPERATION on WebGL, so we always dispatch the matching
+        // command for the format.
         let perTargetColors =
             signature.ColorAttachments
             |> Map.map (fun _i { Name = sym; Format = fmt } ->
-                let isInteger = TextureFormat.isIntegerFormat fmt 
-                if isInteger then
-                    Choice2Of2 (
-                        values |> AVal.map (fun v ->
-                            let color = 
-                                match Map.tryFind sym v.Colors with
-                                | None -> v.Color
-                                | c -> c
-                            match color with
-                            | Some c -> Some c.Integer
-                            | None -> None
+                let pickColor (v : ClearValues) =
+                    match Map.tryFind sym v.Colors with
+                    | None -> v.Color
+                    | c -> c
+
+                if TextureFormat.isIntegerFormat fmt then
+                    if TextureFormat.isSigned fmt then
+                        Choice2Of3 (
+                            values |> AVal.map (fun v ->
+                                pickColor v |> Option.map (fun c -> c.Integer)
+                            )
                         )
-                    )
+                    else
+                        Choice3Of3 (
+                            values |> AVal.map (fun v ->
+                                pickColor v |> Option.map (fun c -> c.Integer)
+                            )
+                        )
                 else
-                    Choice1Of2 (
+                    Choice1Of3 (
                         values |> AVal.map (fun v ->
-                            let color = 
-                                match Map.tryFind sym v.Colors with
-                                | None -> v.Color
-                                | c -> c
-                            match color with
-                            | Some c -> Some c.Float
-                            | None -> None
+                            pickColor v |> Option.map (fun c -> c.Float)
                         )
-
                     )
-
             )
-           
+
 
         for KeyValue(buffer, color) in perTargetColors do
             match color with
-            | Choice1Of2 floatColor ->
+            | Choice1Of3 floatColor ->
                 let active = floatColor |> APtr.mapVal (function Some _ -> 1 |  _ -> 0)
                 let value = floatColor |> APtr.mapVal (function Some c -> c | _ -> V4f(0.0f, 0.0f, 0.0f, 0.0f)) |> APtr.cast
                 backend.Switch(
                     active,
                     [
-                        1, fun cmd -> 
+                        1, fun cmd ->
                             cmd.ClearBufferfv(APtr.constant BufferKind.Color, APtr.constant buffer, value)
                     ],
                     fun _cmd -> ()
                 )
-            | Choice2Of2 intColor ->
+            | Choice2Of3 intColor ->
                 let active = intColor |> APtr.mapVal (function Some _ -> 1 |  _ -> 0)
                 let value = intColor |> APtr.mapVal (function Some c -> c | _ -> V4i(0, 0, 0, 0)) |> APtr.cast
                 backend.Switch(
                     active,
                     [
-                        1, fun cmd -> 
+                        1, fun cmd ->
                             cmd.ClearBufferiv(APtr.constant BufferKind.Color, APtr.constant buffer, value)
+                    ],
+                    fun _cmd -> ()
+                )
+            | Choice3Of3 uintColor ->
+                let active = uintColor |> APtr.mapVal (function Some _ -> 1 |  _ -> 0)
+                // ClearColor.Integer holds the V4i bit pattern; reinterpret it
+                // as V4ui for the unsigned-integer attachment via the cast
+                // below — same memory layout, no conversion.
+                let value =
+                    uintColor
+                    |> APtr.mapVal (function Some c -> c | _ -> V4i(0, 0, 0, 0))
+                    |> APtr.cast<uint32>
+                backend.Switch(
+                    active,
+                    [
+                        1, fun cmd ->
+                            cmd.ClearBufferuiv(APtr.constant BufferKind.Color, APtr.constant buffer, value)
                     ],
                     fun _cmd -> ()
                 )
