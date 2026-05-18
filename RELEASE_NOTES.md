@@ -1,3 +1,9 @@
+### 1.2.7
+* the WebGL canvas now honors `window.devicePixelRatio` by default — the backbuffer is sized as `round(cssSize * devicePixelRatio)` instead of `round(cssSize)`. Previously every swap chain (FXAA / Simple / MSAA) hardcoded a 1.0 ratio, so HiDPI / Retina displays (iPhone DPR=3, MacBook Retina DPR=2) got a CSS-pixel backbuffer that the browser then upscaled — visibly blurry. Fix is at the swap-chain level so it applies to every consumer of `WebGLApplication.CreateRenderControl`.
+* added `WebGLSwapChain.PixelRatio : option<float>` (and `EffectivePixelRatio` for the actual value used) plus a matching `WebGLRenderControl.PixelRatio` property. `None` (the default) uses `Window.DevicePixelRatio`. `Some 1.0` opts out of HiDPI scaling and renders at CSS resolution. `Some r` for any other override. Setter invalidates the control so the change takes effect on the next frame; the resize-checker also reads through `EffectivePixelRatio` so DPR changes (window moved between monitors) are picked up.
+* exposed the knob on the Aardvark.Dom surface as `RenderControl.PixelRatio(ratio : float)` — emits a `data-pixel-ratio` attribute on the parent div; `Aardworx.WebAssembly.Dom.Boot.SetupRenderer` reads it once at init and applies it to `ctrl.PixelRatio`. Omit the attribute for the full-res default.
+* picked up Aardvark.Dom 1.1.8.
+
 ### 1.2.6
 * picked up Aardvark.Dom 1.1.7 (MSAA picking, per-object snap radius, plain-float pick encoding). Validated end-to-end on WebGL — desktop GL and iOS Safari both pick correctly with `Samples 4`.
 * `IRuntime.ReadPixels` PBO path was sizing the scratch PBO via `img.Array.Length` (element count) instead of bytes — broke for any non-byte format. Aardvark.Dom's pick reads `Rgba32f` 33×33 = 17,424 bytes; old code allocated a 4,356-byte PBO and `glReadPixels` errored with `INVALID_OPERATION: readPixels: buffer is not large enough for dimensions`. Fixed to `System.Buffer.ByteLength(img.Array)`.

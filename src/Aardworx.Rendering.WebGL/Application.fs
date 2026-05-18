@@ -21,8 +21,22 @@ type WebGLSwapChain internal(device : Device, main : HTMLCanvasElement, dst : HT
             Some TextureFormat.Depth24Stencil8,
             1,1
         )
-        
+
+    let mutable pixelRatio : option<float> = None
+
     member x.FramebufferSignature = defaultSignature
+
+    /// When Some r the canvas backbuffer is sized as round(cssSize * r). When None the
+    /// browser-reported devicePixelRatio is used (full-res on HiDPI / Retina). Set to
+    /// Some 1.0 to render at CSS resolution and let the browser upscale.
+    member x.PixelRatio
+        with get () = pixelRatio
+        and set v = pixelRatio <- v
+
+    member x.EffectivePixelRatio =
+        match pixelRatio with
+        | Some r -> r
+        | None -> Window.DevicePixelRatio
 
     abstract RenderFrame : action : (Framebuffer -> Silk.NET.OpenGLES.GL -> unit) -> unit
     abstract Release : unit -> unit
@@ -99,7 +113,7 @@ type private WebGLSwapChainFXAA internal(device : Device, main : HTMLCanvasEleme
             r.Size
             
         let renderSize =
-            V2i(round htmlSize)
+            V2i(round (x.EffectivePixelRatio * htmlSize))
 
         dst.Width <- renderSize.X
         dst.Height <- renderSize.Y
@@ -157,7 +171,7 @@ type private WebGLSwapChainSimple internal(device : Device, main : HTMLCanvasEle
             r.Size
             
         let renderSize =
-            V2i(round htmlSize)
+            V2i(round (x.EffectivePixelRatio * htmlSize))
 
         dst.Width <- renderSize.X
         dst.Height <- renderSize.Y
@@ -191,7 +205,7 @@ type private WebGLSwapChainMSAA internal(device : Device, main : HTMLCanvasEleme
             r.Size
             
         let renderSize =
-            V2i(round htmlSize)
+            V2i(round (x.EffectivePixelRatio * htmlSize))
 
         dst.Width <- renderSize.X
         dst.Height <- renderSize.Y
@@ -349,7 +363,7 @@ type WebGLRenderControl internal(runtime : Runtime, swapChain : WebGLSwapChain, 
                     r.Size
             
                 let renderSize =
-                    V2i(round htmlSize)
+                    V2i(round (swapChain.EffectivePixelRatio * htmlSize))
 
                 if lastSize <> renderSize then
                     lastSize <- renderSize
@@ -383,9 +397,19 @@ type WebGLRenderControl internal(runtime : Runtime, swapChain : WebGLSwapChain, 
 
     member x.VSync
         with get() = vsync
-        and set v = 
+        and set v =
             vsync <- v
             invalidate()
+
+    /// Override the canvas pixel ratio. Some r forces backbuffer = round(cssSize * r);
+    /// None (the default) uses the browser's devicePixelRatio (full-res HiDPI).
+    /// Use Some 1.0 to disable HiDPI scaling and render at CSS resolution.
+    member x.PixelRatio
+        with get () = swapChain.PixelRatio
+        and set (v : option<float>) =
+            if swapChain.PixelRatio <> v then
+                swapChain.PixelRatio <- v
+                invalidate()
 
     member x.Visible
         with get() = element.Style.Visibility <> "hidden"

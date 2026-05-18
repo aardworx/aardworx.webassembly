@@ -82,6 +82,11 @@ type HtmlBackend(app : WebGLApplication, server : IServer) =
             
             let ctrl = app.CreateRenderControl(canvas, antialias)
             ctrl.ClearColor <- C4f(0.0f, 0.0f, 0.0f, 0.0f)
+            if parentDiv.HasAttribute "data-pixel-ratio" then
+                let raw = string (parentDiv.GetAttribute "data-pixel-ratio")
+                match System.Double.TryParse(raw, System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture) with
+                | (true, r) when r > 0.0 -> ctrl.PixelRatio <- Some r
+                | _ -> ()
             ctrl.RenderTask <- b.RenderTask
             
             disposables.[a] <-
