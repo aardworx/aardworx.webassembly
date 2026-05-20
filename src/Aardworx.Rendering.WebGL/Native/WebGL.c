@@ -281,6 +281,42 @@ EMSCRIPTEN_KEEPALIVE void glTexSubImage2DJSImage(GLenum target, GLint level, GLi
 }
 
 
+// ---------------------------------------------------------------------------
+// Per-attachment blending via OES_draw_buffers_indexed (or EXT variant).
+// WebGL2 only exposes the indexed blend entry points through this extension.
+// We dispatch through the JS extension object to avoid relying on emscripten's
+// C symbol linkage for the *iOES suffixed entry points.
+// ---------------------------------------------------------------------------
+EMSCRIPTEN_KEEPALIVE int aw_glDrawBuffersIndexedSupported(void) {
+    return EM_ASM_INT({
+        if (Module.__awDBI === undefined) {
+            var gl = Module.ctx;
+            Module.__awDBI = (gl && (gl.getExtension('OES_draw_buffers_indexed') || gl.getExtension('EXT_draw_buffers_indexed'))) || null;
+        }
+        return Module.__awDBI ? 1 : 0;
+    });
+}
+
+EMSCRIPTEN_KEEPALIVE void aw_glEnableBlendi(uint32_t buf) {
+    EM_ASM({ if (Module.__awDBI) Module.__awDBI.enableiOES(0x0BE2, $0); }, buf);
+}
+
+EMSCRIPTEN_KEEPALIVE void aw_glDisableBlendi(uint32_t buf) {
+    EM_ASM({ if (Module.__awDBI) Module.__awDBI.disableiOES(0x0BE2, $0); }, buf);
+}
+
+EMSCRIPTEN_KEEPALIVE void aw_glBlendFuncSeparatei(uint32_t buf, uint32_t srcRGB, uint32_t dstRGB, uint32_t srcA, uint32_t dstA) {
+    EM_ASM({ if (Module.__awDBI) Module.__awDBI.blendFuncSeparateiOES($0, $1, $2, $3, $4); }, buf, srcRGB, dstRGB, srcA, dstA);
+}
+
+EMSCRIPTEN_KEEPALIVE void aw_glBlendEquationSeparatei(uint32_t buf, uint32_t modeRGB, uint32_t modeA) {
+    EM_ASM({ if (Module.__awDBI) Module.__awDBI.blendEquationSeparateiOES($0, $1, $2); }, buf, modeRGB, modeA);
+}
+
+EMSCRIPTEN_KEEPALIVE void aw_glColorMaski(uint32_t buf, int r, int g, int b, int a) {
+    EM_ASM({ if (Module.__awDBI) Module.__awDBI.colorMaskiOES($0, !!$1, !!$2, !!$3, !!$4); }, buf, r, g, b, a);
+}
+
 EMSCRIPTEN_KEEPALIVE void* emGetProcAddress(const char* name) {
     if (strcmp(name, "glGetBufferSubData") == 0) return (void*)glGetBufferSubData;
     if (strcmp(name, "glMultiDrawArrays") == 0)return (void*)glMultiDrawArrays;

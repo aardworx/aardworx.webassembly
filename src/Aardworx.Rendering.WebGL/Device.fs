@@ -47,6 +47,9 @@ type DeviceFeatures =
         
         /// Whether timer queries are supported.
         TimerQuery               : bool
+
+        /// Whether per-attachment blending (OES_draw_buffers_indexed) is supported.
+        PerAttachmentBlending    : bool
     }
 
 /// Device information.
@@ -118,6 +121,7 @@ module DeviceInformation =
             sprintf "  Features:"
             sprintf "    Anisotropic: %A" info.Features.TextureFilterAnisotropic
             sprintf "    TimerQuery:  %A" info.Features.TimerQuery
+            sprintf "    PerAttachmentBlending: %A" info.Features.PerAttachmentBlending
 
             sprintf "  Buffers:"
             sprintf "    Min UniformBuffer align: %d" info.BufferLimits.MinUniformBufferAlign
@@ -272,6 +276,9 @@ type Device(ctx : WebGLContext, debug : bool) as this =
                     {
                         TextureFilterAnisotropic = Set.contains "EXT_texture_filter_anisotropic" extensions
                         TimerQuery = timerQuery
+                        PerAttachmentBlending =
+                            (Set.contains "OES_draw_buffers_indexed" extensions || Set.contains "EXT_draw_buffers_indexed" extensions)
+                            && WebGLRaw.WebGL.aw_glDrawBuffersIndexedSupported() <> 0
                     }
                 TextureLimits =
                     {

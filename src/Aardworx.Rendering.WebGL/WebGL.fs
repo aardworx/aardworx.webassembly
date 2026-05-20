@@ -50,6 +50,25 @@ module WebGLRaw =
         [<DllImport("WebGL")>]
         extern nativeint emGetProcAddress(string name)
 
+        /// Returns 1 iff OES_draw_buffers_indexed (or the EXT variant) is available.
+        [<DllImport("WebGL")>]
+        extern int aw_glDrawBuffersIndexedSupported()
+
+        [<DllImport("WebGL")>]
+        extern void aw_glEnableBlendi(uint32 buf)
+
+        [<DllImport("WebGL")>]
+        extern void aw_glDisableBlendi(uint32 buf)
+
+        [<DllImport("WebGL")>]
+        extern void aw_glBlendFuncSeparatei(uint32 buf, uint32 srcRGB, uint32 dstRGB, uint32 srcA, uint32 dstA)
+
+        [<DllImport("WebGL")>]
+        extern void aw_glBlendEquationSeparatei(uint32 buf, uint32 modeRGB, uint32 modeA)
+
+        [<DllImport("WebGL")>]
+        extern void aw_glColorMaski(uint32 buf, int r, int g, int b, int a)
+
 /// WebGL context.
 [<AllowNullLiteral>]
 type WebGLContext private(handle : WebGLRaw.WebGLContextHandle) =

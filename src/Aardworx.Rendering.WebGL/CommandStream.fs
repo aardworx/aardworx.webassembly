@@ -998,20 +998,22 @@ type CommandStream private(state : CommandStreamState, ownState : bool, backend 
             backend.ColorMask(r, g, b, a)
 
     member x.SetBlendState(blendState : BlendState) =
-        let modes =
+        let attachments =
             state.FramebufferSignature.AttachmentIndices |> Map.toArray |> Array.choose (fun (name, idx) ->
                 let isInt = state.FramebufferSignature.ColorAttachments.[idx].Format |> TextureFormat.isIntegerFormat
                 if isInt then
                     None
                 else
-                    Some (
+                    let mode =
                         blendState.AttachmentMode |> AVal.bind (fun map ->
                             match Map.tryFind name map with
                             | Some mode -> AVal.constant mode
                             | None -> blendState.Mode
                         )
-                    )
+                    Some (idx, mode)
             )
+
+        let modes = attachments |> Array.map snd
 
         let allModesEqual() =
             if modes |> Array.forall (fun m -> m.IsConstant) then
@@ -1038,9 +1040,37 @@ type CommandStream private(state : CommandStreamState, ownState : bool, backend 
                 x.SetBlendMode(mode)
             | None ->
                 x.SetBlendMode BlendMode.None
+        elif state.Device.Info.Features.PerAttachmentBlending then
+            // Per-attachment blending via OES_draw_buffers_indexed / EXT_draw_buffers_indexed.
+            // Each draw re-evaluates the avals so adaptive changes are picked up.
+            let perAttachment = attachments
+            backend.Custom (fun _gl ->
+                for (idx, modeAval) in perAttachment do
+                    let m = AVal.force modeAval
+                    let buf = uint32 idx
+                    if m.Enabled then
+                        WebGLRaw.WebGL.aw_glEnableBlendi(buf)
+                        WebGLRaw.WebGL.aw_glBlendFuncSeparatei(
+                            buf,
+                            uint32 (BlendingFactor.ofBlendFactor m.SourceColorFactor),
+                            uint32 (BlendingFactor.ofBlendFactor m.DestinationColorFactor),
+                            uint32 (BlendingFactor.ofBlendFactor m.SourceAlphaFactor),
+                            uint32 (BlendingFactor.ofBlendFactor m.DestinationAlphaFactor)
+                        )
+                        WebGLRaw.WebGL.aw_glBlendEquationSeparatei(
+                            buf,
+                            uint32 (BlendEquationMode.ofBlendOperation m.ColorOperation),
+                            uint32 (BlendEquationMode.ofBlendOperation m.AlphaOperation)
+                        )
+                    else
+                        WebGLRaw.WebGL.aw_glDisableBlendi(buf)
+            )
         else
-            failwith "[WebGL] no support for per-attachment blending"
-                
+            Log.warn "[WebGL] per-attachment blending requested but OES_draw_buffers_indexed not available — using default mode for all attachments"
+            match Seq.tryHead modes with
+            | Some mode -> x.SetBlendMode(mode)
+            | None -> x.SetBlendMode BlendMode.None
+
         // BlendColor
         x.SetBlendColor(blendState.ConstantColor)
 
